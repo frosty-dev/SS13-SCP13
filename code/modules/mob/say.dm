@@ -9,7 +9,7 @@
 /mob/verb/say_verb(message as text)
 	set name = "Say"
 	set category = "IC"
-	
+
 	if(typing_indicator)
 		qdel(typing_indicator)
 	usr.say(message)
@@ -26,6 +26,9 @@
 		usr.emote("me",usr.emote_type,message)
 	else
 		usr.emote(message)
+
+	var/ckeyname = "[usr.ckey]/[usr.name]"
+	webhook_send_me(ckeyname, message)
 
 /mob/proc/say_dead(var/message)
 	communicate(/decl/communication_channel/dsay, client, message)
