@@ -365,36 +365,6 @@
 	access = list(access_mtflvl1, access_mtflvl2, access_mtflvl3, access_sciencelvl1, access_sciencelvl2, access_sciencelvl3, access_adminlvl1, access_adminlvl2, access_adminlvl3)
 	minimal_access = list()
 
-/datum/job/enlistedofficerlcz
-	has_email = TRUE
-	title = "Junior Guard"
-	department = "Security"
-	selection_color = "#601c1c"
-	department_flag = SEC
-	total_positions = 6
-	spawn_positions = 6
-	duties = "<big><b>As the Junior Guard you have minimal access. You are to guard tests, SCP's and provide support. If in doubt, ask your Guard Commander. You also have the duty of guarding the D-Class Cell Blocks."
-	supervisors = "the Guard Commander"
-	economic_modifier = 4
-//	minimal_player_age = 0
-	ideal_character_age = 25
-	alt_titles = null
-	outfit_type = /decl/hierarchy/outfit/job/site90/crew/security/enlistedofficerhcz
-	allowed_branches = list(
-		/datum/mil_branch/security
-	)
-	allowed_ranks = list(
-		/datum/mil_rank/security/e1,
-		/datum/mil_rank/security/e2
-	)
-	equip(var/mob/living/carbon/human/H)
-		..()
-		H.add_stats(rand(10), rand(10), rand(15,20)) // Str, Dex, Int.
-		H.add_skills(rand(50,80), rand(50,80), rand(15,30), rand(5,10)) // Melee, Ranged, Medical, Engineering.
-
-	access = list(access_mtflvl1, access_sciencelvl1, access_adminlvl1, access_adminlvl2)
-	minimal_access = list()
-
 
 // SCIENCE
 
