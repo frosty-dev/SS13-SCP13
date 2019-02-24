@@ -49,7 +49,7 @@
 		if(d_holder && (d_holder.flags & D_OOCCOLOUR))
 			name = "<font color='[ooc_color]'>[name]</font>"
 
-
+	webhook_send_ooc(C.key, message)
 	for(var/client/target in GLOB.clients)
 		if(target.is_key_ignored(C.key)) // If we're ignored by this person, then do nothing.
 			continue

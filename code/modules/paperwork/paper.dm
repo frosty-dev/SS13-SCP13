@@ -4,14 +4,14 @@
 		if (isturf(paper.loc) && !tile2paper[paper.loc])
 			tile2paper[paper.loc] = list()
 		if (tile2paper[paper.loc])
-			tile2paper[paper.loc] += paper 
-		
+			tile2paper[paper.loc] += paper
+
 	for (var/turf in tile2paper)
 		var/list = tile2paper[turf]
 		if (length(list) > 1)
 			var/obj/item/weapon/paper_bundle/PB = new /obj/item/weapon/paper_bundle (turf)
 			for (var/paper in list)
-				var/obj/item/weapon/paper/P = paper 
+				var/obj/item/weapon/paper/P = paper
 				PB.insert_sheet_at(null, PB.pages.len+1, P)
 			PB.update_icon()
 	return TRUE
@@ -60,7 +60,7 @@
 /obj/item/weapon/paper/proc/set_content(text,title)
 	if(title)
 		SetName(title)
-	info = html_encode(text)
+	info = rhtml_encode(text)
 	info = parsepencode(text)
 	update_icon()
 	update_space(info)
@@ -93,7 +93,7 @@
 		var/mob/living/silicon/ai/AI = user
 		can_read = get_dist(src, AI.camera) < 2
 	var/content = info
-	
+
 	// SCP-078: Too Late To Die Young
 	var/mob/living/carbon/human/H = user
 	if(istype(H) && H.dies_young > 0)
@@ -199,13 +199,13 @@
 					"Your experiments save countless lives.",
 					"The younger scientists do not understand the sacrifices you make."
 				)
-			if (H.job == "Medical Doctor")	
+			if (H.job == "Medical Doctor")
 				solace_possibilities += list(
 					"There were good reasons not to save him.",
 					"Some patients really are more important.",
 					"It would have ruined the experiment if you'd stepped in."
 				)
-			if (H.job == "Surgeon")	
+			if (H.job == "Surgeon")
 				solace_possibilities += list(
 					"He would have died on the table anyway.",
 					"You didn't have enough time to remove the bullets.",
@@ -380,6 +380,7 @@
 	return (user && user.real_name) ? user.real_name : "Anonymous"
 
 /obj/item/weapon/paper/proc/parsepencode(t, obj/item/weapon/pen/P, mob/user, iscrayon)
+	t = cp1251_to_utf8(t)
 	if(length(t) == 0)
 		return ""
 
