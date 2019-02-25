@@ -43,7 +43,7 @@
 					if((time >= 10) && ((time % 2) == 0))
 						var/obj/item/organ/internal/brain = H.internal_organs_by_name[BP_BRAIN]
 						if(brain)
-							brain.take_damage(2)
+							brain.take_internal_damage(2)
 				break
 
 	for(var/mob/living/carbon/human/H in users)
