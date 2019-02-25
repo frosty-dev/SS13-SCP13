@@ -275,7 +275,7 @@
 			return
 
 		user.visible_message("<span class='danger'>[user] stabs [target] in \the [hit_area] with [src.name]!</span>")
-		affecting.take_damage(3)
+		affecting.take_external_damage(3)
 
 	else
 		user.visible_message("<span class='danger'>[user] stabs [target] with [src.name]!</span>")
@@ -388,7 +388,7 @@
 	reagents.add_reagent(/datum/reagent/amnestics/classa, 1)
 	mode = SYRINGE_INJECT
 	update_icon()
-	
+
 /obj/item/weapon/reagent_containers/syringe/amnestics/classb
 	name = "Syringe (Amnestics-B)"
 	desc = "Makes the subject forget memories since before they woke up today."
@@ -398,7 +398,7 @@
 	reagents.add_reagent(/datum/reagent/amnestics/classb, 1)
 	mode = SYRINGE_INJECT
 	update_icon()
-	
+
 /obj/item/weapon/reagent_containers/syringe/amnestics/classc
 	name = "Syringe (Amnestics-C)"
 	desc = "Makes the subject forget memories since before they arrived at the foundation."
@@ -408,7 +408,7 @@
 	reagents.add_reagent(/datum/reagent/amnestics/classc, 1)
 	mode = SYRINGE_INJECT
 	update_icon()
-	
+
 /obj/item/weapon/reagent_containers/syringe/amnestics/classe
 	name = "Syringe (Amnestics-E)"
 	desc = "Makes the subject a blank slate to be molded however you wish."

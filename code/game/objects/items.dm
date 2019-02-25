@@ -88,10 +88,10 @@
 	if(randpixel && (!pixel_x && !pixel_y) && isturf(loc)) //hopefully this will prevent us from messing with mapper-set pixel_x/y
 		pixel_x = rand(-randpixel, randpixel)
 		pixel_y = rand(-randpixel, randpixel)
-	global.item_list += src 
+	global.item_list += src
 
 /obj/item/Destroy()
-	global.item_list -= src 
+	global.item_list -= src
 	qdel(hidden_uplink)
 	hidden_uplink = null
 	if(ismob(loc))
@@ -104,19 +104,19 @@
 
 /obj/item/forceMove(location)
 	..(location)
-	var/mob/M = loc 
+	var/mob/M = loc
 	if (M && istype(M) && action_button_name)
-		M.items_with_action_button_names |= src	
+		M.items_with_action_button_names |= src
 
 /obj/item/device
 	icon = 'icons/obj/device.dmi'
 
 /obj/item/device/New()
 	..()
-	global.device_list += src 
-	
+	global.device_list += src
+
 /obj/item/device/Destroy()
-	global.device_list -= src 
+	global.device_list -= src
 	return ..()
 
 //Checks if the item is being held by a mob, and if so, updates the held icons
@@ -275,17 +275,17 @@
 
 // called when this item is removed from a storage item, which is passed on as S. The loc variable is already set to the new destination before this is called.
 /obj/item/proc/on_exit_storage(obj/item/weapon/storage/S as obj)
-	var/mob/M = S.loc 
+	var/mob/M = S.loc
 	if (action_button_name && M && istype(M) && loc != M)
 		M.items_with_action_button_names -= src
 
 // called when this item is added into a storage item, which is passed on as S. The loc variable is already set to the storage item.
 /obj/item/proc/on_enter_storage(obj/item/weapon/storage/S as obj)
-	var/mob/M = loc 
+	var/mob/M = loc
 	if (action_button_name && M && istype(M))
 		if (M.l_hand == src || M.r_hand == src)
-			M.items_with_action_button_names |= src	
-		else 
+			M.items_with_action_button_names |= src
+		else
 			M.items_with_action_button_names -= src
 
 
@@ -546,7 +546,7 @@ var/list/global/slot_flags_enumeration = list(
 					to_chat(M, "<span class='warning'>You go blind!</span>")
 
 		var/obj/item/organ/external/affecting = H.get_organ(eyes.parent_organ)
-		affecting.take_damage(7)
+		affecting.take_external_damage(7)
 	else
 		M.take_organ_damage(7)
 	M.eye_blurry += rand(3,4)

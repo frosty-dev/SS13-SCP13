@@ -1,6 +1,6 @@
 /mob/Destroy()//This makes sure that mobs with clients/keys are not just deleted from the game.
 	STOP_PROCESSING(SSmobs, src)
-	
+
 	GLOB.player_list -= src
 	GLOB.mob_list -= src
 	GLOB.dead_mob_list_ -= src
@@ -8,7 +8,7 @@
 	GLOB.event_sources_count -= src
 
 	for (var/observer in all_virtual_listeners)
-		var/mob/observer/virtual/O = observer 
+		var/mob/observer/virtual/O = observer
 		if (O.host == src)
 			O.host = null
 
@@ -56,7 +56,7 @@
 	gun_setting_icon = null
 	ability_master = null
 	zone_sel = null
-	
+
 /mob/New()
 	..()
 	GLOB.mob_list += src
@@ -68,8 +68,8 @@
 /mob/Login()
 	..()
 	if (client)
-		GLOB.client2mob[client.ckey] = src 
-	
+		GLOB.client2mob[client.ckey] = src
+
 /mob/proc/show_message(msg, type, alt, alt_type)//Message, type of message (1 or 2), alternative message, alt message type (1 or 2)
 	if(!client)	return
 
@@ -441,7 +441,7 @@
 	var/list/creatures = list()
 
 	for(var/obj in global.obj_list)
-		var/obj/O = obj 
+		var/obj/O = obj
 		if(!O.loc)
 			continue
 		if(istype(O, /obj/item/weapon/disk/nuclear))
@@ -740,27 +740,27 @@
 
 	var/isscp106 = isscp106(src)
 	var/isscp049 = isscp049(src)
-			
+
 	if ((isscp106 || isscp049) && !incapacitated(INCAPACITATION_RESTRAINED|INCAPACITATION_BUCKLED_FULLY|INCAPACITATION_BUCKLED_PARTIALLY))
 		lying = 0
 		density = 1
 
 	// update SCP-106's vis_contents icon
 	if (isscp106)
-		var/mob/living/carbon/human/scp106/H = src 
+		var/mob/living/carbon/human/scp106/H = src
 		H.fix_icons()
 		if (lying)
 			H.reset_vision_cone()
-		else 
+		else
 			H.update_vision_cone()
 
 	// update SCP-049's vis_contents icon
 	else if (isscp049)
-		var/mob/living/carbon/human/scp049/H = src 
+		var/mob/living/carbon/human/scp049/H = src
 		H.fix_icons()
 		if (lying)
 			H.reset_vision_cone()
-		else 
+		else
 			H.update_vision_cone()
 
 	//Temporarily moved here from the various life() procs
@@ -772,10 +772,10 @@
 	else if( lying != lying_prev )
 		update_icons()
 		if (ishuman(src))
-			var/mob/living/carbon/human/H = src 
+			var/mob/living/carbon/human/H = src
 			if (lying)
 				H.reset_vision_cone()
-			else 
+			else
 				H.update_vision_cone()
 
 	return canmove
@@ -978,7 +978,7 @@ mob/proc/yank_out_object()
 			wound.embedded_objects -= selection
 
 		H.shock_stage+=20
-		affected.take_damage((selection.w_class * 3), 0, DAM_EDGE, "Embedded object extraction")
+		affected.take_external_damage((selection.w_class * 3), 0, DAM_EDGE, "Embedded object extraction")
 
 		if(prob(selection.w_class * 5) && affected.sever_artery()) //I'M SO ANEMIC I COULD JUST -DIE-.
 			H.custom_pain("Something tears wetly in your [affected] as [selection] is pulled free!", 50, affecting = affected)
@@ -1119,7 +1119,7 @@ mob/proc/yank_out_object()
 	if (ishuman(src) && locate(/obj/item/paper/scp012) in view(2, src))
 		for (var/obj/item/paper/scp012/scp012 in view(2, target))
 			if (scp012.can_affect(src))
-				return TRUE 
+				return TRUE
 	return FALSE
 
 /client/proc/check_has_body_select()
