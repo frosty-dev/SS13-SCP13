@@ -1,6 +1,6 @@
 # SCP13 Repository
 
-[Website](https://www.scp13.site) - [Code](https://github.com/SS13-SCP13/SS13-SCP13)
+[Website](https://frosty.space) - [Code](https://github.com/SS13-SCP13/SS13-SCP13)
 
 [![Build Status](https://travis-ci.org/SS13-SCP13/SS13-SCP13.svg?branch=master)](https://travis-ci.org/SS13-SCP13/SS13-SCP13)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ss13-scp13/ss13-scp13.svg)](http://isitmaintained.com/project/ss13-scp13/ss13-scp13 "Average time to resolve an issue")

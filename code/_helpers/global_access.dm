@@ -1011,8 +1011,6 @@
 			return global.wireColours;
 		if("wizards")
 			return global.wizards;
-		if("world_topic_spam_protect_ip")
-			return global.world_topic_spam_protect_ip;
 		if("world_topic_spam_protect_time")
 			return global.world_topic_spam_protect_time;
 		if("world_uplinks")
@@ -2038,8 +2036,6 @@
 			global.wireColours=newval;
 		if("wizards")
 			global.wizards=newval;
-		if("world_topic_spam_protect_ip")
-			global.world_topic_spam_protect_ip=newval;
 		if("world_topic_spam_protect_time")
 			global.world_topic_spam_protect_time=newval;
 		if("world_uplinks")
