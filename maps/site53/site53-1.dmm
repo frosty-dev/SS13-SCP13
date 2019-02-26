@@ -846,7 +846,7 @@
 "qn" = (/obj/effect/paint_stripe/red,/turf/simulated/wall/titanium,/area/site53/lhcz/hallway)
 "qo" = (/obj/structure/cable/green{d1 = 1; d2 = 2; icon_state = "1-2"},/obj/effect/catwalk_plated/dark,/turf/simulated/floor,/area/site53/lhcz/hallway)
 "qp" = (/obj/machinery/light/small{dir = 4; pixel_y = 8},/obj/structure/cable/green{d1 = 1; d2 = 2; icon_state = "1-2"},/obj/effect/catwalk_plated/dark,/turf/simulated/floor,/area/site53/lhcz/hallway)
-"qq" = (/obj/machinery/door/airlock/highsecurity{req_one_access = list()},/obj/structure/cable/green{d1 = 1; d2 = 2; icon_state = "1-2"},/obj/effect/catwalk_plated/dark,/obj/effect/catwalk_plated/dark,/turf/simulated/floor,/area/site53/lhcz/hallway)
+"qq" = (/obj/machinery/door/airlock/highsecurity{req_one_access = list()},/obj/structure/cable/green{d1 = 1; d2 = 2; icon_state = "1-2"},/obj/effect/catwalk_plated/dark,/turf/simulated/floor,/area/site53/lhcz/hallway)
 "qr" = (/obj/machinery/light,/turf/simulated/floor/tiled/techmaint,/area/site53/lhcz/hallway)
 "qs" = (/obj/machinery/door/airlock/hatch/maintenance{name = "LHCZ Maintenance"; req_access = list(300)},/obj/structure/cable/green{d1 = 1; d2 = 2; icon_state = "1-2"},/turf/simulated/floor/tiled/techfloor/grid,/area/site53/lhcz/maintenance)
 "qt" = (/obj/structure/cable/green{d1 = 1; d2 = 2; icon_state = "1-2"},/turf/simulated/floor/tiled/techfloor/grid,/area/site53/lhcz/maintenance)
