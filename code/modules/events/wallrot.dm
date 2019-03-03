@@ -3,7 +3,7 @@ datum/event/wallrot/setup()
 	endWhen = announceWhen + 1
 
 datum/event/wallrot/announce()
-	command_announcement.Announce("Containment breach of object class Keter detected. Structures may be contaminated with SCP-020.", "Biohazard Alert", zlevels = affecting_z)
+	GLOB.using_map.level_x_biohazard_announcement(2)
 
 datum/event/wallrot/start()
 	spawn()

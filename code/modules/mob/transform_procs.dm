@@ -1,13 +1,12 @@
 /mob/living/carbon/human/proc/monkeyize()
-	if (transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	for(var/obj/item/W in src)
 		if (W==w_uniform) // will be torn
 			continue
 		drop_from_inventory(W)
 	regenerate_icons()
-	transforming = 1
-	canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	stunned = 1
 	icon = null
 	set_invisibility(101)
@@ -21,9 +20,9 @@
 	sleep(48)
 	//animation = null
 
-	transforming = 0
+	DEL_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	stunned = 0
-	update_canmove()
+	UpdateLyingBuckledAndVerbStatus()
 	set_invisibility(initial(invisibility))
 
 	if(!species.primitive_form) //If the creature in question has no primitive set, this is going to be messy.
@@ -35,6 +34,7 @@
 	set_species(species.primitive_form)
 	dna.SetSEState(GLOB.MONKEYBLOCK,1)
 	dna.SetSEValueRange(GLOB.MONKEYBLOCK,0xDAC, 0xFFF)
+	real_name = "unknown"
 
 	to_chat(src, "<B>You are now [species.name]. </B>")
 	qdel(animation)
@@ -46,7 +46,7 @@
 	return ..()
 
 /mob/living/carbon/human/AIize(move=1) // 'move' argument needs defining here too because BYOND is dumb
-	if (transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	for(var/t in organs)
 		qdel(t)
@@ -54,19 +54,18 @@
 	return ..(move)
 
 /mob/living/carbon/AIize()
-	if (transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	for(var/obj/item/W in src)
 		drop_from_inventory(W)
-	transforming = 1
-	canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	icon = null
 	set_invisibility(101)
 	return ..()
 
 /mob/proc/AIize(move=1)
 	if(client)
-		sound_to(src, sound(null, repeat = 0, wait = 0, volume = 85, channel = 1))// stop the jams for AIs
+		sound_to(src, sound(null, repeat = 0, wait = 0, volume = 85, channel = GLOB.lobby_sound_channel))// stop the jams for AIs
 
 
 	var/mob/living/silicon/ai/O = new (loc, GLOB.using_map.default_law_type,,1)//No MMI but safety is in effect.
@@ -80,22 +79,21 @@
 
 	if(move)
 		var/obj/loc_landmark
-		for(var/obj/effect/landmark/start/sloc in global.landmark_list)
+		for(var/obj/effect/landmark/start/sloc in landmarks_list)
 			if (sloc.name != "AI")
 				continue
 			if ((locate(/mob/living) in sloc.loc) || (locate(/obj/structure/AIcore) in sloc.loc))
 				continue
 			loc_landmark = sloc
 		if (!loc_landmark)
-			for(var/landmark in global.landmark_list)
-				var/obj/effect/landmark/tripai = landmark
+			for(var/obj/effect/landmark/tripai in landmarks_list)
 				if (tripai.name == "tripai")
 					if((locate(/mob/living) in tripai.loc) || (locate(/obj/structure/AIcore) in tripai.loc))
 						continue
 					loc_landmark = tripai
 		if (!loc_landmark)
 			to_chat(O, "Oh god sorry we can't find an unoccupied AI spawn location, so we're spawning you on top of someone.")
-			for(var/obj/effect/landmark/start/sloc in global.landmark_list)
+			for(var/obj/effect/landmark/start/sloc in landmarks_list)
 				if (sloc.name == "AI")
 					loc_landmark = sloc
 		O.forceMove(loc_landmark.loc)
@@ -110,14 +108,13 @@
 
 //human -> robot
 /mob/living/carbon/human/proc/Robotize()
-	if (transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	QDEL_NULL_LIST(worn_underwear)
 	for(var/obj/item/W in src)
 		drop_from_inventory(W)
 	regenerate_icons()
-	transforming = 1
-	canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	icon = null
 	set_invisibility(101)
 	for(var/t in organs)
@@ -130,40 +127,35 @@
 
 	if(mind)		//TODO
 		mind.transfer_to(O)
-		if(O.mind.assigned_role == "Cyborg")
+		if(O.mind && O.mind.assigned_role == "Robot")
 			O.mind.original = O
+			if(O.mind.role_alt_title == "Drone")
+				O.mmi = new /obj/item/device/mmi/digital/robot(O)
+			else if(O.mind.role_alt_title == "Cyborg")
+				O.mmi = new /obj/item/device/mmi(O)
+			else
+				O.mmi = new /obj/item/organ/internal/posibrain(O)
+			O.mmi.transfer_identity(src)
 		else if(mind && mind.special_role)
 			O.mind.store_memory("In case you look at this after being borged, the objectives are only here until I find a way to make them not show up for you, as I can't simply delete them without screwing up round-end reporting. --NeoFite")
 	else
 		O.key = key
 
-	O.loc = loc
-	O.job = "Cyborg"
-	if(O.mind.assigned_role == "Cyborg")
-		if(O.mind.role_alt_title == "Android")
-			O.mmi = new /obj/item/organ/internal/posibrain(O)
-		else if(O.mind.role_alt_title == "Robot")
-			O.mmi = new /obj/item/device/mmi/digital/robot(O)
-		else
-			O.mmi = new /obj/item/device/mmi(O)
-
-		O.mmi.transfer_identity(src)
-
+	O.dropInto(loc)
+	O.job = "Robot"
 	callHook("borgify", list(O))
 	O.Namepick()
 
-	spawn(0)	// Mobs still instantly del themselves, thus we need to spawn or O will never be returned
-		qdel(src)
+	qdel(src) // Queues us for a hard delete
 	return O
 
 /mob/living/carbon/human/proc/slimeize(adult as num, reproduce as num)
-	if (transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	for(var/obj/item/W in src)
 		drop_from_inventory(W)
 	regenerate_icons()
-	transforming = 1
-	canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	icon = null
 	set_invisibility(101)
 	for(var/t in organs)
@@ -191,13 +183,12 @@
 	return
 
 /mob/living/carbon/human/proc/corgize()
-	if (transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	for(var/obj/item/W in src)
 		drop_from_inventory(W)
 	regenerate_icons()
-	transforming = 1
-	canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	icon = null
 	set_invisibility(101)
 	for(var/t in organs)	//this really should not be necessary
@@ -220,14 +211,13 @@
 		to_chat(usr, "<span class='warning'>Sorry but this mob type is currently unavailable.</span>")
 		return
 
-	if(transforming)
+	if(HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	for(var/obj/item/W in src)
 		drop_from_inventory(W)
 
 	regenerate_icons()
-	transforming = 1
-	canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(src)
 	icon = null
 	set_invisibility(101)
 
@@ -273,9 +263,6 @@
 	if(!MP)
 		return 0	//Sanity, this should never happen.
 
-	if(ispath(MP, /mob/living/simple_animal/space_worm))
-		return 0 //Unfinished. Very buggy, they seem to just spawn additional space worms everywhere and eating your own tail results in new worms spawning.
-
 	if(ispath(MP, /mob/living/simple_animal/construct/behemoth))
 		return 0 //I think this may have been an unfinished WiP or something. These constructs should really have their own class simple_animal/construct/subtype
 
@@ -314,22 +301,25 @@
 	return 0
 
 
-//This is barely a transformation but probably best file for it.
-/mob/living/carbon/human/proc/zombieze()
+/mob/living/carbon/human/proc/zombify()
 	ChangeToHusk()
-	mutations |= CLUMSY //cause zombie
-	src.visible_message("<span class='danger'>\The [src]'s flesh decays before your very eyes!</span>", "<span class='danger'>Your entire body is ripe with pain as it is consumed down to flesh and bones. You... hunger. Not only for flesh, but to spread your disease.</span>")
-	if(src.mind)
+	mutations |= MUTATION_CLUMSY
+	src.visible_message("<span class='danger'>\The [src]'s skin decays before your very eyes!</span>", "<span class='danger'>Your entire body is ripe with pain as it is consumed down to flesh and bones. You ... hunger. Not only for flesh, but to spread this gift.</span>")
+	if (src.mind)
+		if (src.mind.special_role == "Zombie")
+			return
 		src.mind.special_role = "Zombie"
 	log_admin("[key_name(src)] has transformed into a zombie!")
 	Weaken(5)
-	if(should_have_organ(BP_HEART))
-		vessel.add_reagent(/datum/reagent/blood,species.blood_volume-vessel.total_volume)
-	for(var/o in organs)
+	if (should_have_organ(BP_HEART))
+		vessel.add_reagent(/datum/reagent/blood, species.blood_volume - vessel.total_volume)
+	for (var/o in organs)
 		var/obj/item/organ/organ = o
 		organ.vital = 0
-		organ.rejuvenate(1)
-		organ.max_damage *= 5
-		organ.min_broken_damage *= 5
+		if (!BP_IS_ROBOTIC(organ))
+			organ.rejuvenate(1)
+			organ.max_damage *= 3
+			organ.min_broken_damage = Floor(organ.max_damage * 0.75)
 	verbs += /mob/living/proc/breath_death
 	verbs += /mob/living/proc/consume
+	playsound(get_turf(src), 'sound/hallucinations/wail.ogg', 20, 1)

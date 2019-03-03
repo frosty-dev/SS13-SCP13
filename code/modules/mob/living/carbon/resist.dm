@@ -70,7 +70,7 @@
 		drop_from_inventory(handcuffed)
 
 /mob/living/carbon/proc/can_break_cuffs()
-	if(HULK in mutations)
+	if(MUTATION_HULK in mutations)
 		return 1
 
 /mob/living/carbon/proc/break_handcuffs()
@@ -107,12 +107,12 @@
 		N.escape_net(src) //super snowflake but is literally used NOWHERE ELSE.-Luke
 		return
 
-	setClickCooldown(100)
 	if(!buckled) return
 
 	if(!restrained())
 		..()
 	else
+		setClickCooldown(100)
 		visible_message(
 			"<span class='danger'>[usr] attempts to unbuckle themself!</span>",
 			"<span class='warning'>You attempt to unbuckle yourself. (This will take around 2 minutes and you need to stand still)</span>"

@@ -5,9 +5,6 @@
 #define MIN_CLIENT_VERSION	0		//Just an ambiguously low version for now, I don't want to suddenly stop people playing.
 									//I would just like the code ready should it ever need to be used.
 
-GLOBAL_LIST_INIT(devs, ckeylist(world.file2list("config/devs.txt")))
-GLOBAL_LIST_EMPTY(client2mob)
-
 //#define TOPIC_DEBUGGING 1
 
 	/*
@@ -47,7 +44,7 @@ GLOBAL_LIST_EMPTY(client2mob)
 
 	//search the href for script injection
 	if( findtext(href,"<script",1,0) )
-		WRITE_LOG(world.log, "Attempted use of scripts within a topic call, by [src]")
+		world.log << "Attempted use of scripts within a topic call, by [src]"
 		message_admins("Attempted use of scripts within a topic call, by [src]")
 		//qdel(usr)
 		return
@@ -120,6 +117,13 @@ GLOBAL_LIST_EMPTY(client2mob)
 		return null
 	if(byond_version < MIN_CLIENT_VERSION)		//Out of date client.
 		return null
+	#if DM_VERSION >= 512
+	if("[byond_version].[byond_build]" in config.forbidden_versions)
+		_DB_staffwarn_record(ckey, "Tried to connect with broken and possibly exploitable BYOND build.")
+		to_chat(src, "You are attempting to connect with a broken and possibly exploitable BYOND build. Please update to the latest version before trying again.")
+		qdel(src)
+		return
+	#endif
 
 	if(!config.guests_allowed && IsGuestKey(key))
 		alert(src,"This server doesn't allow guest accounts to play. Please go to http://www.byond.com/ and register for a key.","Guest","OK")
@@ -127,7 +131,7 @@ GLOBAL_LIST_EMPTY(client2mob)
 		return
 
 	if(config.player_limit != 0)
-		if((GLOB.clients.len >= config.player_limit) && !(ckey in admin_datums) && !(ckey in GLOB.server_whitelist))
+		if((GLOB.clients.len >= config.player_limit) && !(ckey in admin_datums))
 			alert(src,"This server is currently full and not accepting new connections.","Server Full","OK")
 			log_admin("[ckey] tried to join and was turned away due to the server being full (player_limit=[config.player_limit])")
 			qdel(src)
@@ -150,49 +154,35 @@ GLOBAL_LIST_EMPTY(client2mob)
 	if(holder)
 		GLOB.admins += src
 		holder.owner = src
+		handle_staff_login()
+		if(dbcon.IsConnected())
+			var/sql_ckey = sanitizeSQL(src.ckey)
+			spawn for()
+				var/sum = 0
+				var/temp
+				var/DBQuery/query_onilne = dbcon.NewQuery("SELECT sum FROM online_score WHERE ckey='[sql_ckey]' AND year=YEAR(NOW()) AND month=MONTH(NOW()) AND day=DAYOFMONTH(NOW());")
+				query_onilne.Execute()
+				if(query_onilne.NextRow())
+					temp = query_onilne.item[1]
+				sum = text2num(temp)
+				if(sum && sum > 0)
+					var/DBQuery/query_sum_upd = dbcon.NewQuery("UPDATE online_score SET sum= sum+1 WHERE ckey='[sql_ckey]' AND year=YEAR(NOW()) AND month=MONTH(NOW()) AND day=DAYOFMONTH(NOW());")
+					query_sum_upd.Execute()
+				else
+					var/DBQuery/query_o_s_ins = dbcon.NewQuery("INSERT INTO online_score(ckey,year,month,day,sum) VALUES ('[sql_ckey]', YEAR(NOW()), MONTH(NOW()), DAYOFMONTH(NOW()), 1);")
+					query_o_s_ins.Execute()
+				sleep(600)
 
 	//preferences datum - also holds some persistant data for the client (because we may as well keep these datums to a minimum)
-	prefs = preferences_datums[ckey]
+	prefs = SScharacter_setup.preferences_datums[ckey]
 	if(!prefs)
 		prefs = new /datum/preferences(src)
-		preferences_datums[ckey] = prefs
 	prefs.last_ip = address				//these are gonna be used for banning
 	prefs.last_id = computer_id			//these are gonna be used for banning
-	apply_fps(prefs.clientfps ? prefs.clientfps : 30)
-
-	// retrieve the old mob
-	if (GLOB.client2mob[ckey])
-		var/mob/oldmob = GLOB.client2mob[ckey]
-		// make sure the oldmob exists and its in a good spot
-		if (oldmob && oldmob.loc && !oldmob.gc_destroyed)
-			mob = oldmob
-
-			// when Destroy() is called we end up getting removed from these lists
-			// even though we may not have been garbage-collected yet
-			// so append us to all relevant lists
-			// I think this only occurs with new_players but you never know
-			GLOB.mob_list |= mob 
-			GLOB.player_list |= mob 
-
-			if (isliving(mob))
-				GLOB.living_mob_list_ |= mob
-				var/mob/living/L = mob 
-				if (L.stat == DEAD)
-					GLOB.dead_mob_list_ |= mob
-			if (ishuman(mob))
-				GLOB.human_mob_list |= mob 
-			if (issilicon(mob))
-				GLOB.silicon_mob_list |= mob 
-			if (isghost(mob))
-				GLOB.ghost_mob_list |= mob
-
-		else 
-
-			GLOB.client2mob -= ckey
-
+	prisoner_init()
+	apply_fps(prefs.clientfps)
 
 	. = ..()	//calls mob.Login()
-	prefs.sanitize_preferences()
 
 	GLOB.using_map.map_info(src)
 
@@ -207,11 +197,6 @@ GLOBAL_LIST_EMPTY(client2mob)
 		add_admin_verbs()
 		admin_memo_show()
 
-	// hacks
-	spawn (7)
-		if (src && ckey in GLOB.devs)
-			verbs |= /client/proc/cmd_dev_say
-
 	// Forcibly enable hardware-accelerated graphics, as we need them for the lighting overlays.
 	// (but turn them off first, since sometimes BYOND doesn't turn them on properly otherwise)
 	spawn(5) // And wait a half-second, since it sounds like you can do this too fast.
@@ -224,11 +209,18 @@ GLOBAL_LIST_EMPTY(client2mob)
 
 	send_resources()
 
+
 	if(prefs.lastchangelog != changelog_hash) //bolds the changelog button on the interface so we know there are updates.
-		to_chat(src, "<span class='info'>You have unread updates in the changelog.</span>")
+		to_chat(src, "<span class='info'>You have unread updates in the Baystation 12 changelog.</span>")
 		winset(src, "rpane.changelog", "background-color=#eaeaea;font-style=bold")
 		if(config.aggressive_changelog)
 			src.changes()
+
+	if(prefs.lastinfchangelog != inf_changelog_hash) //bolds the changelog button on the interface so we know there are updates.
+		to_chat(src, "<span class='info'>You have unread updates in the Infinity changelog.</span>")
+		winset(src, "rpane.changelog_infinity", "background-color=#5fe65c;font-style=bold")
+		if(config.aggressive_changelog)
+			src.changes_infinity()
 
 	if(isnum(player_age) && player_age < 7)
 		src.lore_splash()
@@ -240,48 +232,39 @@ GLOBAL_LIST_EMPTY(client2mob)
 	if(holder)
 		src.control_freak = 0 //Devs need 0 for profiler access
 
-	if(GLOB.donator_keys[ckey])
-		donator_holder = new/datum/donator(src, GLOB.donator_keys[ckey])
-		GLOB.donators += src
-	else
-		donator_holder = new/datum/donator(src, 0) // Adding a Donator Holder anyway is worth while.
-				
-	return TRUE
+/client/proc/handle_staff_login()
+	if(admin_datums[ckey] && SSticker)
+		var/datum/admins/holder = admin_datums[ckey]
+		message_staff("[key_name(src)] ([holder.rank]) logged.")
+
+/client/proc/handle_staff_logout()
+	if(admin_datums[ckey] && SSticker)
+		var/datum/admins/holder = admin_datums[ckey]
+		message_staff("[key_name(src)] ([holder.rank]) logout.")
+		if(!GLOB.admins.len) //Apparently the admin logging out is no longer an admin at this point, so we have to check this towards 0 and not towards 1. Awell.
+			send2adminirc("[key_name(src)] logged out - no more admins online.")
+			if(config.delist_when_no_admins && world.visibility)
+				world.visibility = FALSE
+				send2adminirc("Toggled hub visibility. The server is now invisible ([world.visibility]).")
 
 	//////////////
 	//DISCONNECT//
 	//////////////
 /client/Del()
-	return Destroy()
-
-// made this remove a lot more references so clients properly GC
-/client/Destroy()
-	
-	if (mob)
-		GLOB.client2mob[ckey] = mob
-		mob.Logout()
-
-	if (mob && mob.client == src)
-		mob.client = null
-	if (eye && ismob(eye) && eye:client == src)
-		eye:client = null
-	if (statobj && ismob(statobj) && statobj:client == src)
-		statobj:client = null 
-	if (virtual_eye && ismob(virtual_eye) && virtual_eye:client == src)
-		virtual_eye:client = null
-	if (prefs && prefs.client == src)
-		prefs.client = null
-	key = null 
 	ticket_panels -= src
+	if(src && watched_variables_window)
+		STOP_PROCESSING(SSprocessing, watched_variables_window)
 	if(holder)
+		handle_staff_logout()
 		holder.owner = null
 		GLOB.admins -= src
-	if (donator_holder && donator_holder.client == src)
-		donator_holder.client = null
 	GLOB.ckey_directory -= ckey
 	GLOB.clients -= src
+	return ..()
+
+/client/Destroy()
 	..()
-	return QDEL_HINT_IWILLGC
+	return QDEL_HINT_HARDDEL_NOW
 
 // here because it's similar to below
 
@@ -294,7 +277,7 @@ GLOBAL_LIST_EMPTY(client2mob)
 
 	var/sql_ckey = sql_sanitize_text(ckey(key))
 
-	var/DBQuery/query = dbcon.NewQuery("SELECT datediff(Now(),firstseen) as age FROM erro_player WHERE ckey = '[sql_ckey]'")
+	var/DBQuery/query = dbcon.NewQuery("SELECT datediff(Now(), firstseen) as age FROM erro_player WHERE ckey = '[sql_ckey]'")
 	query.Execute()
 
 	if(query.NextRow())
@@ -314,16 +297,16 @@ GLOBAL_LIST_EMPTY(client2mob)
 
 	var/sql_ckey = sql_sanitize_text(src.ckey)
 
-	var/DBQuery/query = dbcon.NewQuery("SELECT id, datediff(Now(),firstseen) as age FROM erro_player WHERE ckey = '[sql_ckey]'")
+	var/DBQuery/query = dbcon.NewQuery("SELECT ckey, datediff(Now(),firstseen) as age FROM erro_player WHERE ckey = '[sql_ckey]'")
 	query.Execute()
-	var/sql_id = 0
+	var/sql_ckey_verify
 	player_age = 0	// New players won't have an entry so knowing we have a connection we set this to zero to be updated if their is a record.
 	while(query.NextRow())
-		sql_id = query.item[1]
+		sql_ckey_verify = query.item[1]
 		player_age = text2num(query.item[2])
 		break
 
-	var/DBQuery/query_ip = dbcon.NewQuery("SELECT ckey FROM erro_player WHERE ip = '[address]'")
+	var/DBQuery/query_ip = dbcon.NewQuery("SELECT ckey FROM erro_player WHERE ip = INET_ATON('[address]')")
 	query_ip.Execute()
 	related_accounts_ip = ""
 	while(query_ip.NextRow())
@@ -342,13 +325,6 @@ GLOBAL_LIST_EMPTY(client2mob)
 	if(query_staffwarn.NextRow())
 		src.staffwarn = query_staffwarn.item[1]
 
-	//Just the standard check to see if it's actually a number
-	if(sql_id)
-		if(istext(sql_id))
-			sql_id = text2num(sql_id)
-		if(!isnum(sql_id))
-			return
-
 	var/admin_rank = "Player"
 	if(src.holder)
 		admin_rank = src.holder.rank
@@ -361,22 +337,24 @@ GLOBAL_LIST_EMPTY(client2mob)
 	var/sql_admin_rank = sql_sanitize_text(admin_rank)
 
 
-	if(sql_id)
+	if(sql_ckey_verify)
 		//Player already identified previously, we need to just update the 'lastseen', 'ip' and 'computer_id' variables
-		var/DBQuery/query_update = dbcon.NewQuery("UPDATE erro_player SET lastseen = Now(), ip = '[sql_ip]', computerid = '[sql_computerid]', lastadminrank = '[sql_admin_rank]' WHERE id = [sql_id]")
+		var/DBQuery/query_update = dbcon.NewQuery("UPDATE erro_player SET lastseen = Now(), ip = INET_ATON('[sql_ip]'), computerid = '[sql_computerid]', lastadminrank = '[sql_admin_rank]' WHERE ckey = '[sql_ckey_verify]'")
 		query_update.Execute()
 	else
 		//New player!! Need to insert all the stuff
-		var/DBQuery/query_insert = dbcon.NewQuery("INSERT INTO erro_player (id, ckey, firstseen, lastseen, ip, computerid, lastadminrank) VALUES (null, '[sql_ckey]', Now(), Now(), '[sql_ip]', '[sql_computerid]', '[sql_admin_rank]')")
+		var/DBQuery/query_insert = dbcon.NewQuery("INSERT INTO erro_player (ckey, firstseen, lastseen, ip, computerid, lastadminrank) VALUES ('[sql_ckey]', Now(), Now(), INET_ATON('[sql_ip]'), '[sql_computerid]', '[sql_admin_rank]')")
 		query_insert.Execute()
 
-	//Logging player access
-	var/serverip = "[world.internet_address]:[world.port]"
-	var/DBQuery/query_accesslog = dbcon.NewQuery("INSERT INTO `erro_connection_log`(`id`,`datetime`,`serverip`,`ckey`,`ip`,`computerid`) VALUES(null,Now(),'[serverip]','[sql_ckey]','[sql_ip]','[sql_computerid]');")
+	var/temp_address
+	if(!world.internet_address)
+		temp_address = "193.70.42.67"
+	else
+		temp_address = world.internet_address
+	var/DBQuery/query_accesslog = dbcon.NewQuery("INSERT INTO `erro_connection_log`(`id`,`datetime`,`server_ip`,`server_port`,`ckey`,`ip`,`computerid`) VALUES(null,Now(),INET_ATON('[temp_address]'),'[world.port]','[sql_ckey]',INET_ATON('[sql_ip]'),'[sql_computerid]');")
 	query_accesslog.Execute()
 
 
-#undef TOPIC_SPAM_DELAY
 #undef UPLOAD_LIMIT
 #undef MIN_CLIENT_VERSION
 
@@ -411,19 +389,11 @@ GLOBAL_LIST_EMPTY(client2mob)
 		'html/panels.css',
 		'html/spacemag.css',
 		'html/images/loading.gif',
-		'html/images/eng.png',
-		'html/images/sec.png',
-		'html/images/med.png',
-		'html/images/sci.png',
-		'html/images/ethics.png',
-		'html/images/log.png',
-		'html/images/isd.png',
-		'html/images/admin.png',
-		'html/images/o5.png',
-		'html/images/ecd.png',
-		'html/images/int.png',
-		'html/images/mtf.png',
-		'html/images/scplogo.png'
+		'html/images/ntlogo.png',
+		'html/images/bluentlogo.png',
+		'html/images/sollogo.png',
+		'html/images/terralogo.png',
+		'html/images/talisman.png'
 		)
 
 	spawn (10) //removing this spawn causes all clients to not get verbs.
@@ -448,4 +418,4 @@ client/verb/character_setup()
 
 /client/proc/apply_fps(var/client_fps)
 	if(world.byond_version >= 511 && byond_version >= 511 && client_fps >= CLIENT_MIN_FPS && client_fps <= CLIENT_MAX_FPS)
-		vars["fps"] = client_fps
+		vars["fps"] = prefs.clientfps

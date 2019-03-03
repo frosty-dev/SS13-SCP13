@@ -9,6 +9,12 @@
 	var/base_icon
 	var/open
 	var/obj/item/held //Item inside locket.
+	var/message
+
+/obj/item/clothing/accessory/locket/examine(mob/user)
+	. = ..()
+	if(open && message)
+		to_chat(user, "<span class='notice'>[message]</span>")
 
 /obj/item/clothing/accessory/locket/attack_self(mob/user as mob)
 	if(!base_icon)
@@ -24,7 +30,7 @@
 		icon_state = "[base_icon]_open"
 		if(held)
 			to_chat(user, "\The [held] falls out!")
-			held.loc = get_turf(user)
+			held.dropInto(user.loc)
 			src.held = null
 	else
 		icon_state = "[base_icon]"
@@ -38,9 +44,17 @@
 		if(held)
 			to_chat(usr, "\The [src] already has something inside it.")
 		else
+			if(!user.unEquip(O, src))
+				return
 			to_chat(usr, "You slip [O] into [src].")
-			user.drop_item()
-			O.loc = src
 			src.held = O
+		return
+
+	if(istype(O,/obj/item/weapon/pen))
+		var/new_message = sanitize(input("Enter the text which you want write here (leave field blank to remove)") as text, MAX_DESC_LEN)
+		if(!new_message)
+			message = null
+		else
+			message = new_message
 		return
 	..()

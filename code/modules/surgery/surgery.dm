@@ -19,6 +19,7 @@
 	var/blood_level = 0
 	var/shock_level = 0	//what shock level will this step put patient on
 	var/delicate = 0  //if this step NEEDS stable optable or can be done on any valid surface with no penalty
+	var/core_skill = SKILL_ANATOMY //The skill that's checked for speed modifiers.
 
 //returns how well tool is suited for this step
 /datum/surgery_step/proc/tool_quality(obj/item/tool)
@@ -74,8 +75,18 @@
 
 /datum/surgery_step/proc/success_chance(mob/living/user, mob/living/carbon/human/target, obj/item/tool)
 	. = tool_quality(tool)
+	if(target.can_feel_pain() && (target.wear_suit != /obj/item/clothing/suit/straight_jacket || target.stat == UNCONSCIOUS))
+		for(var/obj/item/organ/external/E in target.organs)
+			. -= E.pain
 	if(user == target)
 		. -= 10
+
+	if(!user.skill_check(SKILL_ANATOMY, SKILL_ADEPT + delicate))
+		. -= 10 * (SKILL_ADEPT + delicate - user.get_skill_value(SKILL_ANATOMY))
+
+	if(user.skill_check(SKILL_ANATOMY, SKILL_PROF))
+		. += 20
+
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		. -= round(H.shock_stage * 0.5)
@@ -117,7 +128,7 @@
 	if(zone in M.op_stage.in_progress) //Can't operate on someone repeatedly.
 		to_chat(user, "<span class='warning'>You can't operate on this area while surgery is already in progress.</span>")
 		return 1
-	for(var/datum/surgery_step/S in global.surgery_step_list)
+	for(var/datum/surgery_step/S in surgery_steps)
 		//check if tool is right or close enough and if this step is possible
 		if(S.tool_quality(src))
 			var/step_is_valid = S.can_use(user, M, zone, src)
@@ -127,9 +138,9 @@
 				M.op_stage.in_progress += zone
 				S.begin_step(user, M, zone, src)		//start on it
 				//We had proper tools! (or RNG smiled.) and user did not move or change hands.
-				if(user.skillcheck(user.medical_skill, 75, 0) || user.statscheck(user.int, 14 ,0))
-					if(prob(S.success_chance(user, M, src)) && do_mob(user, M, rand(S.min_duration, S.max_duration)))
-						S.end_step(user, M, zone, src)		//finish successfully
+				var/duration = user.skill_delay_mult(S.core_skill) * rand(S.min_duration, S.max_duration) * surgery_speed
+				if(prob(S.success_chance(user, M, src)) &&  do_mob(user, M, duration) * surgery_speed)
+					S.end_step(user, M, zone, src)		//finish successfully
 				else if ((src in user.contents) && user.Adjacent(M))			//or
 					S.fail_step(user, M, zone, src)		//malpractice~
 				else // This failing silently was a pain.
@@ -143,7 +154,7 @@
 	return 0
 
 /proc/sort_surgeries()
-	var/gap = global.surgery_step_list.len
+	var/gap = surgery_steps.len
 	var/swapped = 1
 	while (gap > 1 || swapped)
 		swapped = 0
@@ -151,11 +162,11 @@
 			gap = round(gap / 1.247330950103979)
 		if(gap < 1)
 			gap = 1
-		for(var/i = 1; gap + i <= global.surgery_step_list.len; i++)
-			var/datum/surgery_step/l = global.surgery_step_list[i]		//Fucking hate
-			var/datum/surgery_step/r = global.surgery_step_list[gap+i]	//how lists work here
+		for(var/i = 1; gap + i <= surgery_steps.len; i++)
+			var/datum/surgery_step/l = surgery_steps[i]		//Fucking hate
+			var/datum/surgery_step/r = surgery_steps[gap+i]	//how lists work here
 			if(l.priority < r.priority)
-				global.surgery_step_list.Swap(i, gap + i)
+				surgery_steps.Swap(i, gap + i)
 				swapped = 1
 
 /datum/surgery_status/

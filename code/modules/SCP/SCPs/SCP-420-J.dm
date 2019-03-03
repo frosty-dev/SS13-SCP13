@@ -15,6 +15,7 @@ GLOBAL_LIST_EMPTY(possible_420j)
 	brand = "\improper Radical SCP Foundation"
 	chem_volume = 100
 	can_be_put_out = 0
+	waterproof = 1
 	filling = list()
 	SCP = /datum/scp/SCP_420_J
 

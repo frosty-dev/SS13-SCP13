@@ -6,7 +6,7 @@
 /obj/item/weapon/card/id/var/money = 2000
 
 /obj/machinery/atm
-	name = "Automatic Teller Machine"
+	name = "automatic teller machine"
 	desc = "For all your monetary needs!"
 	icon = 'icons/obj/terminals.dmi'
 	icon_state = "atm"
@@ -20,7 +20,7 @@
 	var/ticks_left_locked_down = 0
 	var/ticks_left_timeout = 0
 	var/machine_id = ""
-	var/obj/item/weapon/card/held_card
+	var/obj/item/weapon/card/id/held_card
 	var/editing_security_level = 0
 	var/view_screen = NO_SCREEN
 	var/datum/effect/effect/system/spark_spread/spark_system
@@ -47,7 +47,7 @@
 			number_incorrect_tries = 0
 
 	for(var/obj/item/weapon/spacecash/S in src)
-		S.loc = src.loc
+		S.dropInto(loc)
 		if(prob(50))
 			playsound(loc, 'sound/items/polaroid1.ogg', 50, 1)
 		else
@@ -65,7 +65,7 @@
 
 		//display a message to the user
 		var/response = pick("Initiating withdraw. Have a nice day!", "CRITICAL ERROR: Activating cash chamber panic siphon.","PIN Code accepted! Emptying account balance.", "Jackpot!")
-		to_chat(user, "\icon[src] <span class='warning'>The [src] beeps: \"[response]\"</span>")
+		to_chat(user, "\icon[src] <span class='warning'>[src] beeps: \"[response]\"</span>")
 		return 1
 
 /obj/machinery/atm/attackby(obj/item/I as obj, mob/user as mob)
@@ -74,11 +74,14 @@
 			//prevent inserting id into an emagged ATM
 			to_chat(user, "\icon[src] <span class='warning'>CARD READER ERROR. This system has been compromised!</span>")
 			return
+		if(stat & NOPOWER)
+			to_chat(user, "You try to insert your card into [src], but nothing happens.")
+			return
 
 		var/obj/item/weapon/card/id/idcard = I
 		if(!held_card)
-			usr.drop_item()
-			idcard.loc = src
+			if(!user.unEquip(idcard, src))
+				return
 			held_card = idcard
 			if(authenticated_account && held_card.associated_account_number != authenticated_account.account_number)
 				authenticated_account = null
@@ -178,9 +181,9 @@
 							t += "<form name='transfer' action='?src=\ref[src]' method='get'>"
 							t += "<input type='hidden' name='src' value='\ref[src]'>"
 							t += "<input type='hidden' name='choice' value='transfer'>"
-							t += "Target account number: <input type='text' name='target_acc_number' value='' style='width:200px; background-color:white;'><br>"
-							t += "Funds to transfer: <input type='text' name='funds_amount' value='' style='width:200px; background-color:white;'><br>"
-							t += "Transaction purpose: <input type='text' name='purpose' value='Funds transfer' style='width:200px; background-color:white;'><br>"
+							t += "Target account number: <input type='text' name='target_acc_number' value='' style='width:200px; color:#282828; background-color:white'><br>"
+							t += "Funds to transfer: <input type='text' name='funds_amount' value='' style='width:200px; color:#282828;background-color:white'><br>"
+							t += "Transaction purpose: <input type='text' name='purpose' value='Funds transfer' style='width:200px; color:#282828;background-color:white'><br>"
 							t += "<input type='submit' value='Transfer funds'><br>"
 							t += "</form>"
 						else
@@ -188,7 +191,7 @@
 							t += "<form name='withdrawal' action='?src=\ref[src]' method='get'>"
 							t += "<input type='hidden' name='src' value='\ref[src]'>"
 							t += "<input type='radio' name='choice' value='withdrawal' checked> Cash  <input type='radio' name='choice' value='e_withdrawal'> Chargecard<br>"
-							t += "<input type='text' name='funds_amount' value='' style='width:200px; background-color:white;'><input type='submit' value='Withdraw'>"
+							t += "<input type='text' name='funds_amount' value='' style='width:200px; color:#282828;background-color:white'><input type='submit' value='Withdraw'>"
 							t += "</form>"
 							t += "<A href='?src=\ref[src];choice=view_screen;view_screen=1'>Change account security level</a><br>"
 							t += "<A href='?src=\ref[src];choice=view_screen;view_screen=2'>Make transfer</a><br>"
@@ -212,10 +215,10 @@
 				t += "<form name='atm_auth' action='?src=\ref[src]' method='get'>"
 				t += "<input type='hidden' name='src' value='\ref[src]'>"
 				t += "<input type='hidden' name='choice' value='attempt_auth'>"
-				t += "<b>Account:</b> <input type='text' id='account_num' name='account_num' style='width:250px; background-color:white;'><BR><BR>"
+				t += "<b>Account:</b> <input type='text' id='account_num' name='account_num' style='width:250px; color:#282828;background-color:white'><BR><BR>"
 				//Leave the PIN field out of sight until needed
 				if(account_security_level)
-					t += "<b>PIN:</b> <input type='text' id='account_pin' name='account_pin' style='width:250px; background-color:white;'><BR><BR>"
+					t += "<b>PIN:</b> <input type='text' id='account_pin' name='account_pin' style='width:250px; color:#282828;background-color:white'><BR><BR>"
 				t += "<input type='submit' value='Submit'><br>"
 				t += "</div></form>"
 
@@ -275,7 +278,9 @@
 					//Below is to avoid a runtime
 					if(tried_account_num)
 						D = get_account(tried_account_num)
-						account_security_level = D.security_level
+
+						if(D)
+							account_security_level = D.security_level
 
 					authenticated_account = attempt_account_access(tried_account_num, tried_pin, held_card && login_card.associated_account_number == tried_account_num ? 2 : 1)
 
@@ -346,7 +351,7 @@
 				if(authenticated_account)
 					var/obj/item/weapon/paper/R = new(src.loc)
 					R.SetName("Account balance: [authenticated_account.owner_name]")
-					R.info = "<b>NT Automated Teller Account Statement</b><br><br>"
+					R.info = "<b>Automated Teller Account Statement</b><br><br>"
 					R.info += "<i>Account holder:</i> [authenticated_account.owner_name]<br>"
 					R.info += "<i>Account number:</i> [authenticated_account.account_number]<br>"
 					R.info += "<i>Balance:</i> T[authenticated_account.money]<br>"
@@ -417,8 +422,8 @@
 					else
 						var/obj/item/I = usr.get_active_hand()
 						if (istype(I, /obj/item/weapon/card/id))
-							usr.drop_item()
-							I.loc = src
+							if(!usr.unEquip(I, src))
+								return
 							held_card = I
 				else
 					release_held_id(usr)
@@ -430,22 +435,16 @@
 
 /obj/machinery/atm/proc/scan_user(mob/living/carbon/human/human_user as mob)
 	if(!authenticated_account)
-		if(human_user.wear_id)
-			var/obj/item/weapon/card/id/I
-			if(istype(human_user.wear_id, /obj/item/weapon/card/id) )
-				I = human_user.wear_id
-			else if(istype(human_user.wear_id, /obj/item/device/pda) )
-				var/obj/item/device/pda/P = human_user.wear_id
-				I = P.id
-			if(I)
-				return I
+		var/obj/item/weapon/card/id/I = human_user.GetIdCard()
+		if(istype(I))
+			return I
 
 // put the currently held id on the ground or in the hand of the user
 /obj/machinery/atm/proc/release_held_id(mob/living/carbon/human/human_user as mob)
 	if(!held_card)
 		return
 
-	held_card.loc = src.loc
+	held_card.dropInto(loc)
 	authenticated_account = null
 	account_security_level = 0
 

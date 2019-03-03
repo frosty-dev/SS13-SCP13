@@ -1,10 +1,10 @@
 /datum/computer_file/program/chatclient
-	filename = "scprc_client"
-	filedesc = "Foundation Relay Chat Client"
+	filename = "ntnrc_client"
+	filedesc = "NTNet Relay Chat Client"
 	program_icon_state = "command"
 	program_key_state = "med_key"
 	program_menu_icon = "comment"
-	extended_desc = "This program allows communication over SCPRC network"
+	extended_desc = "This program allows communication over NTNRC network"
 	size = 8
 	requires_ntnet = 1
 	requires_ntnet_feature = NTNET_COMMUNICATION
@@ -17,6 +17,7 @@
 	var/datum/ntnet_conversation/channel = null
 	var/operator_mode = 0		// Channel operator mode
 	var/netadmin_mode = 0		// Administrator mode (invisible to other users + bypasses passwords)
+	usage_flags = PROGRAM_ALL
 
 /datum/computer_file/program/chatclient/New()
 	username = "DefaultUser[rand(100, 999)]"
@@ -70,7 +71,7 @@
 		var/channel_title = sanitizeSafe(input(user,"Enter channel name or leave blank to cancel:"), 64)
 		if(!channel_title)
 			return
-		var/datum/ntnet_conversation/C = new/datum/ntnet_conversation()
+		var/datum/ntnet_conversation/C = new/datum/ntnet_conversation(computer.z)
 		C.add_client(src)
 		C.operator = src
 		channel = C
@@ -86,7 +87,7 @@
 		var/mob/living/user = usr
 		if(can_run(usr, 1, access_network))
 			if(channel)
-				var/response = alert(user, "Really engage admin-mode? You will be disconnected from your current channel!", "SCPRC Admin mode", "Yes", "No")
+				var/response = alert(user, "Really engage admin-mode? You will be disconnected from your current channel!", "NTNRC Admin mode", "Yes", "No")
 				if(response == "Yes")
 					if(channel)
 						channel.remove_client(src)
@@ -115,7 +116,7 @@
 		var/datum/computer_file/data/logfile = new/datum/computer_file/data/logfile()
 		// Now we will generate HTML-compliant file that can actually be viewed/printed.
 		logfile.filename = logname
-		logfile.stored_data = "\[b\]Logfile dump from SCPNRC channel [channel.title]\[/b\]\[BR\]"
+		logfile.stored_data = "\[b\]Logfile dump from NTNRC channel [channel.title]\[/b\]\[BR\]"
 		for(var/logstring in channel.messages)
 			logfile.stored_data += "[logstring]\[BR\]"
 		logfile.stored_data += "\[b\]Logfile dump completed.\[/b\]"
@@ -160,7 +161,13 @@
 			channel.password = newpassword
 
 /datum/computer_file/program/chatclient/process_tick()
+
 	..()
+
+	if(channel && !(channel.source_z in GetConnectedZlevels(computer.z)))
+		channel.remove_client(src)
+		channel = null
+
 	if(program_state != PROGRAM_STATE_KILLED)
 		ui_header = "ntnrc_idle.gif"
 		if(channel)
@@ -169,6 +176,7 @@
 		else
 			last_message = null
 		return 1
+
 	if(channel && channel.messages && channel.messages.len)
 		ui_header = last_message == channel.messages[channel.messages.len - 1] ? "ntnrc_idle.gif" : "ntnrc_new.gif"
 	else
@@ -181,7 +189,7 @@
 	..(forced)
 
 /datum/nano_module/program/computer_chatclient
-	name = "Foundation Relay Chat Client"
+	name = "NTNet Relay Chat Client"
 
 /datum/nano_module/program/computer_chatclient/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1, var/datum/topic_state/state = GLOB.default_state)
 	if(!ntnet_global || !ntnet_global.chat_channels)
@@ -215,17 +223,18 @@
 
 	else // Channel selection screen
 		var/list/all_channels[0]
+		var/list/connected_zs = GetConnectedZlevels(C.computer.z)
 		for(var/datum/ntnet_conversation/conv in ntnet_global.chat_channels)
-			if(conv && conv.title)
+			if(conv && conv.title && (conv.source_z in connected_zs))
 				all_channels.Add(list(list(
 					"chan" = conv.title,
 					"id" = conv.id
 				)))
 		data["all_channels"] = all_channels
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
-		ui = new(user, src, ui_key, "ntnet_chat.tmpl", "Foundation Relay Chat Client", 575, 700, state = state)
+		ui = new(user, src, ui_key, "ntnet_chat.tmpl", "NTNet Relay Chat Client", 575, 700, state = state)
 		ui.auto_update_layout = 1
 		ui.set_initial_data(data)
 		ui.open()

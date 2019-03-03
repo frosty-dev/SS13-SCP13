@@ -9,6 +9,19 @@
 	GLOB.human_mob_list -= src
 	delete_inventory()
 
+/mob/living/carbon/human/corpse/Initialize(mapload, new_species, obj/effect/landmark/corpse/corpse)
+	. = ..(mapload, new_species)
+
+	adjustOxyLoss(maxHealth)//cease life functions
+	setBrainLoss(maxHealth)
+	var/obj/item/organ/internal/heart/corpse_heart = internal_organs_by_name[BP_HEART]
+	if(corpse_heart)
+		corpse_heart.pulse = PULSE_NONE//actually stops heart to make worried explorers not care too much
+	if(corpse)
+		corpse.randomize_appearance(src, new_species)
+		corpse.equip_outfit(src)
+	update_icon()
+
 /mob/living/carbon/human/dummy/mannequin/add_to_living_mob_list()
 	return FALSE
 
@@ -20,6 +33,10 @@
 
 /mob/living/carbon/human/dummy/mannequin/InitializeHud()
 	return	// Mannequins don't get HUDs
+
+/mob/living/carbon/human/resomi/New(var/new_loc)
+	h_style = "Resomi Plumage"
+	..(new_loc, SPECIES_RESOMI)
 
 /mob/living/carbon/human/skrell/New(var/new_loc)
 	h_style = "Skrell Male Tentacles"
@@ -43,12 +60,6 @@
 /mob/living/carbon/human/machine/New(var/new_loc)
 	..(new_loc, SPECIES_IPC)
 
-/mob/living/carbon/human/bogani/New(var/new_loc)
-	..(new_loc, SPECIES_BOGANI)
-
-/mob/living/carbon/human/egyno/New(var/new_loc)
-	..(new_loc, SPECIES_EGYNO)
-
 /mob/living/carbon/human/nabber/New(var/new_loc)
 	pulling_punches = 1
 	..(new_loc, SPECIES_NABBER)
@@ -61,6 +72,10 @@
 
 /mob/living/carbon/human/neaera/New(var/new_loc)
 	..(new_loc, "Neaera")
+	item_state = "neara"
 
 /mob/living/carbon/human/stok/New(var/new_loc)
 	..(new_loc, "Stok")
+
+/mob/living/carbon/human/adherent/New(var/new_loc)
+	..(new_loc, SPECIES_ADHERENT)

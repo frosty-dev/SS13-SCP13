@@ -1,42 +1,45 @@
 /datum/language/xenocommon
-	name = "Xenophage"
+	name = LANGUAGE_XENOPHAGE
 	colour = "alien"
 	desc = "The common tongue of the xenophages."
-	speech_verb = "hisses"
-	ask_verb = "hisses"
-	exclaim_verb = "hisses"
+	speech_verb = "шипит"
+	ask_verb = "шипит"
+	exclaim_verb = "шипит"
 	key = "4"
 	flags = RESTRICTED
 	syllables = list("sss","sSs","SSS")
 	machine_understands = 0
+	shorthand = "Xeno"
 
 /datum/language/xenos
-	name = "Hivemind"
+	name = LANGUAGE_XENOPHAGE_HIVE
 	desc = "Xenophages have the strange ability to commune over a psychic hivemind."
-	speech_verb = "hisses"
-	ask_verb = "hisses"
-	exclaim_verb = "hisses"
+	speech_verb = "шипит"
+	ask_verb = "шипит"
+	exclaim_verb = "шипит"
 	colour = "alien"
 	key = "a"
 	flags = RESTRICTED | HIVEMIND
+	shorthand = "N/A"
 
 /datum/language/xenos/check_special_condition(var/mob/other)
 
 	var/mob/living/carbon/M = other
 	if(!istype(M))
 		return 1
-	if(locate(/obj/item/organ/internal/xenos/hivenode) in M.internal_organs)
+	if(locate(/obj/item/organ/internal/xeno/hivenode) in M.internal_organs)
 		return 1
 
 	return 0
 
 /datum/language/ling
-	name = "Shapeshifter"
-	desc = "Although they are normally wary and suspicious of each other, shapeshifters can commune over a distance via an anomalous communication method."
-	speech_verb = "says"
+	name = "Changeling"
+	desc = "Although they are normally wary and suspicious of each other, changelings can commune over a distance."
+	speech_verb = "говорит"
 	colour = "changeling"
 	key = "g"
 	flags = RESTRICTED | HIVEMIND
+	shorthand = "N/A"
 
 /datum/language/ling/broadcast(var/mob/living/speaker,var/message,var/speaker_mask)
 
@@ -48,12 +51,13 @@
 /datum/language/corticalborer
 	name = "Cortical Link"
 	desc = "Cortical borers possess a strange link between their tiny minds."
-	speech_verb = "sings"
-	ask_verb = "sings"
-	exclaim_verb = "sings"
+	speech_verb = "поет"
+	ask_verb = "поет"
+	exclaim_verb = "поет"
 	colour = "alien"
 	key = "x"
 	flags = RESTRICTED | HIVEMIND
+	shorthand = "N/A"
 
 /datum/language/corticalborer/broadcast(var/mob/living/speaker,var/message,var/speaker_mask)
 
@@ -70,17 +74,18 @@
 	..(speaker,message,speaker_mask)
 
 /datum/language/vox
-	name = "Vox-pidgin"
+	name = LANGUAGE_VOX
 	desc = "The common tongue of the various Vox ships making up the Shoal. It sounds like chaotic shrieking to everyone else."
-	speech_verb = "shrieks"
-	ask_verb = "creels"
-	exclaim_verb = "SHRIEKS"
+	speech_verb = "визжит"
+	ask_verb = "рокочет"
+	exclaim_verb = "верещит"
 	colour = "vox"
 	key = "5"
 	flags = WHITELISTED
 	syllables = list("ti","ti","ti","hi","hi","ki","ki","ki","ki","ya","ta","ha","ka","ya","chi","cha","kah", \
 	"SKRE","AHK","EHK","RAWK","KRA","AAA","EEE","KI","II","KRI","KA")
 	machine_understands = 0
+	shorthand = "Vox"
 
 /datum/language/vox/get_random_name()
 	return ..(FEMALE,1,6)
@@ -88,9 +93,9 @@
 /datum/language/cultcommon
 	name = LANGUAGE_CULT
 	desc = "The chants of the occult, the incomprehensible."
-	speech_verb = "intones"
-	ask_verb = "intones"
-	exclaim_verb = "chants"
+	speech_verb = "молвит"
+	ask_verb = "молвит"
+	exclaim_verb = "напевает"
 	colour = "cult"
 	key = "f"
 	flags = RESTRICTED
@@ -103,27 +108,38 @@
 		"gal'h'rfikk", "harfrandid", "mud'gib", "fuu", "ma'jin", "dedo", "ol'btoh", "n'ath", "reth", "sh'yro", "eth", \
 		"d'rekkathnor", "khari'd", "gual'te", "nikka", "nikt'o", "barada", "kla'atu", "barhah", "hra" ,"zar'garis")
 	machine_understands = 0
+	shorthand = "CT"
 
 /datum/language/cult
-	name = "Occult"
+	name = LANGUAGE_OCCULT
 	desc = "The initiated can share their thoughts by means defying all reason."
-	speech_verb = "intones"
-	ask_verb = "intones"
-	exclaim_verb = "chants"
+	speech_verb = "молвит"
+	ask_verb = "молвит"
+	exclaim_verb = "напевает"
 	colour = "cult"
 	key = "y"
 	flags = RESTRICTED | HIVEMIND
+	shorthand = "N/A"
 
-/datum/language/bogani
-	name = LANGUAGE_BOGANI
-	colour = "alien"
-	desc = "The language of the Bogani"
-	speech_verb = "gurgles"
-	ask_verb = "gurgles"
-	exclaim_verb = "wails"
-	key = "i"
+/datum/language/alium
+	name = LANGUAGE_ALIUM
+	colour = "cult"
+	speech_verb = "шипит"
+	key = "c"
 	flags = RESTRICTED
-	syllables = list("qy","bok","mok","yok","dy","gly","ryl","byl","dok","paj","kaj","wok","wyl","zak","qum","gyh","thj","qpo","basb","ies","niii",
-	"eri","erk","eok","eyl","yyl","hyk","qyb","eon","gni","shaf","bissna","goqqo","xokj","wej","nym","assah","qwssa","nieasl","qyno","shaffar",
-	"egyno","bogani","voijs","nekks","bollos","qoulsan","borrksakja","neemen","aka","nikka","qyegno","shafra","beolas","Byno")
+	syllables = list("qy","bok","mok","yok","dy","gly","ryl","byl","dok","forbici", "tarem", "n'ath", "reth", "sh'yro", "eth", "d'raggathnor","niii",
+	"d'rekkathnor", "khari'd", "gual'te", "ki","ki","ki","ki","ya","ta","wej","nym","assah","qwssa","nieasl","qyno","shaffar",
+	"eg","bog","voijs","nekks","bollos","qoulsan","borrksakja","neemen","aka","nikka","qyegno","shafra","beolas","Byno")
 	machine_understands = 0
+	shorthand = "AL"
+
+/datum/language/alium/New()
+	speech_verb = pick("шипит","ворчит","свистит","булькает","щебечет","визжит","трещит","щелкает")
+	..()
+
+/datum/language/alium/get_random_name()
+	var/new_name = ""
+	var/length = rand(1,3)
+	for(var/i=0 to length)
+		new_name += pick(syllables)
+	return capitalize(new_name)

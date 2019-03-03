@@ -6,10 +6,9 @@
 	desc = "Sensors detect an undamaged vessel without any signs of activity."
 	color = "#bd6100"
 	vessel_mass = 100
-	default_delay = 30 SECONDS
-	speed_mod = 5 SECONDS
+	max_speed = 1/(2 SECONDS)
 	burn_delay = 20 SECONDS
-	generic_waypoints = list(
+	initial_generic_waypoints = list(
 		"nav_casino_1",
 		"nav_casino_2",
 		"nav_casino_3",
@@ -17,7 +16,7 @@
 		"nav_casino_antag",
 		"nav_casino_hangar",
 	)
-	restricted_waypoints = list(
+	initial_restricted_waypoints = list(
 		"Casino Cutter" = list("nav_casino_hangar"),
 	)
 

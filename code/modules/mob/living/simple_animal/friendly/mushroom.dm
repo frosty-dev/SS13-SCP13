@@ -18,6 +18,7 @@
 	var/harvest_time
 	var/min_explode_time = 1200
 	var/global/total_mushrooms = 0
+	pass_flags = PASS_FLAG_TABLE
 
 /mob/living/simple_animal/mushroom/New()
 	..()
@@ -61,6 +62,6 @@
 		if(prob(60) && !target_turf.density && src.Adjacent(target_turf))
 			new /obj/machinery/portable_atmospherics/hydroponics/soil/invisible(target_turf,seed)
 	death(0)
-	seed.thrown_at(src,get_turf(src),1)
+//	seed.thrown_at(src,get_turf(src),1)
 	if(src)
 		qdel(src)

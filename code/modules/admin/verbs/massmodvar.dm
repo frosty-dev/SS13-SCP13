@@ -134,39 +134,33 @@
 			O.vars[variable] = initial(O.vars[variable])
 			if(method)
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if ( istype(M , O.type) )
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj 
+					for(var/obj/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 			else
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if (M.type == O.type)
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf 
+					for(var/turf/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
@@ -180,38 +174,32 @@
 
 			if(method)
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if ( istype(M , O.type) )
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 			else
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob 
+					for(var/mob/M in SSmobs.mob_list)
 						if (M.type == O.type)
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj 
+					for(var/obj/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
@@ -219,67 +207,39 @@
 			var/new_value = input("Enter new number:","Num",\
 					O.vars[variable]) as num|null
 			if(new_value == null) return
-
-			if(variable=="light_range")
-				O.set_light(new_value)
-			else
-				O.vars[variable] = new_value
+			O.vars[variable] = new_value
 
 			if(method)
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob 
+					for(var/mob/M in SSmobs.mob_list)
 						if ( istype(M , O.type) )
-							if(variable=="light_range")
-								M.set_light(new_value)
-							else
-								M.vars[variable] = O.vars[variable]
+							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if ( istype(A , O.type) )
-							if(variable=="light_range")
-								A.set_light(new_value)
-							else
-								A.vars[variable] = O.vars[variable]
+							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if ( istype(A , O.type) )
-							if(variable=="light_range")
-								A.set_light(new_value)
-							else
-								A.vars[variable] = O.vars[variable]
+							A.vars[variable] = O.vars[variable]
 
 			else
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if (M.type == O.type)
-							if(variable=="light_range")
-								M.set_light(new_value)
-							else
-								M.vars[variable] = O.vars[variable]
+							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if (A.type == O.type)
-							if(variable=="light_range")
-								A.set_light(new_value)
-							else
-								A.vars[variable] = O.vars[variable]
+							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if (A.type == O.type)
-							if(variable=="light_range")
-								A.set_light(new_value)
-							else
-								A.vars[variable] = O.vars[variable]
+							A.vars[variable] = O.vars[variable]
 
 		if("type")
 			var/new_value
@@ -288,38 +248,32 @@
 			O.vars[variable] = new_value
 			if(method)
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob 
+					for(var/mob/M in SSmobs.mob_list)
 						if ( istype(M , O.type) )
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 			else
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if (M.type == O.type)
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
@@ -330,38 +284,32 @@
 
 			if(method)
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if ( istype(M , O.type) )
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O.type, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O.type, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 			else
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if (M.type == O.type)
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O.type, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O.type, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
@@ -371,39 +319,33 @@
 			O.vars[variable] = new_value
 			if(method)
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if ( istype(M , O.type) )
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if ( istype(A , O.type) )
 							A.vars[variable] = O.vars[variable]
 
 			else
 				if(istype(O, /mob))
-					for(var/mob in GLOB.mob_list)
-						var/mob/M = mob
+					for(var/mob/M in SSmobs.mob_list)
 						if (M.type == O.type)
 							M.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /obj))
-					for(var/obj in global.obj_list)
-						var/obj/A = obj
+					for(var/obj/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 
 				else if(istype(O, /turf))
-					for(var/turf in global.turf_list)
-						var/turf/A = turf
+					for(var/turf/A in world)
 						if (A.type == O.type)
 							A.vars[variable] = O.vars[variable]
 

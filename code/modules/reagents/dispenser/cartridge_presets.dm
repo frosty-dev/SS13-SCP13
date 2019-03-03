@@ -97,3 +97,4 @@
 	chloral		spawn_reagent = /datum/reagent/chloralhydrate
 	cryoxadone	spawn_reagent = /datum/reagent/cryoxadone
 	clonexadone	spawn_reagent = /datum/reagent/clonexadone
+	glucose		spawn_reagent = /datum/reagent/nutriment/glucose

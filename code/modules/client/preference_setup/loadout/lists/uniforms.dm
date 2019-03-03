@@ -50,11 +50,13 @@
 	suits += /obj/item/clothing/under/lawyer/black
 	suits += /obj/item/clothing/under/suit_jacket/tan
 	suits += /obj/item/clothing/under/scratch
+	suits += /obj/item/clothing/under/bluetunic_regular
 	suits += /obj/item/clothing/under/lawyer/bluesuit
 	suits += /obj/item/clothing/under/rank/internalaffairs/plain
 	suits += /obj/item/clothing/under/blazer
 	suits += /obj/item/clothing/under/blackjumpskirt
 	suits += /obj/item/clothing/under/kilt
+	suits += /obj/item/clothing/under/manager
 	suits += /obj/item/clothing/under/dress/dress_hr
 	suits += /obj/item/clothing/under/det
 	suits += /obj/item/clothing/under/det/black
@@ -146,6 +148,11 @@
 	path = /obj/item/clothing/under/rank/psych/turtleneck/sweater
 	flags = GEAR_HAS_COLOR_SELECTION
 
+/datum/gear/uniform/kimono
+	display_name = "kimono, colour select"
+	path = /obj/item/clothing/under/kimono
+	flags = GEAR_HAS_COLOR_SELECTION
+
 /datum/gear/uniform/corporate
 	display_name = "corporate uniform selection"
 	path = /obj/item/clothing/under
@@ -153,16 +160,48 @@
 /datum/gear/uniform/corporate/New()
 	..()
 	var/corps = list()
+	corps += /obj/item/clothing/under/rank/scientist/nanotrasen
+	corps += /obj/item/clothing/under/rank/scientist/heph
 	corps += /obj/item/clothing/under/mbill
 	corps += /obj/item/clothing/under/saare
 	corps += /obj/item/clothing/under/aether
 	corps += /obj/item/clothing/under/hephaestus
 	corps += /obj/item/clothing/under/pcrc
+	corps += /obj/item/clothing/under/pcrcsuit
 	corps += /obj/item/clothing/under/wardt
 	corps += /obj/item/clothing/under/grayson
 	corps += /obj/item/clothing/under/focal
 	corps += /obj/item/clothing/under/rank/ntwork
+	corps += /obj/item/clothing/under/morpheus
+	corps += /obj/item/clothing/under/skinner
+	corps += /obj/item/clothing/under/dais
+	corps += /obj/item/clothing/under/scp_uniform
 	gear_tweaks += new/datum/gear_tweak/path/specified_types_list(corps)
+
+/datum/gear/uniform/corp_guard
+	display_name = "corporate colours, guard"
+	path = /obj/item/clothing/under/rank/guard
+	flags = GEAR_HAS_TYPE_SELECTION
+
+/datum/gear/uniform/corp_exec
+	display_name = "corporate colours, senior researcher"
+	path = /obj/item/clothing/under/rank/scientist/executive
+	flags = GEAR_HAS_TYPE_SELECTION
+
+/datum/gear/uniform/corp_overalls
+	display_name = "corporate colours, coveralls"
+	path = /obj/item/clothing/under/rank/ntwork
+	flags = GEAR_HAS_TYPE_SELECTION
+
+/datum/gear/uniform/corp_flight
+	display_name = "corporate colours, flight suit"
+	path = /obj/item/clothing/under/rank/ntpilot
+	flags = GEAR_HAS_TYPE_SELECTION
+
+/datum/gear/uniform/corp_exec_jacket
+	display_name = "corporate colours, liason suit"
+	path = /obj/item/clothing/under/suit_jacket/corp
+	flags = GEAR_HAS_TYPE_SELECTION
 
 /datum/gear/uniform/sterile
 	display_name = "sterile jumpsuit"
@@ -175,4 +214,3 @@
 /datum/gear/uniform/frontier
 	display_name = "frontier clothes"
 	path = /obj/item/clothing/under/frontier
-

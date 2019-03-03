@@ -5,9 +5,8 @@
 	circuit = /obj/item/weapon/circuitboard/mining_shuttle
 
 /obj/machinery/computer/shuttle_control/engineering
-	name = "engineering tram control console"
-	shuttle_tag = "Engineering Tram"
-	icon_state = "thick"
+	name = "engineering shuttle control console"
+	shuttle_tag = "Engineering"
 	//req_one_access = list(access_engine_equip,access_atmospherics)
 	circuit = /obj/item/weapon/circuitboard/engineering_shuttle
 

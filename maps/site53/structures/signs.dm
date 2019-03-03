@@ -56,3 +56,148 @@
 
 /obj/structure/sign/double/solgovflag/right
 	icon_state = "solgovflag-right"
+/*
+/obj/item/sign/medipolma
+	name = "medical diploma"
+	desc = "A fancy print laminated paper that certifies that its bearer is indeed a Doctor of Medicine, graduated from a medical school in one of fringe systems. You don't recognize the name though, and half of latin words they used do not actually exist."
+	icon = 'icons/obj/decals.dmi'
+	icon_state = "goldenplaque"
+	sign_state = "goldenplaque"
+	var/claimant
+
+/obj/item/sign/medipolma/attack_self(mob/user)
+	if(!claimant)
+		to_chat(user, "<span class='notice'>You fill in your name in the blanks with a permanent marker.</span>")
+		claimant = user.real_name
+	..()
+
+/obj/item/sign/medipolma/examine(mob/user)
+	..()
+	if(claimant)
+		to_chat(user,"This one belongs to Dr.[claimant], MD.")
+	else
+		to_chat(user,"The name is left blank for some reason.")
+*/
+// TOPSIDE SIGNS
+
+/obj/structure/sign/scp/topside/SecureArealv1mtf
+	icon_state = "secure"
+	desc = "A warning sign which reads: CAUTION, SECURE AREA. LEVEL 1+ SECURITY CLEARANCE REQUIRED."
+
+/obj/structure/sign/scp/topside/SecureArealv2mtf
+	icon_state = "secure"
+	desc = "A warning sign which reads: CAUTION, SECURE AREA. LEVEL 2+ SECURITY CLEARANCE REQUIRED."
+
+/obj/structure/sign/scp/topside/SecureArealv3mtf
+	icon_state = "secure"
+	desc = "A warning sign which reads: CAUTION, SECURE AREA. LEVEL 3+ SECURITY CLEARANCE REQUIRED."
+
+/obj/structure/sign/scp/topside/SecureArealv4mtf
+	icon_state = "secure"
+	desc = "A warning sign which reads: CAUTION, SECURE AREA. LEVEL 4+ SECURITY CLEARANCE REQUIRED."
+
+/obj/structure/sign/scp/topside/SecureArealv5mtf
+	icon_state = "secure"
+	desc = "A warning sign which reads: CAUTION, SECURE AREA. LEVEL 5+ SECURITY CLEARANCE REQUIRED."
+
+/obj/structure/sign/scp/radiation
+	icon_state = "radiationnew"
+	desc = "A warning sign which reads: CAUTION, RADIATION HAZARD."
+
+/obj/structure/sign/scp/electrical
+	icon_state = "electrical"
+	desc = "A warning sign which reads: CAUTION, ELECTRICAL HAZARD."
+
+/obj/structure/sign/scp/cryogenic
+	icon_state = "cryogenic"
+	desc = "A warning sign which reads: CAUTION, POTENTIAL CRYOGENIC HAZARD."
+
+/obj/structure/sign/scp/oxidizer
+	icon_state = "oxidizer"
+	desc = "A warning sign which reads: CAUTION, FLAMMABLE SUBSTANCE HAZARD."
+
+/obj/structure/sign/scp/memnetic
+	icon_state = "memnetic"
+	desc = "A warning sign which reads: CAUTION, MEMETIC HAZARD."
+
+/obj/structure/sign/scp/biohazardous
+	icon_state = "biohazardous"
+	desc = "A warning sign which reads: CAUTION, BIOHAZARD."
+
+/obj/structure/sign/scp/amnesiac
+	icon_state = "amnesiac"
+	desc = "A warning sign which reads: CAUTION, AMNESTIC HAZARD."
+
+/obj/structure/sign/scp/containers
+	icon_state = "containers"
+	desc = "A warning sign which reads: CAUTION, PRESSURIZED GAS STORAGE."
+
+/obj/structure/sign/scp/corrosive
+	icon_state = "corrosive"
+	desc = "A warning sign which reads: CAUTION, CORROSIVE HAZARD."
+
+/obj/structure/sign/scp/explosive
+	icon_state = "explosive"
+	desc = "A warning sign which reads: CAUTION, EXPLOSIVE HAZARD."
+
+/obj/structure/sign/scp/flamable
+	icon_state = "flamable"
+	desc = "A warning sign which reads: CAUTION, FLAMABLE HAZARD."
+
+/obj/structure/sign/scp/lasers
+	icon_state = "lasers"
+	desc = "A warning sign which reads: CAUTION, LASER HAZARD."
+
+/obj/structure/sign/scp/poisonous
+	icon_state = "poisonous"
+	desc = "A warning sign which reads: CAUTION, POISONOUS HAZARD."
+
+/obj/structure/sign/scp/magnetic
+	icon_state = "magnetic"
+	desc = "A warning sign which reads: CAUTION, MAGNETICAL HAZARD. NO METAL OBJECTS BEYOND THIS SIGN."
+
+/obj/structure/sign/scp/optics
+	icon_state = "optics"
+	desc = "A warning sign which reads: CAUTION, OPTICS HAZARD."
+
+/obj/structure/sign/scp/look
+	icon_state = "look"
+	desc = "A warning sign which reads: CAUTION, LOOK AT ANOMALOUS OBJECT."
+
+/obj/structure/sign/scp/dontlook
+	icon_state = "dontlook"
+	desc = "A warning sign which reads: CAUTION, DO NOT LOOK AT ANOMALOUS OBJECT."
+
+/obj/structure/sign/scp/dclass
+	name = "\improper MIND THE ACCEPTABLE ZONES!"
+	icon_state = "securearea2"
+	desc = "A warning sign which reads: REMEMBER YOUR PLACE. DO NOT MOVE BEYOND THE YELLOW HAZARD MARKINGS IF RED HATCHED MARKINGS ARE PRESENT! IMMEDIATE TERMINATION TO VIOLATIONS!"
+
+/obj/structure/sign/dplaque
+	name = "\improper D-Class Work Assignment Sheet"
+	desc = "Kitchen Duty - 3x, Botany Duty - 4x, Mining & Manual Labor - 6x, Janitorial - 2x."
+	icon_state = "kiddieplaque"
+
+/obj/structure/sign/directions/site53/mcr
+	name = "\improper Main Control Room"
+	icon_state = "mcr"
+
+/obj/structure/sign/directions/site53/ez
+	name = "\improper Entrance Zone"
+	icon_state = "ez"
+
+/obj/structure/sign/directions/site53/bunker
+	name = "\improper Secure Bunker"
+	icon_state = "bunker"
+
+/obj/structure/sign/directions/site53/hcz
+	name = "\improper Heavy Containment Zone"
+	icon_state = "hcz"
+
+/obj/structure/sign/directions/site53/lcz
+	name = "\improper Light Containment Zone"
+	icon_state = "lcz"
+
+/obj/structure/sign/directions/site53/adm
+	name = "\improper Administration"
+	icon_state = "direction_adm"

@@ -3,11 +3,10 @@
 /obj/effect/overmap/ship/yacht
 	name = "private yacht"
 	desc = "Sensor array is detecting a small vessel with unknown lifeforms on board"
-	color = "#FFC966"
-	vessel_mass = 30
-	default_delay = 35 SECONDS
-	speed_mod = 10 SECONDS
-	generic_waypoints = list(
+	color = "#ffc966"
+	vessel_mass = 3000
+	max_speed = 1/(2 SECONDS)
+	initial_generic_waypoints = list(
 		"nav_yacht_1",
 		"nav_yacht_2",
 		"nav_yacht_3",
@@ -23,7 +22,7 @@
 	id = "awaysite_yach"
 	description = "Tiny movable ship with spiders."
 	suffixes = list("yacht/yacht.dmm")
-	cost = 0.5
+	cost = 10
 
 /obj/effect/shuttle_landmark/nav_yacht/nav1
 	name = "Small Yacht Navpoint #1"

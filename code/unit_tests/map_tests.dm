@@ -18,8 +18,7 @@
 	var/list/bad_areas = list()
 	var/area_test_count = 0
 
-	for(var/area in GLOB.areas)
-		var/area/A = area
+	for(var/area/A in world)
 		if(!A.z)
 			continue
 		if(!isPlayerLevel(A.z))
@@ -76,18 +75,18 @@
 	var/wire_test_count = 0
 	var/bad_tests = 0
 	var/turf/T = null
+	var/obj/structure/cable/C = null
 	var/list/cable_turfs = list()
 	var/list/dirs_checked = list()
 
-	for(var/cable in global.cable_list)
-		T = get_turf(cable)
-		cable_turfs |= T
+	for(C in world)
+		T = get_turf(C)
+		cable_turfs |= get_turf(C)
 
 	for(T in cable_turfs)
 		var/bad_msg = "[ascii_red]--------------- [T.name] \[[T.x] / [T.y] / [T.z]\]"
 		dirs_checked.Cut()
-		for(var/cable in T)
-			var/obj/structure/cable/C = cable 
+		for(C in T)
 			wire_test_count++
 			var/combined_dir = "[C.d1]-[C.d2]"
 			if(combined_dir in dirs_checked)
@@ -110,8 +109,7 @@
 /datum/unit_test/wire_dir_and_icon_stat/start_test()
 	var/list/bad_cables = list()
 
-	for(var/cable in global.cable_list)
-		var/obj/structure/cable/C = cable
+	for(var/obj/structure/cable/C in world)
 		var/expected_icon_state = "[C.d1]-[C.d2]"
 		if(C.icon_state != expected_icon_state)
 			bad_cables |= C
@@ -135,7 +133,7 @@
 /datum/unit_test/closet_test/start_test()
 	var/bad_tests = 0
 
-	for(var/obj/structure/closet/C in global.structure_list)
+	for(var/obj/structure/closet/C in world)
 		if(!C.opened && isPlayerLevel(C.z))
 			var/total_content_size = 0
 			for(var/atom/movable/AM in C.contents)
@@ -159,7 +157,7 @@
 /datum/unit_test/closet_containment_test/start_test()
 	var/bad_tests = 0
 
-	for(var/obj/structure/closet/C in global.structure_list)
+	for(var/obj/structure/closet/C in world)
 		if(!C.opened && isPlayerLevel(C.z))
 			var/contents_pre_open = C.contents.Copy()
 			C.dump_contents()
@@ -188,7 +186,7 @@
 /datum/unit_test/storage_map_test/start_test()
 	var/bad_tests = 0
 
-	for(var/obj/item/weapon/storage/S in global.item_list)
+	for(var/obj/item/weapon/storage/S in world)
 		if(isPlayerLevel(S.z))
 			var/bad_msg = "[ascii_red]--------------- [S.name] \[[S.type]\] \[[S.x] / [S.y] / [S.z]\]"
 			bad_tests += test_storage_capacity(S, bad_msg)
@@ -273,6 +271,7 @@ datum/unit_test/ladder_check/start_test()
 			succeeded = check_direction(L, GetAbove(L), UP, DOWN) && succeeded
 		if(L.allowed_directions & DOWN)
 			succeeded = check_direction(L, GetBelow(L), DOWN, UP) && succeeded
+			succeeded = check_open_space(L) && succeeded
 	if(succeeded)
 		pass("All ladders are correctly setup.")
 	else
@@ -293,6 +292,13 @@ datum/unit_test/ladder_check/start_test()
 		return FALSE
 	return TRUE
 
+/datum/unit_test/ladder_check/proc/check_open_space(var/obj/structure/ladder/L)
+	if(!istype(get_turf(L), /turf/simulated/open))
+		log_bad("There is a non-open turf blocking the way for [log_info_line(L)]")
+		return FALSE
+	return TRUE
+
+
 //=======================================================================================
 
 /datum/unit_test/landmark_check
@@ -302,7 +308,7 @@ datum/unit_test/ladder_check/start_test()
 	var/safe_landmarks = 0
 	var/space_landmarks = 0
 
-	for(var/lm in global.landmark_list)
+	for(var/lm in landmarks_list)
 		var/obj/effect/landmark/landmark = lm
 		if(istype(landmark, /obj/effect/landmark/test/safe_turf))
 			log_debug("Safe landmark found: [log_info_line(landmark)]")
@@ -332,12 +338,12 @@ datum/unit_test/ladder_check/start_test()
 /datum/unit_test/cryopod_comp_check/start_test()
 	var/pass = TRUE
 
-	for(var/obj/machinery/cryopod/C in SSmachines.all_machinery)
+	for(var/obj/machinery/cryopod/C in SSmachines.machinery)
 		if(!C.control_computer)
 			log_bad("[get_area(C)] lacks a cryopod control computer while holding a cryopod.")
 			pass = FALSE
 
-	for(var/obj/machinery/computer/cryopod/C in SSmachines.all_machinery)
+	for(var/obj/machinery/computer/cryopod/C in SSmachines.machinery)
 		if(!(locate(/obj/machinery/cryopod) in get_area(C)))
 			log_bad("[get_area(C)] lacks a cryopod while holding a control computer.")
 			pass = FALSE
@@ -357,8 +363,7 @@ datum/unit_test/ladder_check/start_test()
 /datum/unit_test/camera_nil_c_tag_check/start_test()
 	var/pass = TRUE
 
-	for(var/camera in global.camera_list)
-		var/obj/machinery/camera/C = camera
+	for(var/obj/machinery/camera/C in world)
 		if(!C.c_tag)
 			log_bad("Following camera does not have a c_tag set: [log_info_line(C)]")
 			pass = FALSE
@@ -379,8 +384,7 @@ datum/unit_test/ladder_check/start_test()
 	var/cameras_by_ctag = list()
 	var/checked_cameras = 0
 
-	for(var/camera in global.camera_list)
-		var/obj/machinery/camera/C = camera
+	for(var/obj/machinery/camera/C in world)
 		if(!C.c_tag)
 			continue
 		checked_cameras++
@@ -415,7 +419,7 @@ datum/unit_test/ladder_check/start_test()
 		num2text(SOUTH) = list(list(SOUTH, list(NORTH, WEST)), list(EAST,  list(NORTH, EAST))),
 		num2text(WEST)  = list(list(EAST,  list(NORTH, EAST)), list(SOUTH, list(SOUTH, EAST))))
 
-	for(var/obj/structure/disposalpipe/segment/D in global.structure_list)
+	for(var/obj/structure/disposalpipe/segment/D in world)
 		if(D.icon_state == "pipe-s")
 			if(!(D.dir == SOUTH || D.dir == EAST))
 				log_bad("Following disposal pipe has an invalid direction set: [log_info_line(D)]")
@@ -470,7 +474,7 @@ datum/unit_test/ladder_check/start_test()
 
 /datum/unit_test/simple_pipes_shall_not_face_north_or_west/start_test()
 	var/failures = 0
-	for(var/obj/machinery/atmospherics/pipe/simple/pipe in SSmachines.all_machinery)
+	for(var/obj/machinery/atmospherics/pipe/simple/pipe in world) // Pipes are removed from the SSmachines list during init.
 		if(!istype(pipe, /obj/machinery/atmospherics/pipe/simple/hidden) && !istype(pipe, /obj/machinery/atmospherics/pipe/simple/visible))
 			continue
 		if(pipe.dir == NORTH || pipe.dir == WEST)
@@ -490,9 +494,9 @@ datum/unit_test/ladder_check/start_test()
 
 /datum/unit_test/shutoff_valves_shall_connect_to_two_different_pipe_networks/start_test()
 	var/failures = 0
-	for(var/obj/machinery/atmospherics/valve/shutoff/SV in SSmachines.all_machinery)
+	for(var/obj/machinery/atmospherics/valve/shutoff/SV in SSmachines.machinery)
 		SV.close()
-	for(var/obj/machinery/atmospherics/valve/shutoff/SV in SSmachines.all_machinery)
+	for(var/obj/machinery/atmospherics/valve/shutoff/SV in SSmachines.machinery)
 		if(SV.network_node1 == SV.network_node2)
 			log_bad("Following shutoff valve does not connect to two different pipe networks: [log_info_line(SV)]")
 			failures++
@@ -503,6 +507,248 @@ datum/unit_test/ladder_check/start_test()
 		pass("All shutoff valves connect to two different pipe networks.")
 	return 1
 
+//=======================================================================================
+
+/datum/unit_test/station_pipes_shall_not_leak
+	name = "MAP: Station pipes shall not leak"
+
+/datum/unit_test/station_pipes_shall_not_leak/start_test()
+	var/failures = 0
+	for(var/obj/machinery/atmospherics/pipe/P in world)
+		if(P.leaking && isStationLevel(P.z))
+			failures++
+			log_bad("Following pipe is leaking: [log_info_line(P)]")
+
+	if(failures)
+		fail("[failures] station pipe\s leak.")
+	else
+		pass("No station pipes are leaking")
+	return 1
+
+//=======================================================================================
+
+/datum/unit_test/station_power_terminals_shall_be_wired
+	name = "MAP: Station power terminals shall be wired"
+
+/datum/unit_test/station_power_terminals_shall_be_wired/start_test()
+	var/failures = 0
+	for(var/obj/machinery/power/terminal/term in SSmachines.machinery)
+		var/turf/T = get_turf(term)
+		if(!T)
+			failures++
+			log_bad("Nullspace terminal : [log_info_line(term)]")
+			continue
+
+		if(!isStationLevel(T.z))
+			continue
+
+		var/found_cable = FALSE
+		for(var/obj/structure/cable/C in T)
+			if(C.d2 > 0 && C.d1 == 0)
+				found_cable = TRUE
+				break
+		if(!found_cable)
+			failures++
+			log_bad("Unwired terminal : [log_info_line(term)]")
+
+	if(failures)
+		fail("[failures] unwired power terminal\s.")
+	else
+		pass("All station power terminals are wired.")
+	return 1
+
+//=======================================================================================
+
+/datum/unit_test/station_wires_shall_be_connected
+	name = "MAP: Station wires shall be connected"
+	var/list/exceptions
+
+/datum/unit_test/station_wires_shall_be_connected/start_test()
+	var/failures = 0
+
+	var/exceptions_by_turf = list()
+	for(var/exception in exceptions)
+		var/turf/T = locate(exception[1], exception[2], exception[3])
+		if(!T)
+			CRASH("Invalid exception: [exception[1]] - [exception[2]] - [exception[3]]")
+		if(!(T in exceptions_by_turf))
+			exceptions_by_turf[T] = list()
+		exceptions_by_turf[T] += exception[4]
+	exceptions = exceptions_by_turf
+
+	for(var/obj/structure/cable/C in world)
+		if(!all_ends_connected(C))
+			failures++
+
+	if(failures)
+		fail("Found [failures] cable\s without connections.")
+	else if(exceptions.len)
+		for(var/entry in exceptions)
+			log_bad("[log_info_line(entry)] - [english_list(exceptions[entry])] ")
+		fail("Unnecessary exceptions need to be cleaned up.")
+	else
+		pass("All station wires are properly connected.")
+
+	return 1
+
+// We work on the assumption that another test ensures we only have valid directions
+/datum/unit_test/station_wires_shall_be_connected/proc/all_ends_connected(var/obj/structure/cable/C)
+	. = TRUE
+
+	var/turf/source_turf = get_turf(C)
+	if(!source_turf)
+		log_bad("Nullspace wire: [log_info_line(C)]")
+		return FALSE
+
+	// We don't care about non-station wires
+	if(!isStationLevel(source_turf.z))
+		return TRUE
+
+	for(var/dir in list(C.d1, C.d2))
+		if(!dir) // Don't care about knots
+			continue
+		var/rev_dir = GLOB.reverse_dir[dir]
+
+		var/list/exception = exceptions[source_turf]
+		if(exception && (dir in exception))
+			exception -= dir
+			if(!exception.len)
+				exceptions -= source_turf
+			continue
+
+		var/turf/target_turf
+		if(dir == UP)
+			target_turf = GetAbove(C)
+		if(dir == DOWN)
+			target_turf = GetBelow(C)
+		else
+			target_turf = get_step(C, dir)
+
+		var/connected = FALSE
+		for(var/obj/structure/cable/revC in target_turf)
+			if(revC.d1 == rev_dir || revC.d2 == rev_dir)
+				connected = TRUE
+				break
+
+		if(!connected)
+			log_bad("Disconnected wire: [dir2text(dir)] - [log_info_line(C)]")
+			. = FALSE
+
+/datum/unit_test/networked_disposals_shall_deliver_tagged_packages
+	name = "MAP: Networked disposals shall deliver tagged packages"
+	async = 1
+
+	var/extra_spawns = 3
+
+	var/list/packages_awaiting_delivery = list()
+	var/list/all_tagged_bins = list()
+	var/list/all_tagged_destinations = list()
+
+	var/failed = FALSE
+	var/list/exempt_junctions = list(
+		/obj/structure/disposalpipe/sortjunction/untagged
+	)
+
+/datum/unit_test/networked_disposals_shall_deliver_tagged_packages/start_test()
+	. = 1
+	var/fail = FALSE
+	for(var/obj/structure/disposalpipe/sortjunction/sort in world)
+		if(is_type_in_list(sort, exempt_junctions))
+			continue
+		var/obj/machinery/disposal/bin = get_bin_from_junction(sort)
+		if(!bin)
+			log_bad("Junction with tag [sort.sortType] at ([sort.x], [sort.y], [sort.z]) could not find disposal.")
+			fail = TRUE
+			continue
+		all_tagged_destinations[sort.sortType] = bin
+		if(!istype(bin)) // Can also be an outlet.
+			continue
+		all_tagged_bins[sort.sortType] = bin
+	if(fail)
+		fail("Improperly connected junction detected.")
+		return
+	for(var/target_tag in all_tagged_destinations)
+		var/start_tag = all_tagged_bins[target_tag] ? target_tag : pick(all_tagged_bins)
+		spawn_package(start_tag, target_tag)
+		for(var/i in 1 to extra_spawns)
+			spawn_package(pick(all_tagged_bins), target_tag) // This potentially helps catch errors in junction logic.
+
+/datum/unit_test/networked_disposals_shall_deliver_tagged_packages/proc/spawn_package(start_tag, target_tag)
+	var/obj/structure/disposalholder/unit_test/package = new()
+	package.tomail = 1
+	package.destinationTag = target_tag
+	package.start(all_tagged_bins[start_tag])
+	package.test = src
+	packages_awaiting_delivery[package] = start_tag
+
+/obj/structure/disposalholder/unit_test
+	var/datum/unit_test/networked_disposals_shall_deliver_tagged_packages/test
+	var/speed = 50
+
+/obj/structure/disposalholder/unit_test/Destroy()
+	test.package_delivered(src)
+	. = ..()
+
+/obj/structure/disposalholder/unit_test/Process()
+	for(var/i in 1 to speed) // Go faster, as it takes a while and we don't want to wait forever.
+		. = ..()
+		if(. == PROCESS_KILL)
+			if(QDELETED(src) || !test.packages_awaiting_delivery[src])
+				return
+			log_and_fail()
+			return
+
+/obj/structure/disposalholder/unit_test/proc/log_and_fail()
+	var/location = log_info_line(get_turf(src))
+	var/expected_loc = log_info_line(get_turf(test.all_tagged_destinations[destinationTag]))
+	test.log_bad("A package routed from [test.packages_awaiting_delivery[src]] to [destinationTag] was misrouted to [location]; expected location was [expected_loc].")
+	test.failed = TRUE
+	test.packages_awaiting_delivery -= src
+
+/datum/unit_test/networked_disposals_shall_deliver_tagged_packages/check_result()
+	. = 1
+	if(failed)
+		fail("A package has been delivered to an incorrect location.")
+		return
+	if(!packages_awaiting_delivery.len)
+		pass("All packages delivered.")
+		return
+	return 0
+
+/datum/unit_test/networked_disposals_shall_deliver_tagged_packages/proc/package_delivered(var/obj/structure/disposalholder/unit_test/package)
+	if(!packages_awaiting_delivery[package])
+		return
+	var/obj/structure/disposalpipe/trunk/trunk = package.loc
+
+	if(!istype(trunk))
+		package.log_and_fail()
+		return
+	var/obj/linked = trunk.linked
+	if(all_tagged_destinations[package.destinationTag] != linked)
+		package.log_and_fail()
+		return
+	packages_awaiting_delivery -= package
+
+/datum/unit_test/networked_disposals_shall_deliver_tagged_packages/proc/get_bin_from_junction(var/obj/structure/disposalpipe/sortjunction/sort)
+	var/list/traversed = list(sort) // Avoid self-looping, infinite loops.
+	var/obj/structure/disposalpipe/our_pipe = sort
+	var/current_dir = sort.sortdir
+	while(1)
+		if(istype(our_pipe, /obj/structure/disposalpipe/trunk))
+			var/obj/structure/disposalpipe/trunk/trunk = our_pipe
+			return trunk.linked
+		var/obj/structure/disposalpipe/next_pipe
+		for(var/obj/structure/disposalpipe/P in get_step(our_pipe, current_dir))
+			if(turn(current_dir, 180) & P.dpdir)
+				next_pipe = P
+				break
+		if(!istype(next_pipe))
+			return
+		if(next_pipe in traversed)
+			return
+		traversed += next_pipe
+		current_dir = next_pipe.nextdir(current_dir, sort.sortType)
+		our_pipe = next_pipe
 
 #undef SUCCESS
 #undef FAILURE

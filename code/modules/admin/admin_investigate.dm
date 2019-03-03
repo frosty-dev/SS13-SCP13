@@ -48,3 +48,5 @@
 			else
 				to_chat(src, "<span class='warning'>Error: admin_investigate: Href Logging is not on.</span>")
 				return
+		if("notes")
+			show_note()

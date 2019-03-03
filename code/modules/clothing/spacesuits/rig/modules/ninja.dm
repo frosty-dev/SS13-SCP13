@@ -17,7 +17,7 @@
 	disruptive = 0
 
 	use_power_cost = 250 KILOWATTS
-	active_power_cost = 6 KILOWATTS		// 30 min battery life /w best (3kWh) cell
+	active_power_cost = 25 KILOWATTS
 	passive_power_cost = 0
 	module_cooldown = 10 SECONDS
 	origin_tech = list(TECH_MATERIAL = 5, TECH_POWER = 6, TECH_MAGNET = 6, TECH_ILLEGAL = 6, TECH_ENGINEERING = 7)
@@ -37,6 +37,13 @@
 
 	var/mob/living/carbon/human/H = holder.wearer
 
+	if(istype(H.get_active_hand(), /obj/item/weapon/melee/energy/blade/))
+		H.drop_item()
+
+	if(istype(H.get_inactive_hand(), /obj/item/weapon/melee/energy/blade))
+		H.swap_hand()
+		H.drop_item()
+
 	if(H.add_cloaking_source(src))
 		anim(get_turf(H), H, 'icons/effects/effects.dmi', "electricity",null,20,null)
 
@@ -50,7 +57,7 @@
 	if(H.remove_cloaking_source(src))
 		anim(get_turf(H), H,'icons/mob/mob.dmi',,"uncloak",,H.dir)
 		anim(get_turf(H), H, 'icons/effects/effects.dmi', "electricity",null,20,null)
-	
+
 	// We still play the sound, even if not visibly uncloaking. Ninjas are not that stealthy.
 	playsound(get_turf(H), 'sound/effects/stealthoff.ogg', 75, 1)
 
@@ -218,11 +225,11 @@
 	holder.visible_message("<span class='danger'>\The [src.holder] emits a shrill tone!</span>","<span class='danger'> You hear a shrill tone!</span>")
 	sleep(blink_solid_time)
 	src.blink_mode = 0
-	src.holder.set_light(0, 0, "#000000")
+	src.holder.set_light(0, 0, 0, 2, "#000000")
 
 	explosion(get_turf(src), explosion_values[1], explosion_values[2], explosion_values[3], explosion_values[4])
 	if(holder && holder.wearer)
-		holder.wearer.drop_from_inventory(src)
+		holder.wearer.gib()
 		qdel(holder)
 	qdel(src)
 
@@ -242,17 +249,17 @@
 		if(0)
 			return
 		if(1)
-			src.holder.set_light(1.5, 8.5, "#ff0a00")
+			src.holder.set_light(1, 1, 8.5, 2, "#ff0a00")
 			sleep(6)
-			src.holder.set_light(0, 0, "#000000")
+			src.holder.set_light(0, 0, 0, 2, "#000000")
 			spawn(6) .()
 		if(2)
-			src.holder.set_light(1.5, 8.5, "#ff0a00")
+			src.holder.set_light(1, 1, 8.5, 2, "#ff0a00")
 			sleep(2)
-			src.holder.set_light(0, 0, "#000000")
+			src.holder.set_light(0, 0, 0, 2, "#000000")
 			spawn(2) .()
 		if(3)
-			src.holder.set_light(1.5, 8.5, "#ff0a00")
+			src.holder.set_light(1, 1, 8.5, 2, "#ff0a00")
 
 /obj/item/rig_module/grenade_launcher/ninja
 	suit_overlay = null

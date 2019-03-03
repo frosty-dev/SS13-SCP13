@@ -8,7 +8,8 @@ var/list/holder_mob_icon_cache = list()
 	slot_flags = SLOT_HEAD | SLOT_HOLSTER
 
 	sprite_sheets = list(
-		SPECIES_VOX = 'icons/mob/species/vox/head.dmi',
+		SPECIES_VOX = 'icons/mob/species/vox/onmob_head_vox.dmi',
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/head.dmi'
 		)
 
 	origin_tech = null
@@ -110,10 +111,6 @@ var/list/holder_mob_icon_cache = list()
 	update_held_icon()
 
 //Mob specific holders.
-/obj/item/weapon/holder/diona
-	origin_tech = list(TECH_MAGNET = 3, TECH_BIO = 5)
-	slot_flags = SLOT_HEAD | SLOT_OCLOTHING | SLOT_HOLSTER
-
 /obj/item/weapon/holder/drone
 	origin_tech = list(TECH_MAGNET = 3, TECH_ENGINEERING = 5)
 
@@ -126,6 +123,10 @@ var/list/holder_mob_icon_cache = list()
 //need own subtype to work with recipies
 /obj/item/weapon/holder/corgi
 	origin_tech = list(TECH_BIO = 4)
+
+/obj/item/weapon/holder/lizard
+	slot_flags = SLOT_HOLSTER // | SLOT_HEAD Currently we don't have on head icons for lizards :(
+	w_class = ITEM_SIZE_TINY
 
 /obj/item/weapon/holder/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	for(var/mob/M in src.contents)
@@ -168,9 +169,10 @@ var/list/holder_mob_icon_cache = list()
 	return H
 
 /mob/living/MouseDrop(var/mob/living/carbon/human/over_object)
-	if(istype(over_object) && Adjacent(over_object) && (usr == src || usr == over_object) && over_object.a_intent == I_GRAB)
+	if(istype(over_object) && Adjacent(over_object) && (usr == src || usr == over_object) && over_object.a_intent == I_HELP)
 		if(scoop_check(over_object))
 			get_scooped(over_object, (usr == src))
+			over_object.regenerate_icons()
 			return
 	return ..()
 
@@ -178,11 +180,12 @@ var/list/holder_mob_icon_cache = list()
 	return 1
 
 /mob/living/carbon/human/scoop_check(var/mob/living/scooper)
-	return (scooper.mob_size > src.mob_size && a_intent == I_HELP)
+	return (scooper.mob_size > src.mob_size && (a_intent == I_HELP || src.incapacitated()))
 
 /obj/item/weapon/holder/human
 	icon = 'icons/mob/holder_complex.dmi'
 	var/list/generate_for_slots = list(slot_l_hand_str, slot_r_hand_str, slot_back_str)
+	w_class = ITEM_SIZE_LARGE
 	slot_flags = SLOT_BACK
 
 /obj/item/weapon/holder/human/sync(var/mob/living/M)

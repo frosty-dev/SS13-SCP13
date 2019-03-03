@@ -9,13 +9,12 @@
 
 /mob/living/carbon/proc/breathe(var/active_breathe = 1)
 	//if(istype(loc, /obj/machinery/atmospherics/unary/cryo_cell)) return
-
 	if(!need_breathe()) return
 
 	var/datum/gas_mixture/breath = null
 
 	//First, check if we can breathe at all
-	if(is_asystole() && !(CE_STABLE in chem_effects) && active_breathe) //crit aka circulatory shock
+	if(handle_drowning() || (is_asystole() && !(CE_STABLE in chem_effects) && active_breathe)) //crit aka circulatory shock
 		losebreath = max(2, losebreath + 1)
 
 	if(losebreath>0) //Suffocating so do not take a breath
@@ -24,9 +23,10 @@
 			emote("gasp")
 	else
 		//Okay, we can breathe, now check if we can get air
-		breath = get_breath_from_internal() //First, check for air from internals
+		var/volume_needed = get_breath_volume()
+		breath = get_breath_from_internal(volume_needed) //First, check for air from internals
 		if(!breath)
-			breath = get_breath_from_environment() //No breath from internals so let's try to get air from our location
+			breath = get_breath_from_environment(volume_needed) //No breath from internals so let's try to get air from our location
 		if(!breath)
 			var/static/datum/gas_mixture/vacuum //avoid having to create a new gas mixture for each breath in space
 			if(!vacuum) vacuum = new
@@ -36,7 +36,7 @@
 	handle_breath(breath)
 	handle_post_breath(breath)
 
-/mob/living/carbon/proc/get_breath_from_internal(var/volume_needed=BREATH_VOLUME) //hopefully this will allow overrides to specify a different default volume without breaking any cases where volume is passed in.
+/mob/living/carbon/proc/get_breath_from_internal(var/volume_needed=STD_BREATH_VOLUME) //hopefully this will allow overrides to specify a different default volume without breaking any cases where volume is passed in.
 	if(internal)
 		if (!contents.Find(internal))
 			internal = null
@@ -51,7 +51,9 @@
 				internals.icon_state = "internal0"
 	return null
 
-/mob/living/carbon/proc/get_breath_from_environment(var/volume_needed=BREATH_VOLUME)
+/mob/living/carbon/proc/get_breath_from_environment(var/volume_needed=STD_BREATH_VOLUME)
+	if(volume_needed <= 0)
+		return
 	var/datum/gas_mixture/breath = null
 
 	var/datum/gas_mixture/environment
@@ -84,6 +86,9 @@
 			smoke.reagents.trans_to_mob(src, 5, CHEM_BLOOD, copy = 1)
 			// I dunno, maybe the reagents enter the blood stream through the lungs?
 			break // If they breathe in the nasty stuff once, no need to continue checking
+
+/mob/living/carbon/proc/get_breath_volume()
+	return STD_BREATH_VOLUME
 
 /mob/living/carbon/proc/handle_breath(datum/gas_mixture/breath)
 	return

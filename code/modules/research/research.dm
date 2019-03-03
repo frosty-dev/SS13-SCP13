@@ -91,17 +91,17 @@ research holder datum.
 	return
 
 /datum/research/proc/AddDesign2Known(var/datum/design/D)
-	if(!length(known_designs)) // Special case
-		known_designs += D
+	if(!known_designs.len) // Special case
+		known_designs.Add(D)
 		return
-	for(var/i = 1 to length(known_designs))
+	for(var/i = 1 to known_designs.len)
 		var/datum/design/A = known_designs[i]
 		if(A.id == D.id) // We are guaranteed to reach this if the ids are the same, because sort_string will also be the same
 			return
 		if(A.sort_string > D.sort_string)
 			known_designs.Insert(i, D)
 			return
-	known_designs += D
+	known_designs.Add(D)
 	return
 
 //Refreshes known_tech and known_designs list
@@ -123,12 +123,12 @@ research holder datum.
 	return
 
 // A simple helper proc to find the name of a tech with a given ID.
-/proc/CallTechName(var/ID) 
+/proc/CallTechName(var/ID)
 	for(var/T in subtypesof(/datum/tech))
 		var/datum/tech/check_tech = T
 		if(initial(check_tech.id) == ID)
 			return  initial(check_tech.name)
-	
+
 /***************************************************************
 **						Technology Datums					  **
 **	Includes all the various technoliges and what they make.  **
@@ -204,7 +204,7 @@ research holder datum.
 	icon_state = "datadisk2"
 	item_state = "card-id"
 	w_class = ITEM_SIZE_SMALL
-	matter = list(DEFAULT_WALL_MATERIAL = 30, "glass" = 10)
+	matter = list(MATERIAL_STEEL = 30, MATERIAL_GLASS = 10)
 	var/datum/tech/stored
 
 
@@ -215,5 +215,5 @@ research holder datum.
 	icon_state = "datadisk2"
 	item_state = "card-id"
 	w_class = ITEM_SIZE_SMALL
-	matter = list(DEFAULT_WALL_MATERIAL = 30, "glass" = 10)
+	matter = list(MATERIAL_STEEL = 30, MATERIAL_GLASS = 10)
 	var/datum/design/blueprint

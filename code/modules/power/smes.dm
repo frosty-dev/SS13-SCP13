@@ -92,7 +92,7 @@
 	terminals -= term
 	term.master = null
 
-/obj/machinery/power/smes/update_icon()
+/obj/machinery/power/smes/on_update_icon()
 	overlays.Cut()
 	if(stat & BROKEN)	return
 
@@ -130,6 +130,8 @@
 	// else inputting = 0, as set in process()
 
 	for(var/obj/machinery/power/terminal/term in terminals)
+		if(!term.powernet)
+			continue
 		var/inputted = term.powernet.draw_power(to_input)
 		add_charge(inputted)
 		input_available += inputted
@@ -372,7 +374,7 @@
 
 
 	// update the ui if it exists, returns null if no ui is passed/found
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		// the ui does not exist, so we'll create a new() one
 		// for a list of parameters and their descriptions see the code docs in \code\modules\nano\nanoui.dm

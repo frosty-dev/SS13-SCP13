@@ -16,6 +16,7 @@
 		return
 
 	//add the new taste data
+	LAZYINITLIST(data)
 	for(var/taste in newdata)
 		if(taste in data)
 			data[taste] += newdata[taste]
@@ -46,6 +47,7 @@
 
 /datum/reagent/nutriment/proc/adjust_nutrition(var/mob/living/carbon/M, var/alien, var/removed)
 	switch(alien)
+		if(IS_RESOMI) removed *= 0.8 // Resomi get a bit more nutrition from meat, a bit less from other stuff to compensate
 		if(IS_UNATHI) removed *= 0.1 // Unathi get most of their nutrition from meat.
 	M.nutrition += nutriment_factor * removed // For hunger and fatness
 
@@ -69,6 +71,7 @@
 
 /datum/reagent/nutriment/protein/adjust_nutrition(var/mob/living/carbon/M, var/alien, var/removed)
 	switch(alien)
+		if(IS_RESOMI) removed *= 1.25
 		if(IS_UNATHI) removed *= 2.25
 	M.nutrition += nutriment_factor * removed // For hunger and fatness
 
@@ -83,6 +86,14 @@
 	taste_description = "egg"
 	color = "#ffffaa"
 
+//vegetamarian alternative that is safe for skrell to ingest//rewired it from its intended nutriment/protein/egg/softtofu because it would not actually work, going with plan B, more recipes.
+
+/datum/reagent/nutriment/softtofu
+	name = "plant protein"
+	description = "A gooey pale bean paste."
+	taste_description = "healthy sadness"
+	color = "#ffffff"
+
 /datum/reagent/nutriment/honey
 	name = "Honey"
 	description = "A golden yellow syrup, loaded with sugary sweetness."
@@ -90,22 +101,12 @@
 	nutriment_factor = 10
 	color = "#ffff00"
 
-/datum/reagent/honey/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
+/datum/reagent/nutriment/honey/affect_ingest(var/mob/living/carbon/human/M, var/alien, var/removed)
 	..()
 
 	if(alien == IS_UNATHI)
-		if(M.chem_doses[type] < 2)
-			if(M.chem_doses[type] == metabolism * 2 || prob(5))
-				M.emote("yawn")
-		else if(M.chem_doses[type] < 5)
-			M.eye_blurry = max(M.eye_blurry, 10)
-		else if(M.chem_doses[type] < 20)
-			if(prob(50))
-				M.Weaken(2)
-			M.drowsyness = max(M.drowsyness, 20)
-		else
-			M.sleeping = max(M.sleeping, 20)
-			M.drowsyness = max(M.drowsyness, 60)
+		var/datum/species/unathi/S = M.species
+		S.handle_sugar(M,src)
 
 /datum/reagent/nutriment/flour
 	name = "flour"
@@ -123,6 +124,44 @@
 		else
 			T.wet = 0
 
+/datum/reagent/nutriment/batter
+	name = "Batter"
+	description = "A gooey mixture of eggs and flour, a base for turning wheat into food."
+	taste_description = "blandness"
+	reagent_state = LIQUID
+	nutriment_factor = 3
+	color = "#ffd592"
+
+/datum/reagent/nutriment/batter/touch_turf(var/turf/simulated/T)
+	if(!istype(T, /turf/space))
+		new /obj/effect/decal/cleanable/pie_smudge(T)
+		if(T.wet > 1)
+			T.wet = min(T.wet, 1)
+		else
+			T.wet = 0
+
+/datum/reagent/nutriment/batter/cakebatter
+	name = "Cake Batter"
+	description = "A gooey mixture of eggs, flour and sugar, a important precursor to cake!"
+	taste_description = "sweetness"
+	color = "#ffe992"
+
+/datum/reagent/nutriment/coffee
+	name = "Coffee Powder"
+	description = "A bitter powder made by grinding coffee beans."
+	taste_description = "bitterness"
+	taste_mult = 1.3
+	nutriment_factor = 1
+	color = "#482000"
+
+/datum/reagent/nutriment/tea
+	name = "Tea Powder"
+	description = "A dark, tart powder made from black tea leaves."
+	taste_description = "tartness"
+	taste_mult = 1.3
+	nutriment_factor = 1
+	color = "#101000"
+
 /datum/reagent/nutriment/coco
 	name = "Coco Powder"
 	description = "A fatty, bitter paste made from coco beans."
@@ -131,6 +170,36 @@
 	reagent_state = SOLID
 	nutriment_factor = 5
 	color = "#302000"
+
+/datum/reagent/nutriment/instantjuice
+	name = "Juice Powder"
+	description = "Dehydrated, powdered juice of some kind."
+	taste_mult = 1.3
+	nutriment_factor = 1
+
+/datum/reagent/nutriment/instantjuice/grape
+	name = "Grape Juice Powder"
+	description = "Dehydrated, powdered grape juice."
+	taste_description = "dry grapes"
+	color = "#863333"
+
+/datum/reagent/nutriment/instantjuice/orange
+	name = "Orange Juice Powder"
+	description = "Dehydrated, powdered orange juice."
+	taste_description = "dry oranges"
+	color = "#e78108"
+
+/datum/reagent/nutriment/instantjuice/watermelon
+	name = "Watermelon Juice Powder"
+	description = "Dehydrated, powdered watermelon juice."
+	taste_description = "dry sweet watermelon"
+	color = "#b83333"
+
+/datum/reagent/nutriment/instantjuice/apple
+	name = "Apple Juice Powder"
+	description = "Dehydrated, powdered apple juice."
+	taste_description = "dry sweet apples"
+	color = "#c07c40"
 
 /datum/reagent/nutriment/soysauce
 	name = "Soysauce"
@@ -156,6 +225,14 @@
 	reagent_state = LIQUID
 	nutriment_factor = 5
 	color = "#4f330f"
+
+/datum/reagent/nutriment/szechuan
+	name = "Szechuan"
+	description = "A long forgotten sauce of Earth, recently re-discovered."
+	taste_description = "sense of legend."
+	reagent_state = LIQUID
+	nutriment_factor = 10
+	color = "#6d2d26" //rgb: 121, 35, 0
 
 /datum/reagent/nutriment/garlicsauce
 	name = "Garlic Sauce"
@@ -226,7 +303,7 @@
 /datum/reagent/nutriment/mint
 	name = "Mint"
 	description = "Also known as Mentha."
-	taste_description = "mint"
+	taste_description = "sweet mint"
 	reagent_state = LIQUID
 	color = "#cf3600"
 
@@ -270,10 +347,10 @@
 /datum/reagent/frostoil
 	name = "Frost Oil"
 	description = "A special oil that noticably chills the body. Extracted from Ice Peppers."
-	taste_description = "mint"
+	taste_description = "arctic mint"
 	taste_mult = 1.5
 	reagent_state = LIQUID
-	color = "#b31008"
+	color = "#07aab2"
 
 /datum/reagent/frostoil/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
@@ -402,6 +479,22 @@
 		M.bodytemperature += rand(15, 30)
 	holder.remove_reagent(/datum/reagent/frostoil, 5)
 
+/datum/reagent/nutriment/vinegar
+	name = "Vinegar"
+	description = "A weak solution of acetic acid. Usually used for seasoning food."
+	taste_description = "vinegar"
+	reagent_state = LIQUID
+	color = "#e8dfd0"
+	taste_mult = 3
+
+/datum/reagent/nutriment/mayo
+	name = "Mayonnaise"
+	description = "A mixture of egg yolk with lemon juice or vinegar. Usually put on bland food to make it more edible."
+	taste_description = "mayo"
+	reagent_state = LIQUID
+	color = "#efede8"
+	taste_mult = 2
+
 /* Drinks */
 
 /datum/reagent/drink
@@ -430,23 +523,12 @@
 		M.bodytemperature = min(310, M.bodytemperature - (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
 
 // Juices
-/datum/reagent/drink/juice/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
+/datum/reagent/drink/juice/affect_ingest(var/mob/living/carbon/human/M, var/alien, var/removed)
 	..()
 	M.immunity = min(M.immunity + 0.25, M.immunity_norm*1.5)
-	var/effective_dose = M.chem_doses[type]/2
 	if(alien == IS_UNATHI)
-		if(effective_dose < 2)
-			if(effective_dose == metabolism * 2 || prob(5))
-				M.emote("yawn")
-		else if(effective_dose < 5)
-			M.eye_blurry = max(M.eye_blurry, 10)
-		else if(effective_dose < 20)
-			if(prob(50))
-				M.Weaken(2)
-			M.drowsyness = max(M.drowsyness, 20)
-		else
-			M.sleeping = max(M.sleeping, 20)
-			M.drowsyness = max(M.drowsyness, 60)
+		var/datum/species/unathi/S = M.species
+		S.handle_sugar(M,src,0.5)
 
 /datum/reagent/drink/juice/banana
 	name = "Banana Juice"
@@ -547,7 +629,7 @@
 /datum/reagent/drink/juice/potato
 	name = "Potato Juice"
 	description = "Juice of the potato. Bleh."
-	taste_description = "irish sadness"
+	taste_description = "irish sadness and potatoes"
 	nutrition = 2
 	color = "#302000"
 
@@ -597,6 +679,34 @@
 
 	glass_name = "watermelon juice"
 	glass_desc = "Delicious juice made from watermelon."
+
+/datum/reagent/drink/juice/turnip
+	name = "Turnip Juice"
+	description = "Delicious (?) juice made from turnips."
+	taste_description = "love of motherland and oppression"
+	color = "#b1166e"
+
+	glass_name = "turnip juice"
+	glass_desc = "Delicious (?) juice made from turnips."
+
+
+/datum/reagent/drink/juice/apple
+	name = "Apple Juice"
+	description = "Delicious sweet juice made from apples."
+	taste_description = "sweet apples"
+	color = "#c07c40"
+
+	glass_name = "apple juice"
+	glass_desc = "Delicious juice made from apples."
+
+/datum/reagent/drink/juice/pear
+	name = "Pear Juice"
+	description = "Delicious sweet juice made from pears."
+	taste_description = "sweet pears"
+	color = "#ffff66"
+
+	glass_name = "pear juice"
+	glass_desc = "Delicious juice made from pears."
 
 // Everything else
 
@@ -665,14 +775,21 @@
 
 /datum/reagent/drink/tea/icetea
 	name = "Iced Tea"
-	description = "No relation to a certain rap artist/ actor."
-	taste_description = "sweet tea"
-	color = "#104038" // rgb: 16, 64, 56
+	description = "It's the tea you know and love, but now it's cold."
+	taste_description = "cold black tea"
 	adj_temp = -5
 
 	glass_name = "iced tea"
-	glass_desc = "No relation to a certain rap artist/ actor."
+	glass_desc = "It's the tea you know and love, but now it's cold."
 	glass_special = list(DRINK_ICE)
+
+/datum/reagent/drink/tea/icetea/sweet
+	name = "Sweet Tea"
+	description = "It's the tea you know and love, but now it's cold. And sweet."
+	taste_description = "sweet tea"
+
+	glass_name = "sweet tea"
+	glass_desc = "It's the tea you know and love, but now it's cold. And sweet."
 
 /datum/reagent/drink/coffee
 	name = "Coffee"
@@ -850,23 +967,12 @@
 	glass_name = "milkshake"
 	glass_desc = "Glorious brainfreezing mixture."
 
-/datum/reagent/milkshake/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
+/datum/reagent/milkshake/affect_ingest(var/mob/living/carbon/human/M, var/alien, var/removed)
 	..()
 
-	var/effective_dose = M.chem_doses[type]/2
 	if(alien == IS_UNATHI)
-		if(effective_dose < 2)
-			if(effective_dose == metabolism * 2 || prob(5))
-				M.emote("yawn")
-		else if(effective_dose < 5)
-			M.eye_blurry = max(M.eye_blurry, 10)
-		else if(effective_dose < 20)
-			if(prob(50))
-				M.Weaken(2)
-			M.drowsyness = max(M.drowsyness, 20)
-		else
-			M.sleeping = max(M.sleeping, 20)
-			M.drowsyness = max(M.drowsyness, 60)
+		var/datum/species/unathi/S = M.species
+		S.handle_sugar(M,src,0.5)
 
 /datum/reagent/drink/rewriter
 	name = "Rewriter"
@@ -1024,19 +1130,6 @@
 		return
 	M.bodytemperature += 10 * TEMPERATURE_DAMAGE_COEFFICIENT
 
-/datum/reagent/drink/ice
-	name = "Ice"
-	description = "Frozen water, your dentist wouldn't like you chewing this."
-	taste_description = "ice"
-	taste_mult = 1.5
-	reagent_state = SOLID
-	color = "#619494"
-	adj_temp = -5
-
-	glass_name = "ice"
-	glass_desc = "Generally, you're supposed to put something else in there too..."
-	glass_icon = DRINK_ICON_NOISY
-
 /datum/reagent/drink/nothing
 	name = "Nothing"
 	description = "Absolutely nothing."
@@ -1068,7 +1161,7 @@
 	strength = 50
 
 	glass_name = "ale"
-	glass_desc = "A freezing pint of delicious ale"
+	glass_desc = "A freezing container of delicious ale"
 
 /datum/reagent/ethanol/beer
 	name = "Beer"
@@ -1079,7 +1172,11 @@
 	nutriment_factor = 1
 
 	glass_name = "beer"
-	glass_desc = "A freezing pint of beer"
+	glass_desc = "A freezing container of beer"
+
+/datum/reagent/ethanol/beer/good
+
+	taste_description = "beer"
 
 /datum/reagent/ethanol/beer/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
 	..()
@@ -1604,7 +1701,7 @@
 /datum/reagent/ethanol/gintonic
 	name = "Gin and Tonic"
 	description = "An all time classic, mild cocktail."
-	taste_description = "mild and tart"
+	taste_description = "mild tartness" //???
 	color = "#0064c8"
 	strength = 50
 
@@ -1851,9 +1948,9 @@
 		var/obj/item/organ/internal/heart/L = H.internal_organs_by_name[BP_HEART]
 		if (L && istype(L))
 			if(M.chem_doses[type] < 120)
-				L.take_damage(10 * removed, 0)
+				L.take_internal_damage(10 * removed, 0)
 			else
-				L.take_damage(100, 0)
+				L.take_internal_damage(100, 0)
 
 /datum/reagent/ethanol/red_mead
 	name = "Red Mead"
@@ -2045,99 +2142,3 @@
 
 	glass_name = "special blend whiskey"
 	glass_desc = "Just when you thought regular whiskey was good... This silky, amber goodness has to come along and ruin everything."
-
-//Below are reagents that, as of now, can only be obtained through SCP-294, for now at least.
-
-/datum/reagent/drink/saliva
-	name = "Saliva"
-	description = "Why are you drinking this...?"
-	taste_description = "mouth juices"
-	reagent_state = LIQUID
-	color = "#C0C0C0"
-	nutrition = 0
-
-	glass_name = "saliva"
-	glass_desc = "This is not for you to drink."
-	
-/datum/reagent/drink/lava
-	name = "Lava"
-	description = "Hot."
-	taste_description = "melting flesh"
-	reagent_state = LIQUID
-	color = "#cf1020"
-	nutrition = -5
-
-	glass_name = "Lava"
-	glass_desc = "It looks very hot!"
-	
-	/datum/reagent/drink/lava/affect_touch(var/mob/living/carbon/M)
-		M.take_organ_damage(5)
-		M.adjustFireLoss(rand(50, 100))	
-		M.emote("scream")
-		M.visible_message("<span class='warning'>[M] is burnt badly by the lava!</span>")
-
-	/datum/reagent/drink/lava/affect_ingest(var/mob/living/carbon/M)
-		M.take_organ_damage(15)
-		M.adjustFireLoss(rand(150, 200))
-		M.emote("scream")
-	
-/datum/reagent/drink/erp
-	name = "Shame"
-	description = "You are a very bad person."
-	taste_description = "shame"
-	reagent_state = LIQUID
-	color = "#FF1D8E"
-	nutrition = 0
-
-	glass_name = "liquid shame"
-	glass_desc = "You feel dirty just looking at this."
-	
-	/datum/reagent/drink/erp/affect_ingest(var/mob/living/carbon/M)
-		M.emote("moan")
-	
-/datum/reagent/drink/dog
-	name = "Dog"
-	description = "Ew..."
-	taste_description = "puppy smoothie"
-	reagent_state = LIQUID
-	color = "#af111c"
-	nutrition = 2
-
-	glass_name = "blended puppies"
-	glass_desc = "God, why?!"
-	
-/datum/reagent/drink/cat
-	name = "Cat"
-	description = "Ew..."
-	taste_description = "kitty smoothie"
-	reagent_state = LIQUID
-	color = "#af111c"
-	nutrition = 2
-
-	glass_name = "blended kittens"
-	glass_desc = "God, why?!"
-	
-/datum/reagent/drink/mouse
-	name = "Mouse"
-	description = "Ew..."
-	taste_description = "mice smoothie"
-	reagent_state = LIQUID
-	color = "#af111c"
-	nutrition = 2
-
-	glass_name = "blended mice"
-	glass_desc = "God, why?!"
-
-/datum/reagent/drink/yogurt
-	name = "Yogurt"
-	description = "Creamy!"
-	taste_description = "cream"
-	reagent_state = LIQUID
-	color = "#fffdd0"
-	nutrition = 1
-
-	glass_name = "yogurt"
-	glass_desc = "Creamy and fat-free!"
-
-
-

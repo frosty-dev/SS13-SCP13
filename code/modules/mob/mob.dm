@@ -1,39 +1,26 @@
 /mob/Destroy()//This makes sure that mobs with clients/keys are not just deleted from the game.
 	STOP_PROCESSING(SSmobs, src)
-	
-	GLOB.player_list -= src
-	GLOB.mob_list -= src
 	GLOB.dead_mob_list_ -= src
 	GLOB.living_mob_list_ -= src
-	GLOB.event_sources_count -= src
-
-	for (var/observer in all_virtual_listeners)
-		var/mob/observer/virtual/O = observer 
-		if (O.host == src)
-			O.host = null
-
 	unset_machine()
 	QDEL_NULL(hud_used)
+	if(istype(skillset))
+		QDEL_NULL(skillset)
 	for(var/obj/item/grab/G in grabbed_by)
 		qdel(G)
 	clear_fullscreen()
-	remove_screen_obj_references()
-
 	if(client)
+		remove_screen_obj_references()
 		for(var/atom/movable/AM in client.screen)
 			var/obj/screen/screenobj = AM
 			if(!istype(screenobj) || !screenobj.globalscreen)
 				qdel(screenobj)
 		client.screen = list()
-
 	if(mind && mind.current == src)
-		mind.current = null
 		spellremove(src)
-
 	ghostize()
-	key = null
 	..()
-	return QDEL_HINT_IWILLGC
+	return QDEL_HINT_HARDDEL
 
 /mob/proc/remove_screen_obj_references()
 	hands = null
@@ -46,6 +33,7 @@
 	toxin = null
 	fire = null
 	bodytemp = null
+	minsbodytemp = null
 	healths = null
 	throw_icon = null
 	nutrition_icon = null
@@ -56,20 +44,13 @@
 	gun_setting_icon = null
 	ability_master = null
 	zone_sel = null
-	
-/mob/New()
-	..()
-	GLOB.mob_list += src
 
 /mob/Initialize()
 	. = ..()
+	skillset = new skillset(src)
+	move_intent = decls_repository.get_decl(move_intent)
 	START_PROCESSING(SSmobs, src)
 
-/mob/Login()
-	..()
-	if (client)
-		GLOB.client2mob[client.ckey] = src 
-	
 /mob/proc/show_message(msg, type, alt, alt_type)//Message, type of message (1 or 2), alternative message, alt message type (1 or 2)
 	if(!client)	return
 
@@ -110,12 +91,19 @@
 
 	for(var/m in mobs)
 		var/mob/M = m
+		var/mob_message = message
+
+		if(isghost(M))
+			if(ghost_skip_message(M))
+				continue
+			mob_message = add_ghost_track(mob_message, M)
+
 		if(self_message && M == src)
 			M.show_message(self_message, VISIBLE_MESSAGE, blind_message, AUDIBLE_MESSAGE)
 			continue
 
-		if(M.see_invisible >= invisibility || narrate)
-			M.show_message(message, VISIBLE_MESSAGE, blind_message, AUDIBLE_MESSAGE)
+		if(!M.is_blind() || narrate)
+			M.show_message(mob_message, VISIBLE_MESSAGE, blind_message, AUDIBLE_MESSAGE)
 			continue
 
 		if(blind_message)
@@ -124,13 +112,6 @@
 	//Multiz, have shadow do same
 	if(shadow)
 		shadow.visible_message(message, self_message, blind_message)
-
-// Returns an amount of power drawn from the object (-1 if it's not viable).
-// If drain_check is set it will not actually drain power, just return a value.
-// If surge is set, it will destroy/damage the recipient and not return any power.
-// Not sure where to define this, so it can sit here for the rest of time.
-/atom/proc/drain_power(var/drain_check,var/surge, var/amount = 0)
-	return -1
 
 // Show a message to all mobs and objects in earshot of this one
 // This would be for audible actions by the src mob
@@ -146,19 +127,52 @@
 
 	for(var/m in mobs)
 		var/mob/M = m
+		var/mob_message = message
+
+		if(isghost(M))
+			if(ghost_skip_message(M))
+				continue
+			mob_message = add_ghost_track(mob_message, M)
+
 		if(self_message && M == src)
 			M.show_message(self_message, AUDIBLE_MESSAGE, deaf_message, VISIBLE_MESSAGE)
 		else if(M.see_invisible >= invisibility || narrate) // Cannot view the invisible
-			M.show_message(message, AUDIBLE_MESSAGE, deaf_message, VISIBLE_MESSAGE)
+			M.show_message(mob_message, AUDIBLE_MESSAGE, deaf_message, VISIBLE_MESSAGE)
 		else
-			M.show_message(message, AUDIBLE_MESSAGE)
+			M.show_message(mob_message, AUDIBLE_MESSAGE)
 
 	for(var/o in objs)
 		var/obj/O = o
 		O.show_message(message, AUDIBLE_MESSAGE, deaf_message, VISIBLE_MESSAGE)
 
+/mob/proc/add_ghost_track(var/message, var/mob/observer/ghost/M)
+	ASSERT(istype(M))
+
+	var/remote = ""
+	if(M.get_preference_value(/datum/client_preference/ghost_sight) == GLOB.PREF_ALL_EMOTES && !(src in view(M)))
+		remote = "\[R\]"
+
+	var/track = "([ghost_follow_link(src, M)])"
+
+	message = track + remote + " " + message
+	return message
+
+/mob/proc/ghost_skip_message(var/mob/observer/ghost/M)
+	ASSERT(istype(M))
+	if(M.get_preference_value(/datum/client_preference/ghost_sight) == GLOB.PREF_ALL_EMOTES && !(src in view(M)))
+		if(!client)
+			return TRUE
+	return FALSE
+
+// Returns an amount of power drawn from the object (-1 if it's not viable).
+// If drain_check is set it will not actually drain power, just return a value.
+// If surge is set, it will destroy/damage the recipient and not return any power.
+// Not sure where to define this, so it can sit here for the rest of time.
+/atom/proc/drain_power(var/drain_check,var/surge, var/amount = 0)
+	return -1
+
 /mob/proc/findname(msg)
-	for(var/mob/M in GLOB.mob_list)
+	for(var/mob/M in SSmobs.mob_list)
 		if (M.real_name == msg)
 			return M
 	return 0
@@ -168,6 +182,17 @@
 	if(istype(loc, /turf))
 		var/turf/T = loc
 		. += T.movement_delay
+
+	if ((drowsyness > 0) && !MOVING_DELIBERATELY(src))
+		. += 6
+	if(lying) //Crawling, it's slower
+		. += 8 + (weakened * 2)
+	. += move_intent.move_delay
+	. += encumbrance() * (0.5 + 1.5 * (SKILL_MAX - get_skill_value(SKILL_HAULING))/(SKILL_MAX - SKILL_MIN)) //Varies between 0.5 and 2, depending on skill
+
+//How much the stuff the mob is pulling contributes to its movement delay.
+/mob/proc/encumbrance()
+	. = 0
 	if(pulling)
 		if(istype(pulling, /obj))
 			var/obj/O = pulling
@@ -177,8 +202,15 @@
 			. += max(0, M.mob_size) / MOB_MEDIUM
 		else
 			. += 1
+	. *= (0.8 ** size_strength_mod())
+
+//Determines mob size/strength effects for slowdown purposes. Standard is 0; can be pos/neg.
+/mob/proc/size_strength_mod()
+	return log(2, mob_size / MOB_MEDIUM)
 
 /mob/proc/Life()
+//	if(organStructure)
+//		organStructure.ProcessOrgans()
 	return
 
 #define UNBUCKLED 0
@@ -204,7 +236,6 @@
 	return incapacitated(INCAPACITATION_KNOCKDOWN)
 
 /mob/proc/incapacitated(var/incapacitation_flags = INCAPACITATION_DEFAULT)
-
 	if ((incapacitation_flags & INCAPACITATION_STUNNED) && stunned)
 		return 1
 
@@ -279,9 +310,9 @@
 
 	var/obj/P = new /obj/effect/decal/point(tile)
 	P.set_invisibility(invisibility)
-	spawn (20)
-		if(P)
-			qdel(P)	// qdel
+	P.pixel_x = A.pixel_x
+	P.pixel_y = A.pixel_y
+	QDEL_IN(P, 2 SECONDS)
 
 	face_atom(A)
 	return 1
@@ -318,18 +349,6 @@
 		if (W)
 			W.attack_self(src)
 			update_inv_r_hand()
-	return
-
-/*
-/mob/verb/dump_source()
-
-	var/master = "<PRE>"
-	for(var/t in typesof(/area))
-		master += text("[]\n", t)
-		//Foreach goto(26)
-	src << browse(master)
-	return
-*/
 
 /mob/verb/memory()
 	set name = "Notes"
@@ -380,9 +399,9 @@
 	if (flavor_text && flavor_text != "")
 		var/msg = replacetext(flavor_text, "\n", " ")
 		if(lentext(msg) <= 40)
-			return "<span class='notice'>[msg]</span>"
+			return "<span class='notice'>[sanitize_u2a(msg)]</span>"
 		else
-			return "<span class='notice'>[copytext_preserve_html(msg, 1, 37)]... <a href='byond://?src=\ref[src];flavor_more=1'>More...</a></span>"
+			return "<span class='notice'>[sanitize_u2a(copytext_preserve_html(msg, 1, 37))]... <a href='byond://?src=\ref[src];flavor_more=1'>More...</a></span>"
 
 /*
 /mob/verb/help()
@@ -392,7 +411,7 @@
 */
 
 /client/verb/changes()
-	set name = "Changelog"
+	set name = "Baystation12 Changelog"
 	set category = "OOC"
 	getFiles(
 		'html/88x31.png',
@@ -420,11 +439,40 @@
 		prefs.save_preferences()
 		winset(src, "rpane.changelog", "background-color=none;font-style=;")
 
+/client/verb/changes_infinity()
+	set name = "Infinity Changelog"
+	set category = "OOC"
+	getFiles(
+		'html/88x31.png',
+		'html/bug-minus.png',
+		'html/burn-exclamation.png',
+		'html/chevron.png',
+		'html/chevron-expand.png',
+		'html/cross-circle.png',
+		'html/hard-hat-exclamation.png',
+		'html/image-minus.png',
+		'html/image-plus.png',
+		'html/map-pencil.png',
+		'html/music-minus.png',
+		'html/music-plus.png',
+		'html/tick-circle.png',
+		'html/scales.png',
+		'html/spell-check.png',
+		'html/wrench-screwdriver.png',
+		'html/changelog.css',
+		'html/changelog.html'
+		)
+	src << browse('html/changelog_infinity.html', "window=changes;size=675x650")
+	if(prefs.lastinfchangelog != inf_changelog_hash)
+		prefs.lastinfchangelog = inf_changelog_hash
+		prefs.save_preferences()
+		winset(src, "rpane.changelog_infinity", "background-color=none;font-style=;")
+
 /mob/new_player/verb/observe()
 	set name = "Observe"
 	set category = "OOC"
 
-	if(!(Master.initialization_stage&INITIALIZATION_COMPLETE))
+	if(GAME_STATE < RUNLEVEL_LOBBY)
 		to_chat(src, "<span class='warning'>Please wait for server initialization to complete...</span>")
 		return
 
@@ -440,8 +488,7 @@
 	var/list/namecounts = list()
 	var/list/creatures = list()
 
-	for(var/obj in global.obj_list)
-		var/obj/O = obj 
+	for(var/obj/O in world)				//EWWWWWWWWWWWWWWWWWWWWWWWW ~needs to be optimised
 		if(!O.loc)
 			continue
 		if(istype(O, /obj/item/weapon/disk/nuclear))
@@ -464,7 +511,7 @@
 				namecounts[name] = 1
 			creatures[name] = O
 
-	for(var/mob/M in sortAtom(GLOB.mob_list))
+	for(var/mob/M in sortAtom(SSmobs.mob_list))
 		var/name = M.name
 		if (names.Find(name))
 			namecounts[name]++
@@ -608,6 +655,11 @@
 		var/mob/living/carbon/human/H = AM
 		if(H.pull_damage())
 			to_chat(src, "<span class='danger'>Pulling \the [H] in their current condition would probably be a bad idea.</span>")
+
+		var/obj/item/clothing/C = H.get_covering_equipped_item_by_zone(BP_CHEST)
+		if(istype(C))
+			C.leave_evidence(src)
+
 	//Attempted fix for people flying away through space when cuffed and dragged.
 	if(ismob(AM))
 		var/mob/pulled = AM
@@ -623,7 +675,7 @@
 	return stat == DEAD
 
 /mob/proc/is_mechanical()
-	if(mind && (mind.assigned_role == "Cyborg" || mind.assigned_role == "AI"))
+	if(mind && (mind.assigned_role == "Robot" || mind.assigned_role == "AI"))
 		return 1
 	return istype(src, /mob/living/silicon) || get_species() == SPECIES_IPC
 
@@ -645,15 +697,18 @@
 
 /mob/Stat()
 	..()
-	. = is_client_active(2 MINUTES)
+	. = (is_client_active(10 MINUTES))
 	if(!.)
 		return
 
 	if(statpanel("Status"))
-		if(ticker && ticker.current_state != GAME_STATE_PREGAME)
+		if(GAME_STATE >= RUNLEVEL_LOBBY)
 			stat("Local Time", stationtime2text())
 			stat("Local Date", stationdate2text())
 			stat("Round Duration", roundduration2text())
+			if(game_id)
+				stat("Round ID:", game_id)
+			stat("Server Time", time2text(world.realtime, "YYYY-MM-DD hh:mm"))
 		if(client.holder || isghost(client.mob))
 			stat("Location:", "([x], [y], [z]) [loc]")
 
@@ -693,24 +748,18 @@
 
 // facing verbs
 /mob/proc/canface()
-	if(!canmove)						return 0
-	if(anchored)						return 0
-	if(transforming)					return 0
-	return 1
+	return !incapacitated()
 
 // Not sure what to call this. Used to check if humans are wearing an AI-controlled exosuit and hence don't need to fall over yet.
 /mob/proc/can_stand_overridden()
 	return 0
 
-//Updates canmove, lying and icons. Could perhaps do with a rename but I can't think of anything to describe it.
-/mob/proc/update_canmove()
-
+//Updates lying and icons
+/mob/proc/UpdateLyingBuckledAndVerbStatus()
 	if(!resting && cannot_stand() && can_stand_overridden())
 		lying = 0
-		canmove = 1
 	else if(buckled)
 		anchored = 1
-		canmove = 0
 		if(istype(buckled))
 			if(buckled.buckle_lying == -1)
 				lying = incapacitated(INCAPACITATION_KNOCKDOWN)
@@ -718,10 +767,8 @@
 				lying = buckled.buckle_lying
 			if(buckled.buckle_movable)
 				anchored = 0
-				canmove = 1
 	else
 		lying = incapacitated(INCAPACITATION_KNOCKDOWN)
-		canmove = !incapacitated(INCAPACITATION_DISABLED)
 
 	if(lying)
 		set_density(0)
@@ -732,36 +779,8 @@
 	reset_layer()
 
 	for(var/obj/item/grab/G in grabbed_by)
-		if(G.stop_move())
-			canmove = 0
-
 		if(G.force_stand())
 			lying = 0
-
-	var/isscp106 = isscp106(src)
-	var/isscp049 = isscp049(src)
-			
-	if ((isscp106 || isscp049) && !incapacitated(INCAPACITATION_RESTRAINED|INCAPACITATION_BUCKLED_FULLY|INCAPACITATION_BUCKLED_PARTIALLY))
-		lying = 0
-		density = 1
-
-	// update SCP-106's vis_contents icon
-	if (isscp106)
-		var/mob/living/carbon/human/scp106/H = src 
-		H.fix_icons()
-		if (lying)
-			H.reset_vision_cone()
-		else 
-			H.update_vision_cone()
-
-	// update SCP-049's vis_contents icon
-	else if (isscp049)
-		var/mob/living/carbon/human/scp049/H = src 
-		H.fix_icons()
-		if (lying)
-			H.reset_vision_cone()
-		else 
-			H.update_vision_cone()
 
 	//Temporarily moved here from the various life() procs
 	//I'm fixing stuff incrementally so this will likely find a better home.
@@ -771,14 +790,6 @@
 		regenerate_icons()
 	else if( lying != lying_prev )
 		update_icons()
-		if (ishuman(src))
-			var/mob/living/carbon/human/H = src 
-			if (lying)
-				H.reset_vision_cone()
-			else 
-				H.update_vision_cone()
-
-	return canmove
 
 /mob/proc/reset_layer()
 	if(lying)
@@ -788,12 +799,12 @@
 		reset_plane_and_layer()
 
 /mob/proc/facedir(var/ndir)
-	if(!canface() || client.moving || world.time < client.move_delay)
+	if(!canface() || moving)
 		return 0
 	set_dir(ndir)
 	if(buckled && buckled.buckle_movable)
 		buckled.set_dir(ndir)
-	client.move_delay += movement_delay()
+	SetMoveCooldown(movement_delay())
 	return 1
 
 
@@ -825,35 +836,38 @@
 	if(status_flags & CANSTUN)
 		facing_dir = null
 		stunned = max(max(stunned,amount),0) //can't go below 0, getting a low amount of stun doesn't lower your current stun
+		UpdateLyingBuckledAndVerbStatus()
 	return
 
 /mob/proc/SetStunned(amount) //if you REALLY need to set stun to a set amount without the whole "can't go below current stunned"
 	if(status_flags & CANSTUN)
 		stunned = max(amount,0)
+		UpdateLyingBuckledAndVerbStatus()
 	return
 
 /mob/proc/AdjustStunned(amount)
 	if(status_flags & CANSTUN)
 		stunned = max(stunned + amount,0)
+		UpdateLyingBuckledAndVerbStatus()
 	return
 
 /mob/proc/Weaken(amount)
 	if(status_flags & CANWEAKEN)
 		facing_dir = null
 		weakened = max(max(weakened,amount),0)
-		update_canmove()	//updates lying, canmove and icons
+		UpdateLyingBuckledAndVerbStatus()
 	return
 
 /mob/proc/SetWeakened(amount)
 	if(status_flags & CANWEAKEN)
 		weakened = max(amount,0)
-		update_canmove()	//updates lying, canmove and icons
+		UpdateLyingBuckledAndVerbStatus()
 	return
 
 /mob/proc/AdjustWeakened(amount)
 	if(status_flags & CANWEAKEN)
 		weakened = max(weakened + amount,0)
-		update_canmove()	//updates lying, canmove and icons
+		UpdateLyingBuckledAndVerbStatus()
 	return
 
 /mob/proc/Paralyse(amount)
@@ -911,7 +925,7 @@
 /mob/proc/embedded_needs_process()
 	return (embedded.len > 0)
 
-mob/proc/yank_out_object()
+/mob/proc/yank_out_object()
 	set category = "Object"
 	set name = "Yank out object"
 	set desc = "Remove an embedded item at the cost of bleeding and pain."
@@ -951,7 +965,7 @@ mob/proc/yank_out_object()
 		to_chat(src, "<span class='warning'>You attempt to get a good grip on [selection] in your body.</span>")
 	else
 		to_chat(U, "<span class='warning'>You attempt to get a good grip on [selection] in [S]'s body.</span>")
-	if(!do_mob(U, S, 30))
+	if(!do_mob(U, S, 30, incapacitation_flags = INCAPACITATION_DEFAULT & (~INCAPACITATION_FORCELYING))) //let people pinned to stuff yank it out, otherwise they're stuck... forever!!!
 		return
 	if(!selection || !S || !U)
 		return
@@ -978,7 +992,7 @@ mob/proc/yank_out_object()
 			wound.embedded_objects -= selection
 
 		H.shock_stage+=20
-		affected.take_damage((selection.w_class * 3), 0, DAM_EDGE, "Embedded object extraction")
+		affected.take_external_damage((selection.w_class * 3), 0, DAM_EDGE, "Embedded object extraction")
 
 		if(prob(selection.w_class * 5) && affected.sever_artery()) //I'M SO ANEMIC I COULD JUST -DIE-.
 			H.custom_pain("Something tears wetly in your [affected] as [selection] is pulled free!", 50, affecting = affected)
@@ -1013,21 +1027,47 @@ mob/proc/yank_out_object()
 
 	return 0
 
-/mob/update_icon()
-	return
+// A mob should either use update_icon(), overriding this definition, or use update_icons(), not touching update_icon().
+// It should not use both.
+/mob/on_update_icon()
+	return update_icons()
 
-/mob/verb/face_direction()
-
-	set name = "Face Direction"
-	set category = "IC"
-	set src = usr
-
+/mob/proc/face_direction()
 	set_face_dir()
 
 	if(!facing_dir)
 		to_chat(usr, "You are now not facing anything.")
 	else
 		to_chat(usr, "You are now facing [dir2text(facing_dir)].")
+
+/mob/proc/air_temperature()
+	var/air_contents = loc.return_air()
+	if(!air_contents)
+		to_chat(usr, "<span class='warning'>It's very cold... oh, shit.</span>")
+		return 0
+
+	var/list/result = atmosanalyzer_scan_lesser(usr, air_contents)
+	print_atmos_analysis_lesser(usr, result)
+	return 1
+
+/mob/proc/print_atmos_analysis_lesser(var/mob/user, var/list/result)
+	for(var/line in result)
+		to_chat(user, "<span class='notice'>[line]</span>")
+
+/mob/proc/atmosanalyzer_scan_lesser(var/atom/target, var/datum/gas_mixture/mixture)
+	. = list()
+	. += "<span class='notice'>Results of the analysis of \the [target]:</span>"
+	if(!mixture)
+		mixture = target.return_air()
+
+	if(mixture)
+		var/total_moles = mixture.total_moles
+		if (total_moles>0)
+			for(var/mix in mixture.gas)
+			. += "<span class='notice'>Temperature: [round(mixture.temperature-T0C)]&deg;C / [round(mixture.temperature)]K</span>"
+			return
+	. += "<span class='warning'>\The [target] has no gases!</span>"
+
 /mob/proc/set_face_dir(var/newdir)
 	if(!isnull(facing_dir) && newdir == facing_dir)
 		facing_dir = null
@@ -1098,29 +1138,19 @@ mob/proc/yank_out_object()
 	set desc = "Toggles whether or not you will be considered a candidate by an add-antag vote."
 	set category = "OOC"
 	if(isghostmind(src.mind) || isnewplayer(src))
-		if(ticker && ticker.looking_for_antags)
-			if(src.mind in ticker.antag_pool)
-				ticker.antag_pool -= src.mind
+		if(SSticker.looking_for_antags)
+			if(src.mind in SSticker.antag_pool)
+				SSticker.antag_pool -= src.mind
 				to_chat(usr, "You have left the antag pool.")
 			else
-				ticker.antag_pool += src.mind
+				SSticker.antag_pool += src.mind
 				to_chat(usr, "You have joined the antag pool. Make sure you have the needed role set to high!")
 		else
 			to_chat(usr, "The game is not currently looking for antags.")
 	else
 		to_chat(usr, "You must be observing or in the lobby to join the antag pool.")
-
 /mob/proc/is_invisible_to(var/mob/viewer)
 	return (!alpha || !mouse_opacity || viewer.see_invisible < invisibility)
-
-/mob/proc/is_scp012_affected(var/turf/target)
-	if (!target)
-		target = get_turf(src)
-	if (ishuman(src) && locate(/obj/item/paper/scp012) in view(2, src))
-		for (var/obj/item/paper/scp012/scp012 in view(2, target))
-			if (scp012.can_affect(src))
-				return TRUE 
-	return FALSE
 
 /client/proc/check_has_body_select()
 	return mob && mob.hud_used && istype(mob.zone_sel, /obj/screen/zone_sel)
@@ -1165,3 +1195,27 @@ mob/proc/yank_out_object()
 		return
 	var/obj/screen/zone_sel/selector = mob.zone_sel
 	selector.set_selected_zone(next_in_list(mob.zone_sel.selecting,zones))
+
+/mob/proc/has_chem_effect(chem, threshold)
+	return FALSE
+
+/mob/proc/has_admin_rights()
+	return check_rights(R_ADMIN, 0, src)
+
+/mob/proc/handle_drowning()
+	return FALSE
+
+/mob/proc/can_drown()
+	return 0
+
+/mob/proc/get_sex()
+	return gender
+
+/mob/is_fluid_pushable(var/amt)
+	if(..() && !buckled && (lying || !Check_Shoegrip()) && (amt >= mob_size * (lying ? 5 : 10)))
+		if(!lying)
+			Weaken(1)
+			if(lying && prob(10))
+				to_chat(src, "<span class='danger'>You are pushed down by the flood!</span>")
+		return TRUE
+	return FALSE

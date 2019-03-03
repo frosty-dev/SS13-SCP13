@@ -8,16 +8,19 @@
 	..()
 	switch(severity)
 		if(EVENT_LEVEL_MUNDANE)
-			command_announcement.Announce("A minor thunderstorm has been detected near the [location_name()]. Please watch out for possible electrical discharges.", "[location_name()] Sensor Array", zlevels = affecting_z)
+//			command_announcement.Announce("A minor electrical storm has been detected near the [location_name()]. Please watch out for possible electrical discharges.", "Сенсоры [location_name()]", zlevels = affecting_z)
+			priority_announcement.Announce("Маломощные электромагнитное волны обнаружены в близи [location_name()]. Рекомендуется следить за уровнем заряда батарей.", "Сенсоры [location_name()]", zlevels = affecting_z)
 		if(EVENT_LEVEL_MODERATE)
-			command_announcement.Announce("[location_name()] is about to pass through a thunderstorm. Please secure sensitive electrical equipment until the storm passes.", "[location_name()] Sensor Array", new_sound = GLOB.using_map.electrical_storm_moderate_sound, zlevels = affecting_z)
+//			command_announcement.Announce("The [location_name()] is about to pass through an electrical storm. Please secure sensitive electrical equipment until the storm passes.", "Сенсоры [location_name()]", new_sound = GLOB.using_map.electrical_storm_moderate_sound, zlevels = affecting_z)
+			priority_announcement.Announce("Объект [location_name()] проходит через электромагнитное поле. Рекомендуется приготовиться к перезагрузке неэкранированной электроники.", "Сенсоры [location_name()]", new_sound = GLOB.using_map.electrical_storm_moderate_sound, zlevels = affecting_z)
 		if(EVENT_LEVEL_MAJOR)
-			command_announcement.Announce("Alert. A strong thunderstorm has been detected in proximity of [location_name()]. It is recommended to immediately secure sensitive electrical equipment until the storm passes.", "[location_name()] Sensor Array", new_sound = GLOB.using_map.electrical_storm_major_sound, zlevels = affecting_z)
+//			command_announcement.Announce("Alert. A strong electrical storm has been detected in proximity of the [location_name()]. It is recommended to immediately secure sensitive electrical equipment until the storm passes.", "Сенсоры [location_name()]", new_sound = GLOB.using_map.electrical_storm_major_sound, zlevels = affecting_z)
+			priority_announcement.Announce("Внимание всему персоналу. Мощное электромагнитное поле обнаружено в непосредственной близости [location_name()]. Требуется приготовиться к ремонту и экстренной перезагрузке важной электроники.", "Сенсоры [location_name()]", new_sound = GLOB.using_map.electrical_storm_major_sound, zlevels = affecting_z)
 
 /datum/event/electrical_storm/start()
 	..()
 	valid_apcs = list()
-	for(var/obj/machinery/power/apc/A in SSmachines.all_machinery)
+	for(var/obj/machinery/power/apc/A in SSmachines.machinery)
 		if(A.z in affecting_z)
 			valid_apcs.Add(A)
 	endWhen = (severity * 60) + startWhen
@@ -26,7 +29,7 @@
 	..()
 	//See if shields can stop it first
 	var/list/shields = list()
-	for(var/obj/machinery/power/shield_generator/G in SSmachines.all_machinery)
+	for(var/obj/machinery/power/shield_generator/G in SSmachines.machinery)
 		if((G.z in affecting_z) && G.running && G.check_flag(MODEFLAG_EM))
 			shields += G
 	if(shields.len)
@@ -64,8 +67,6 @@
 		if(prob((0.2 * severity) - 0.2))
 			T.set_broken()
 
-
-
 /datum/event/electrical_storm/end()
 	..()
-	command_announcement.Announce("[location_name()] has cleared the thunderstorm. Please repair any electrical overloads.", "Electrical Storm Alert")
+	priority_announcement.Announce("[location_name()] покинул зону электромагнитного поля. Требуется перенастройка всех затронутых систем.", "Электромагнитный шторм", zlevels = affecting_z)

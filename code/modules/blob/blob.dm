@@ -3,8 +3,6 @@
 	name = "blob"
 	icon = 'icons/mob/blob.dmi'
 	icon_state = "blob"
-	light_range = 2
-	light_color = "#b5ff5b"
 	desc = "Some blob creature thingy."
 	density = 1
 	opacity = 1
@@ -19,13 +17,14 @@
 	var/regen_rate = 5
 	var/brute_resist = 4
 	var/fire_resist = 1
-	var/laser_resist = 4	// Special resist for laser based weapons - Emitters or handheld energy weaponry. Damage is divided by this and THEN by fire_resist.
+	var/laser_resist = 2	// Special resist for laser based weapons - Emitters or handheld energy weaponry. Damage is divided by this and THEN by fire_resist.
 	var/expandType = /obj/effect/blob
 	var/secondary_core_growth_chance = 5 //% chance to grow a secondary blob core instead of whatever was suposed to grown. Secondary cores are considerably weaker, but still nasty.
 
 /obj/effect/blob/New(loc)
 	health = maxHealth
 	update_icon()
+	set_light(0.5, 1, 2, 2, "#b5ff5b")
 	return ..(loc)
 
 /obj/effect/blob/CanPass(var/atom/movable/mover, vra/turf/target, var/height = 0, var/air_group = 0)
@@ -42,7 +41,7 @@
 		if(3)
 			take_damage(rand(20, 60) / brute_resist)
 
-/obj/effect/blob/update_icon()
+/obj/effect/blob/on_update_icon()
 	if(health > maxHealth / 2)
 		icon_state = "blob"
 	else
@@ -50,18 +49,18 @@
 
 /obj/effect/blob/proc/take_damage(var/damage)
 	health -= damage
+	update_icon()
 	if(health < 0)
 		playsound(loc, 'sound/effects/splat.ogg', 50, 1)
+		set_light(0)
 		qdel(src)
-	else
-		update_icon()
 
 /obj/effect/blob/proc/regen()
 	health = min(health + regen_rate, maxHealth)
 	update_icon()
 
 /obj/effect/blob/proc/expand(var/turf/T)
-	if(istype(T, /turf/unsimulated/) || istype(T, /turf/space) || (istype(T, /turf/simulated/mineral) && T.density))
+	if(istype(T, /turf/unsimulated/) || istype(T, /turf/space) ||  istype(T, /turf/simulated/open) || (istype(T, /turf/simulated/mineral) && T.density))
 		return
 	if(istype(T, /turf/simulated/wall))
 		var/turf/simulated/wall/SW = T
@@ -92,7 +91,10 @@
 	if(I)
 		I.deflate(1)
 		return
-
+	var/obj/machinery/camera/CA = locate() in T
+	if(CA)
+		qdel(CA)
+		return
 	var/obj/vehicle/V = locate() in T
 	if(V)
 		V.ex_act(2)
@@ -101,10 +103,6 @@
 	if(M)
 		M.visible_message("<span class='danger'>The blob attacks \the [M]!</span>")
 		M.take_damage(40)
-		return
-	var/obj/machinery/camera/CA = locate() in T
-	if(CA)
-		CA.take_damage(30)
 		return
 
 	// Above things, we destroy completely and thus can use locate. Mobs are different.
@@ -165,9 +163,8 @@
 	icon = 'icons/mob/blob.dmi'
 	icon_state = "blob_core"
 	maxHealth = 200
-	brute_resist = 2
-	fire_resist = 2
-	laser_resist = 8
+	brute_resist = 1
+	fire_resist = 4
 	regen_rate = 2
 
 	layer = BLOB_CORE_LAYER
@@ -177,7 +174,7 @@
 	var/growth_range = 10 // Maximal distance for new blob pieces from this core.
 
 // Rough icon state changes that reflect the core's health
-/obj/effect/blob/core/update_icon()
+/obj/effect/blob/core/on_update_icon()
 	var/health_percent = (health / maxHealth) * 100
 	switch(health_percent)
 		if(66 to INFINITY)
@@ -213,15 +210,12 @@
 	icon = 'icons/mob/blob.dmi'
 	icon_state = "blob_node"
 	maxHealth = 100
-	brute_resist = 1
-	fire_resist = 1
-	laser_resist = 5
 	regen_rate = 1
 	growth_range = 3
 
 	layer = BLOB_NODE_LAYER
 
-/obj/effect/blob/core/secondary/update_icon()
+/obj/effect/blob/core/secondary/on_update_icon()
 	icon_state = (health / maxHealth >= 0.5) ? "blob_node" : "blob_factory"
 
 /obj/effect/blob/shield
@@ -230,9 +224,7 @@
 	icon_state = "blob_idle"
 	desc = "Some blob creature thingy."
 	maxHealth = 60
-	brute_resist = 1
-	fire_resist = 2
-	laser_resist = 6
+
 /obj/effect/blob/shield/New()
 	..()
 	update_nearby_tiles()
@@ -242,7 +234,7 @@
 	update_nearby_tiles()
 	..()
 
-/obj/effect/blob/shield/update_icon()
+/obj/effect/blob/shield/on_update_icon()
 	if(health > maxHealth * 2 / 3)
 		icon_state = "blob_idle"
 	else if(health > maxHealth / 3)

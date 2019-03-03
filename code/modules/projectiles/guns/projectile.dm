@@ -9,11 +9,11 @@
 	icon_state = "revolver"
 	origin_tech = list(TECH_COMBAT = 2, TECH_MATERIAL = 2)
 	w_class = ITEM_SIZE_NORMAL
-	matter = list(DEFAULT_WALL_MATERIAL = 1000)
+	matter = list(MATERIAL_STEEL = 1000)
 	screen_shake = 1
 	combustion = 1
 
-	var/caliber = "357"		//determines which casings will fit
+	var/caliber = ".44"		//determines which casings will fit
 	var/handle_casings = EJECT_CASINGS	//determines how spent casings should be handled
 	var/load_method = SINGLE_CASING|SPEEDLOADER //1 = Single shells, 2 = box or quick loader, 3 = magazine
 	var/obj/item/ammo_casing/chambered = null
@@ -23,6 +23,7 @@
 	var/ammo_type = null		//the type of ammo that the gun comes preloaded with
 	var/list/loaded = list()	//stored ammo
 	var/starts_loaded = 1		//whether the gun starts loaded or not, can be overridden for guns crafted in-game
+	var/load_sound = 'sound/weapons/guns/interaction/bullet_insert.ogg'
 
 	//For MAGAZINE guns
 	var/magazine_type = null	//the type of magazine that the gun comes preloaded with
@@ -30,16 +31,19 @@
 	var/allowed_magazines		//magazine types that may be loaded. Can be a list or single path
 	var/auto_eject = 0			//if the magazine should automatically eject itself when empty.
 	var/auto_eject_sound = null
+	var/mag_insert_sound = 'sound/weapons/guns/interaction/pistol_magin.ogg'
+	var/mag_remove_sound = 'sound/weapons/guns/interaction/pistol_magout.ogg'
+
 
 	var/is_jammed = 0           //Whether this gun is jammed
 	var/jam_chance = 0          //Chance it jams on fire
 	//TODO generalize ammo icon states for guns
 	//var/magazine_states = 0
 	//var/list/icon_keys = list()		//keys
-	//var/list/ammo_states = list()	//values
+	//var/list/ammo_states = list()	//values?	have_safety = TRUE
 
-/obj/item/weapon/gun/projectile/New()
-	..()
+/obj/item/weapon/gun/projectile/Initialize()
+	. = ..()
 	if (starts_loaded)
 		if(ispath(ammo_type) && (load_method & (SINGLE_CASING|SPEEDLOADER)))
 			for(var/i in 1 to max_shells)
@@ -52,6 +56,14 @@
 	if(!is_jammed && prob(jam_chance))
 		src.visible_message("<span class='danger'>\The [src] jams!</span>")
 		is_jammed = 1
+		var/mob/user = loc
+		if(istype(user))
+			if(prob(user.skill_fail_chance(SKILL_WEAPONS, 100, SKILL_PROF)))
+				return null
+			else
+				to_chat(user, "<span class='notice'>You reflexively clear the jam on \the [src].</span>")
+				is_jammed = 0
+				playsound(src.loc, 'sound/weapons/flipblade.ogg', 50, 1)
 	if(is_jammed)
 		return null
 	//get the next casing
@@ -74,6 +86,18 @@
 		chambered.expend()
 		process_chambered()
 
+/obj/item/weapon/gun/projectile/process_point_blank(obj/projectile, mob/user, atom/target)
+	..()
+	if(chambered && ishuman(target))
+		var/mob/living/carbon/human/H = target
+		var/zone = BP_CHEST
+		if(user && user.zone_sel)
+			zone = user.zone_sel.selecting
+		var/obj/item/organ/external/E = H.get_organ(zone)
+		if(E)
+			chambered.put_residue_on(E)
+			H.apply_damage(3, BURN, used_weapon = "Gunpowder Burn", given_organ = E)
+
 /obj/item/weapon/gun/projectile/handle_click_empty()
 	..()
 	process_chambered()
@@ -83,7 +107,9 @@
 
 	switch(handle_casings)
 		if(EJECT_CASINGS) //eject casing onto ground.
-			chambered.loc = get_turf(src)
+			chambered.dropInto(loc)
+			if(LAZYLEN(chambered.fall_sounds))
+				playsound(loc, pick(chambered.fall_sounds), 50, 1)
 		if(CYCLE_CASINGS) //cycle the casing back to the end.
 			if(ammo_magazine)
 				ammo_magazine.stored_ammo += chambered
@@ -111,11 +137,11 @@
 					to_chat(user, "<span class='warning'>[src] already has a magazine loaded.</span>")//already a magazine here
 
 					return
-				user.remove_from_mob(AM)
-				AM.loc = src
+				if(!user.unEquip(AM, src))
+					return
 				ammo_magazine = AM
 				user.visible_message("[user] inserts [AM] into [src].", "<span class='notice'>You insert [AM] into [src].</span>")
-				playsound(src.loc, 'sound/weapons/flipblade.ogg', 50, 1)
+				playsound(loc, mag_insert_sound, 50, 1)
 			if(SPEEDLOADER)
 				if(loaded.len >= max_shells)
 					to_chat(user, "<span class='warning'>[src] is full!</span>")
@@ -125,13 +151,13 @@
 					if(loaded.len >= max_shells)
 						break
 					if(C.caliber == caliber)
-						C.loc = src
+						C.forceMove(src)
 						loaded += C
 						AM.stored_ammo -= C //should probably go inside an ammo_magazine proc, but I guess less proc calls this way...
 						count++
 				if(count)
 					user.visible_message("[user] reloads [src].", "<span class='notice'>You load [count] round\s into [src].</span>")
-					playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
+					playsound(src.loc, 'sound/weapons/gun_empty.ogg', 50, 1)
 		AM.update_icon()
 	else if(istype(A, /obj/item/ammo_casing))
 		var/obj/item/ammo_casing/C = A
@@ -140,12 +166,11 @@
 		if(loaded.len >= max_shells)
 			to_chat(user, "<span class='warning'>[src] is full.</span>")
 			return
-
-		user.remove_from_mob(C)
-		C.loc = src
+		if(!user.unEquip(C, src))
+			return
 		loaded.Insert(1, C) //add to the head of the list
 		user.visible_message("[user] inserts \a [C] into [src].", "<span class='notice'>You insert \a [C] into [src].</span>")
-		playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
+		playsound(loc, load_sound, 50, 1)
 
 	update_icon()
 
@@ -156,11 +181,11 @@
 		if(!do_after(user, 4, src))
 			return
 		is_jammed = 0
-		playsound(src.loc, 'sound/weapons/flipblade.ogg', 50, 1)
+		playsound(src.loc, 'sound/weapons/guns/interact/gun_bullet_insert.ogg', 50, 1)
 	if(ammo_magazine)
 		user.put_in_hands(ammo_magazine)
 		user.visible_message("[user] removes [ammo_magazine] from [src].", "<span class='notice'>You remove [ammo_magazine] from [src].</span>")
-		playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
+		playsound(loc, mag_remove_sound, 50, 1)
 		ammo_magazine.update_icon()
 		ammo_magazine = null
 	else if(loaded.len)
@@ -170,16 +195,18 @@
 			var/turf/T = get_turf(user)
 			if(T)
 				for(var/obj/item/ammo_casing/C in loaded)
-					C.loc = T
+					C.forceMove(T)
 					count++
 				loaded.Cut()
 			if(count)
 				user.visible_message("[user] unloads [src].", "<span class='notice'>You unload [count] round\s from [src].</span>")
+				playsound(src.loc, 'sound/weapons/guns/interact/gun_bullet_insert.ogg', 50, 1)
 		else if(load_method & SINGLE_CASING)
 			var/obj/item/ammo_casing/C = loaded[loaded.len]
 			loaded.len--
 			user.put_in_hands(C)
 			user.visible_message("[user] removes \a [C] from [src].", "<span class='notice'>You remove \a [C] from [src].</span>")
+			playsound(src.loc, 'sound/weapons/guns/interact/gun_bullet_insert.ogg', 50, 1)
 	else
 		to_chat(user, "<span class='warning'>[src] is empty.</span>")
 	update_icon()
@@ -202,7 +229,7 @@
 /obj/item/weapon/gun/projectile/afterattack(atom/A, mob/living/user)
 	..()
 	if(auto_eject && ammo_magazine && ammo_magazine.stored_ammo && !ammo_magazine.stored_ammo.len)
-		ammo_magazine.loc = get_turf(src.loc)
+		ammo_magazine.dropInto(loc)
 		user.visible_message(
 			"[ammo_magazine] falls out and clatters on the floor!",
 			"<span class='notice'>[ammo_magazine] falls out and clatters on the floor!</span>"
@@ -215,11 +242,12 @@
 
 /obj/item/weapon/gun/projectile/examine(mob/user)
 	. = ..(user)
-	if(is_jammed)
+	if(is_jammed && user.skill_check(SKILL_WEAPONS, SKILL_BASIC))
 		to_chat(user, "<span class='warning'>It looks jammed.</span>")
 	if(ammo_magazine)
 		to_chat(user, "It has \a [ammo_magazine] loaded.")
-	to_chat(user, "Has [getAmmo()] round\s remaining.")
+	if(user.skill_check(SKILL_WEAPONS, SKILL_ADEPT))
+		to_chat(user, "Has [getAmmo()] round\s remaining.")
 	return
 
 /obj/item/weapon/gun/projectile/proc/getAmmo()

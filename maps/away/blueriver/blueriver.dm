@@ -5,7 +5,7 @@
 	desc = "Sensor array detects an arctic planet with a small vessle on the planet's surface. Scans further indicate strange energy levels below the planet's surface."
 	in_space = 0
 	icon_state = "globe"
-	generic_waypoints = list(
+	initial_generic_waypoints = list(
 		"nav_blueriv_1",
 		"nav_blueriv_2",
 		"nav_blueriv_3",
@@ -35,6 +35,7 @@
 	speed = -1
 	health = 280
 	maxHealth = 280
+	can_escape = 1
 
 	harm_intent_damage = 8
 	melee_damage_lower = 30
@@ -92,26 +93,27 @@
 /mob/living/simple_animal/hostile/hive_alien/defender/wounded
 	name = "wounded hive defender"
 	health = 80
+	can_escape = 0
+
+/obj/effect/shuttle_landmark/nav_blueriv
+	base_area = /area/bluespaceriver/ground
+	base_turf = /turf/simulated/floor/exoplanet/snow
 
 /obj/effect/shuttle_landmark/nav_blueriv/nav1
 	name = "Arctic Planet Landing Point #1"
 	landmark_tag = "nav_blueriv_1"
-	base_area = /area/bluespaceriver/ground
 
 /obj/effect/shuttle_landmark/nav_blueriv/nav2
 	name = "Arctic Planet Landing Point #2"
 	landmark_tag = "nav_blueriv_2"
-	base_area = /area/bluespaceriver/ground
 
 /obj/effect/shuttle_landmark/nav_blueriv/nav3
 	name = "Arctic Planet Landing Point #3"
 	landmark_tag = "nav_blueriv_3"
-	base_area = /area/bluespaceriver/ground
 
 /obj/effect/shuttle_landmark/nav_blueriv/nav4
 	name = "Arctic Planet Navpoint #4"
 	landmark_tag = "nav_blueriv_antag"
-	base_area = /area/bluespaceriver/ground
 
 /turf/simulated/floor/away/blueriver/alienfloor
 	name = "glowing floor"
@@ -123,7 +125,7 @@
 /turf/simulated/floor/away/blueriver/alienfloor/Initialize()
 	.=..()
 
-	set_light(l_range = 5, l_power = 2, l_color = "#0066FF")
+	set_light(0.7, 1, 5, l_color = "#0066ff")
 
 /turf/unsimulated/wall/away/blueriver/livingwall
 	name = "alien wall"
@@ -154,7 +156,7 @@
 	.=..()
 
 	icon_state = "bluespacecrystal[rand(1,3)]"
-	set_light(l_range = 5, l_power = 2, l_color = "#0066FF")
+	set_light(0.7, 1, 5, l_color = "#0066ff")
 
 /turf/unsimulated/wall/supermatter/no_spread/Process()
 	return PROCESS_KILL

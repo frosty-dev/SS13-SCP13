@@ -1,8 +1,15 @@
 /obj/effect/overmap/sector/exoplanet/rocks
 	name = "rocky exoplanet"
 	desc = "A planet with rocky formations on the surface, exposing minerals. Rest of terrain varies."
-	landmark_type = /obj/effect/shuttle_landmark/automatic/clearing
 	color = "#7c7670"
+
+	possible_features = list(/datum/map_template/ruin/exoplanet/monolith,
+							 /datum/map_template/ruin/exoplanet/oasis,
+							 /datum/map_template/ruin/exoplanet/oasis/oasis2,
+							 /datum/map_template/ruin/exoplanet/hydrobase,
+							 /datum/map_template/ruin/exoplanet/lodge,
+							 /datum/map_template/ruin/exoplanet/crashed_pod,
+							 /datum/map_template/ruin/exoplanet/drill_site)
 
 /obj/effect/overmap/sector/exoplanet/rocks/generate_map()
 	if(prob(50))

@@ -1,7 +1,8 @@
 /obj/machinery/r_n_d/protolathe
 	name = "\improper Protolathe"
 	icon_state = "protolathe"
-	atom_flags = ATOM_FLAG_OPEN_CONTAINER
+	atom_flags = ATOM_FLAG_NO_TEMP_CHANGE | ATOM_FLAG_OPEN_CONTAINER
+	layer = BELOW_OBJ_LAYER
 
 	use_power = 1
 	idle_power_usage = 30
@@ -69,7 +70,7 @@
 	speed = T / 2
 
 
-/obj/machinery/r_n_d/protolathe/update_icon()
+/obj/machinery/r_n_d/protolathe/on_update_icon()
 	if(panel_open)
 		icon_state = "protolathe_t"
 	else if(busy)
@@ -137,12 +138,12 @@
 	queue.Cut(index, index + 1)
 	return
 
-/obj/machinery/r_n_d/protolathe/proc/canBuild(var/datum/design/D)
+/obj/machinery/r_n_d/protolathe/proc/canBuild(var/datum/design/D, var/protolathe_bonus)
 	for(var/M in D.materials)
-		if(materials[M] < D.materials[M])
+		if(materials[M] < D.materials[M] * mat_efficiency * protolathe_bonus)
 			return 0
 	for(var/C in D.chemicals)
-		if(!reagents.has_reagent(C, D.chemicals[C]))
+		if(!reagents.has_reagent(C, D.chemicals[C] * mat_efficiency * protolathe_bonus))
 			return 0
 	return 1
 
@@ -158,8 +159,15 @@
 		reagents.remove_reagent(C, D.chemicals[C] * mat_efficiency)
 
 	if(D.build_path)
-		var/obj/new_item = D.Fabricate(src, src)
-		new_item.loc = loc
+		if(prob(D.skill_fail_chance))
+			src.audible_message("<span class='warning'>[pick("You hear a strange noises and some metal crackles.", "You hear a strange buzz.")]</span>")
+			if(prob(D.skill_fail_chance / 2))
+				playsound(src.loc, 'sound/effects/smoke.ogg', 50, 1, -3)
+				var/datum/effect/effect/system/smoke_spread/smoke = new
+				smoke.set_up(8, 0, src.loc, 0)
+				smoke.start()
+			return
+		var/obj/new_item = D.Fabricate(loc, src)
 		if(mat_efficiency != 1) // No matter out of nowhere
 			if(new_item.matter && new_item.matter.len > 0)
 				for(var/i in new_item.matter)

@@ -9,16 +9,17 @@
 	endWhen = rand(600,1200)
 
 /datum/event/carp_migration/announce()
-	var/announcement = ""
+/*	var/announcement = ""
 	if(severity == EVENT_LEVEL_MAJOR)
 		announcement = "Massive migration of unknown biological entities has been detected near the [location_name()], please stand-by."
 	else
 		announcement = "Unknown biological [spawned_carp.len == 1 ? "entity has" : "entities have"] been detected near the [location_name()], please stand-by."
-	command_announcement.Announce(announcement, "[location_name()] Sensor Array", zlevels = affecting_z)
+*/
+	GLOB.using_map.level_x_biohazard_announcement(5)
 
 /datum/event/carp_migration/start()
 	if(severity == EVENT_LEVEL_MAJOR)
-		spawn_fish(global.landmark_list.len)
+		spawn_fish(landmarks_list.len)
 	else if(severity == EVENT_LEVEL_MODERATE)
 		spawn_fish(rand(4, 6)) 			//12 to 30 carp, in small groups
 	else
@@ -27,11 +28,9 @@
 /datum/event/carp_migration/proc/spawn_fish(var/num_groups, var/group_size_min=3, var/group_size_max=5)
 	var/list/spawn_locations = list()
 
-	for(var/landmark in global.landmark_list)
-		var/obj/effect/landmark/L = landmark
-		if(L.name == "carpspawn")
-			spawn_locations.Add(L.loc)
-			
+	for(var/obj/effect/landmark/C in landmarks_list)
+		if(C.name == "carpspawn")
+			spawn_locations.Add(C.loc)
 	spawn_locations = shuffle(spawn_locations)
 	num_groups = min(num_groups, spawn_locations.len)
 

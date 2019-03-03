@@ -34,7 +34,7 @@ var/const/MAP_HAS_RANK = 2		//Rank system, also togglable
 	var/list/map_levels              // Z-levels available to various consoles, such as the crew monitor. Defaults to station_levels if unset.
 
 	var/list/base_turf_by_z = list() // Custom base turf by Z-level. Defaults to world.turf for unlisted Z-levels
-	var/list/usable_email_tlds = list("freemail.nt")
+	var/list/usable_email_tlds = list("freemail.net")
 	var/base_floor_type = /turf/simulated/floor/airless // The turf type used when generating floors between Z-levels at startup.
 	var/base_floor_area                                 // Replacement area, if a base_floor_type is generated. Leave blank to skip.
 
@@ -87,7 +87,8 @@ var/const/MAP_HAS_RANK = 2		//Rank system, also togglable
 
 	var/lobby_icon									// The icon which contains the lobby image(s)
 	var/list/lobby_screens = list()                 // The list of lobby screen to pick() from. If left unset the first icon state is always selected.
-	var/lobby_music/lobby_music                     // The track that will play in the lobby screen. Handed in the /setup_map() proc.
+	var/music_track/lobby_track                     // The track that will play in the lobby screen.
+	var/list/lobby_tracks = list()                  // The list of lobby tracks to pick() from. If left unset will randomly select among all available /music_track subtypes.
 	var/welcome_sound = 'sound/AI/welcome.ogg'		// Sound played on roundstart
 
 	var/default_law_type = /datum/ai_laws/nanotrasen  // The default lawset use by synth units, if not overriden by their laws var.
@@ -107,43 +108,124 @@ var/const/MAP_HAS_RANK = 2		//Rank system, also togglable
 	var/salary_modifier	= 1			//Multiplier to starting character money
 	var/station_departments = list()//Gets filled automatically depending on jobs allowed
 
-	//Factions prefs stuff
-	var/list/citizenship_choices = list(
-		"Earth"
+	var/supply_currency_name = "Credits"
+	var/supply_currency_name_short = "Cr."
+
+	var/list/available_cultural_info = list(
+		TAG_HOMEWORLD = list(
+			HOME_SYSTEM_EARTH,
+			HOME_SYSTEM_LUNA,
+			HOME_SYSTEM_MARS,
+			HOME_SYSTEM_VENUS,
+			HOME_SYSTEM_CERES,
+			HOME_SYSTEM_PLUTO,
+			HOME_SYSTEM_TAU_CETI,
+			HOME_SYSTEM_HELIOS,
+			HOME_SYSTEM_TERRA,
+			HOME_SYSTEM_TERSTEN,
+			HOME_SYSTEM_LORRIMAN,
+			HOME_SYSTEM_CINU,
+			HOME_SYSTEM_YUKLID,
+			HOME_SYSTEM_LORDANIA,
+			HOME_SYSTEM_KINGSTON,
+			HOME_SYSTEM_GAIA,
+			HOME_SYSTEM_OTHER
+		),
+		TAG_FACTION = list(
+			FACTION_SOL_CENTRAL,
+			FACTION_TERRAN_CONFED,
+			FACTION_CORPORATE,
+			FACTION_NANOTRASEN,
+			FACTION_FREETRADE,
+			FACTION_XYNERGY,
+			FACTION_HEPHAESTUS,
+			FACTION_DAIS,
+			FACTION_EXPEDITIONARY,
+			FACTION_FLEET,
+			FACTION_PCRC,
+			FACTION_OTHER
+		),
+		TAG_CULTURE = list(
+			CULTURE_HUMAN,
+			CULTURE_HUMAN_MARTIAN,
+			CULTURE_HUMAN_MARSTUN,
+			CULTURE_HUMAN_LUNAPOOR,
+			CULTURE_HUMAN_LUNARICH,
+			CULTURE_HUMAN_VENUSIAN,
+			CULTURE_HUMAN_VENUSLOW,
+			CULTURE_HUMAN_BELTER,
+			CULTURE_HUMAN_PLUTO,
+			CULTURE_HUMAN_EARTH,
+			CULTURE_HUMAN_CETI,
+			CULTURE_HUMAN_SPACER,
+			CULTURE_HUMAN_SPAFRO,
+			CULTURE_HUMAN_CONFED,
+			CULTURE_HUMAN_OTHER,
+			CULTURE_OTHER
+		),
+		TAG_RELIGION = list(
+			RELIGION_OTHER,
+			RELIGION_JUDAISM,
+			RELIGION_HINDUISM,
+			RELIGION_BUDDHISM,
+			RELIGION_ISLAM,
+			RELIGION_CHRISTIANITY,
+			RELIGION_AGNOSTICISM,
+			RELIGION_DEISM,
+			RELIGION_ATHEISM,
+			RELIGION_THELEMA,
+			RELIGION_SPIRITUALISM
+		),
+		TAG_EDUCATION = list(
+			EDUCATION_NONE,
+			EDUCATION_DROPOUT,
+			EDUCATION_HIGH_SCHOOL,
+			EDUCATION_TRADE_SCHOOL,
+			EDUCATION_UNDERGRAD,
+			EDUCATION_MASTERS,
+			EDUCATION_DOCTORATE,
+			EDUCATION_MEDSCHOOL
+		)
 	)
 
-	var/list/home_system_choices = list(
-		"Sol"
-		)
+	var/list/default_cultural_info = list(
+		TAG_HOMEWORLD = HOME_SYSTEM_MARS,
+		TAG_FACTION =   FACTION_SOL_CENTRAL,
+		TAG_CULTURE =   CULTURE_HUMAN_MARTIAN,
+		TAG_RELIGION =  RELIGION_AGNOSTICISM,
+		TAG_EDUCATION = EDUCATION_HIGH_SCHOOL
+	)
 
-	var/list/faction_choices = list(
-		"SCP Foundation"
-		)
-
-	var/list/religion_choices = list(
-		"Unitarianism",
-		"Hinduism",
-		"Buddhist",
-		"Islamic",
-		"Christian",
-		"Agnostic",
-		"Deist"
-		)
+	var/access_modify_region = list(
+		ACCESS_REGION_SECURITY = list(access_hos, access_change_ids),
+		ACCESS_REGION_MEDBAY = list(access_cmo, access_change_ids),
+		ACCESS_REGION_RESEARCH = list(access_rd, access_change_ids),
+		ACCESS_REGION_ENGINEERING = list(access_ce, access_change_ids),
+		ACCESS_REGION_COMMAND = list(access_change_ids),
+		ACCESS_REGION_GENERAL = list(access_change_ids),
+		ACCESS_REGION_SUPPLY = list(access_change_ids)
+	)
 
 /datum/map/New()
 	if(!map_levels)
 		map_levels = station_levels.Copy()
 	if(!allowed_jobs)
-		allowed_jobs = subtypesof(/datum/job)
+		allowed_jobs = list()
+		for(var/jtype in subtypesof(/datum/job))
+			var/datum/job/job = jtype
+			if(initial(job.available_by_default))
+				allowed_jobs += jtype
 	if(!planet_size)
 		planet_size = list(world.maxx, world.maxy)
 
 /datum/map/proc/setup_map()
-	var/list/lobby_music_tracks = subtypesof(/lobby_music)
-	var/lobby_music_type = /lobby_music
-	if(lobby_music_tracks.len)
-		lobby_music_type = pick(lobby_music_tracks)
-	lobby_music = new lobby_music_type()
+	var/lobby_track_type
+	if(lobby_tracks.len)
+		lobby_track_type = pick(lobby_tracks)
+	else
+		lobby_track_type = pick(subtypesof(/music_track))
+
+	lobby_track = decls_repository.get_decl(lobby_track_type)
 	world.update_status()
 
 /datum/map/proc/send_welcome()
@@ -161,6 +243,12 @@ var/const/MAP_HAS_RANK = 2		//Rank system, also togglable
 	var/list/sites_by_spawn_weight = list()
 	for (var/site_name in SSmapping.away_sites_templates)
 		var/datum/map_template/ruin/away_site/site = SSmapping.away_sites_templates[site_name]
+
+		if((site.template_flags & TEMPLATE_FLAG_SPAWN_GUARANTEED) && site.load_new_z()) // no check for budget, but guaranteed means guaranteed
+			report_progress("Loaded guaranteed away site [site]!")
+			away_site_budget -= site.cost
+			continue
+
 		sites_by_spawn_weight[site] = site.spawn_weight
 	while (away_site_budget > 0 && sites_by_spawn_weight.len)
 		var/datum/map_template/ruin/away_site/selected_site = pickweight(sites_by_spawn_weight)
@@ -241,6 +329,21 @@ var/const/MAP_HAS_RANK = 2		//Rank system, also togglable
 
 /datum/map/proc/map_info(var/client/victim)
 	return
+
+/datum/map/proc/bolt_saferooms()
+	return // overriden by torch
+
+/datum/map/proc/unbolt_saferooms()
+	return // overriden by torch
+
+/datum/map/proc/make_maint_all_access(var/radstorm = 0) // parameter used by torch
+	maint_all_access = 1
+	priority_announcement.Announce("The maintenance access requirement has been revoked on all maintenance airlocks.", "Attention!")
+
+/datum/map/proc/revoke_maint_all_access(var/radstorm = 0) // parameter used by torch
+	maint_all_access = 0
+	priority_announcement.Announce("The maintenance access requirement has been readded on all maintenance airlocks.", "Attention!")
+
 // Access check is of the type requires one. These have been carefully selected to avoid allowing the janitor to see channels he shouldn't
 // This list needs to be purged but people insist on adding more cruft to the radio.
 /datum/map/proc/default_internal_channels()
@@ -249,14 +352,13 @@ var/const/MAP_HAS_RANK = 2		//Rank system, also togglable
 		num2text(AI_FREQ)    = list(access_synth),
 		num2text(ENT_FREQ)   = list(),
 		num2text(ERT_FREQ)   = list(access_cent_specops),
-		num2text(COMM_FREQ)  = list(access_com_comms),
-		num2text(ENG_FREQ)   = list(access_eng_comms),
-		num2text(MED_FREQ)   = list(access_med_comms),
-		// num2text(MED_I_FREQ) = list(access_med_comms), // Not sure why these exist
-		num2text(SEC_FREQ)   = list(access_sec_comms),
-		// num2text(SEC_I_FREQ) = list(access_sec_comms), // Not sure why these exist
-		num2text(SCI_FREQ)   = list(access_sci_comms),
-		num2text(SUP_FREQ)   = list(access_log_comms),
-		num2text(SRV_FREQ)   = list(access_civ_comms),
+		num2text(COMM_FREQ)  = list(access_bridge),
+		num2text(ENG_FREQ)   = list(access_engine_equip, access_atmospherics),
+		num2text(MED_FREQ)   = list(access_medical_equip),
+		num2text(MED_I_FREQ) = list(access_medical_equip),
+		num2text(SEC_FREQ)   = list(access_security),
+		num2text(SEC_I_FREQ) = list(access_security),
+		num2text(SCI_FREQ)   = list(access_tox,access_robotics,access_xenobiology),
+		num2text(SUP_FREQ)   = list(access_cargo),
+		num2text(SRV_FREQ)   = list(access_janitor, access_hydroponics),
 	)
-

@@ -1,14 +1,3 @@
-
-/client/proc/cmd_modify_ticker_variables()
-	set category = "Debug"
-	set name = "Edit Ticker Variables"
-
-	if (ticker == null)
-		to_chat(src, "Game hasn't started yet.")
-	else
-		src.modify_variables(ticker)
-		feedback_add_details("admin_verb","ETV") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
 /client/proc/mod_list_add_ass()
 	var/class = "text"
 	var/list/class_input = list("text","num","type","reference","mob reference", "icon","file","color","list","edit referenced object","restore to default")
@@ -42,7 +31,7 @@
 			var_value = input("Select reference:","Reference") as null|mob|obj|turf|area in world
 
 		if("mob reference")
-			var_value = input("Select reference:","Reference") as null|mob in GLOB.mob_list
+			var_value = input("Select reference:","Reference") as null|mob in world
 
 		if("file")
 			var_value = input("Pick file:","File") as null|file
@@ -95,7 +84,7 @@
 			var_value = input("Select reference:","Reference") as mob|obj|turf|area in world
 
 		if("mob reference")
-			var_value = input("Select reference:","Reference") as mob in GLOB.mob_list
+			var_value = input("Select reference:","Reference") as mob in world
 
 		if("file")
 			var_value = input("Pick file:","File") as file
@@ -114,8 +103,7 @@
 			L[var_value] = mod_list_add_ass() //haha
 		if("No")
 			L += var_value
-
-	WRITE_LOG(world.log, "### ListVarEdit by [src]: [O.type] [objectvar]: ADDED=[var_value]")
+	world.log << "### ListVarEdit by [src]: [O.type] [objectvar]: ADDED=[var_value]"
 	log_admin("[key_name(src)] modified [original_name]'s [objectvar]: ADDED=[var_value]")
 	message_admins("[key_name_admin(src)] modified [original_name]'s [objectvar]: ADDED=[var_value]")
 
@@ -266,7 +254,7 @@
 			modify_variables(variable)
 
 		if("DELETE FROM LIST")
-			WRITE_LOG(world.log, "### ListVarEdit by [src]: [O.type] [objectvar]: REMOVED=[html_encode("[variable]")]")
+			world.log << "### ListVarEdit by [src]: [O.type] [objectvar]: REMOVED=[html_encode("[variable]")]"
 			log_admin("[key_name(src)] modified [original_name]'s [objectvar]: REMOVED=[variable]")
 			message_admins("[key_name_admin(src)] modified [original_name]'s [objectvar]: REMOVED=[variable]")
 			L -= variable
@@ -301,7 +289,7 @@
 				L[L.Find(variable)] = new_var
 
 		if("mob reference")
-			new_var = input("Select reference:","Reference") as mob in GLOB.mob_list
+			new_var = input("Select reference:","Reference") as mob in world
 			if(assoc)
 				L[assoc_key] = new_var
 			else
@@ -330,7 +318,7 @@
 			else
 				L[L.Find(variable)] = new_var
 
-	WRITE_LOG(world.log, "### ListVarEdit by [src]: [O.type] [objectvar]: [original_var]=[new_var]")
+	world.log << "### ListVarEdit by [src]: [O.type] [objectvar]: [original_var]=[new_var]"
 	log_admin("[key_name(src)] modified [original_name]'s [objectvar]: [original_var]=[new_var]")
 	message_admins("[key_name_admin(src)] modified [original_name]'s varlist [objectvar]: [original_var]=[new_var]")
 
@@ -514,11 +502,7 @@
 			var_value = var_new
 
 		if("num")
-			if(variable=="light_range")
-				var/var_new = input("Enter new number:","Num",O.get_variable_value(variable)) as null|num
-				if(var_new == null) return
-				O.set_light(var_new)
-			else if(variable=="stat")
+			if(variable=="stat")
 				var/var_new = input("Enter new number:","Num",O.get_variable_value(variable)) as null|num
 				if(var_new == null) return
 				if((O.get_variable_value(variable) == 2) && (var_new < 2))//Bringing the dead back to life
@@ -544,7 +528,7 @@
 			var_value = var_new
 
 		if("mob reference")
-			var/var_new = input("Select reference:","Reference",O.get_variable_value(variable)) as null|mob in GLOB.mob_list
+			var/var_new = input("Select reference:","Reference",O.get_variable_value(variable)) as null|mob in world
 			if(var_new==null) return
 			var_value = var_new
 
@@ -579,7 +563,7 @@
 	if(old_value == new_value)
 		return
 
-	WRITE_LOG(world.log, "### VarEdit by [src]: [O.type] [variable]=[html_encode("[new_value]")]")
+	world.log << "### VarEdit by [src]: [O.type] [variable]=[html_encode("[new_value]")]"
 	log_and_message_admins("modified [original_name]'s [variable] from '[old_value]' to '[new_value]'")
 
 /client

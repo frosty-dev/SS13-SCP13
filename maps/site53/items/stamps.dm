@@ -33,3 +33,21 @@
 /obj/item/weapon/stamp/supply
 	name = "supply rubber stamp"
 	icon_state = "stamp-cargo"
+
+// SCP STAMPS
+
+/obj/item/weapon/stamp/scp/facdir
+	name = "facility director's rubber stamp"
+	icon_state = "stamp-cap"
+
+/obj/item/weapon/stamp/scp/o5rep
+	name = "representative's rubber stamp"
+	icon_state = "stamp-cap"
+
+/obj/item/weapon/stamp/scp/hop
+	name = "head of personnel's rubber stamp"
+	icon_state = "stamp-hop"
+
+/obj/item/weapon/stamp/scp/cmo
+	name = "chief medical officer's rubber stamp"
+	icon_state = "stamp-cmo"

@@ -2,11 +2,13 @@
 #define LOCKED 				2
 #define CAN_MAKE_CONTRACTS	4
 #define INVESTABLE			8
+#define NO_LOCKING         16
+
 //spells/spellbooks have a variable for this but as artefacts are literal items they do not.
 //so we do this instead.
 var/list/artefact_feedback = list(/obj/structure/closet/wizard/armor = 		"HS",
 								/obj/item/weapon/gun/energy/staff/focus = 	"MF",
-								/obj/item/weapon/monster_manual = 			"MA",
+								/obj/item/weapon/summoning_stone = 			"ST",
 								/obj/item/weapon/magic_rock = 				"RA",
 								/obj/item/weapon/contract/apprentice = 		"CP",
 								/obj/structure/closet/wizard/souls = 		"SS",
@@ -45,17 +47,17 @@ var/list/artefact_feedback = list(/obj/structure/closet/wizard/armor = 		"HS",
 	desc = spellbook.desc
 
 /obj/item/weapon/spellbook/attack_self(mob/user as mob)
-	if(user.mind)
-		if(!wizards.is_antagonist(user.mind))
+	if(!user.mind)
+		return
+	if (user.mind.special_role != ANTAG_WIZARD)
+		if (user.mind.special_role != ANTAG_APPRENTICE)
 			to_chat(user, "You can't make heads or tails of this book.")
 			return
-		if(spellbook.book_flags & LOCKED)
-			if(user.mind.special_role == "apprentice")
-				to_chat(user, "<span class='warning'>Drat! This spellbook's apprentice proof lock is on!.</span>")
-				return
-			else
-				to_chat(user, "You notice the apprentice proof lock is on. Luckily you are beyond such things and can open it anyways.")
-
+		if (spellbook.book_flags & LOCKED)
+			to_chat(user, "<span class='warning'>Drat! This spellbook's apprentice-proof lock is on!</span>")
+			return
+	else if (spellbook.book_flags & LOCKED)
+		to_chat(user, "You notice the apprentice-proof lock is on. Luckily you are beyond such things.")
 	interact(user)
 
 /obj/item/weapon/spellbook/proc/make_sacrifice(obj/item/I as obj, mob/user as mob, var/reagent)
@@ -70,7 +72,6 @@ var/list/artefact_feedback = list(/obj/structure/closet/wizard/armor = 		"HS",
 			if(S.amount < S.max_amount)
 				to_chat(usr, "<span class='warning'>You must sacrifice [S.max_amount] stacks of [S]!</span>")
 				return
-		user.remove_from_mob(I)
 		qdel(I)
 	to_chat(user, "<span class='notice'>Your sacrifice was accepted!</span>")
 	has_sacrificed = 1
@@ -147,20 +148,21 @@ var/list/artefact_feedback = list(/obj/structure/closet/wizard/armor = 		"HS",
 				dat += "<center><A href='byond://?src=\ref[src];invest=1'>Invest a Spell Slot</a><br><i>Investing a spellpoint will return two spellpoints back in 15 minutes.<br>Some say a sacrifice could even shorten the time...</i></center>"
 		if(!(spellbook.book_flags & NOREVERT))
 			dat += "<center><A href='byond://?src=\ref[src];book=1'>Choose different spellbook.</a></center>"
-		dat += "<center><A href='byond://?src=\ref[src];lock=1'>[spellbook.book_flags & LOCKED ? "Unlock" : "Lock"] the spellbook.</a></center>"
+		if(!(spellbook.book_flags & NO_LOCKING))
+			dat += "<center><A href='byond://?src=\ref[src];lock=1'>[spellbook.book_flags & LOCKED ? "Unlock" : "Lock"] the spellbook.</a></center>"
 	user << browse(dat,"window=spellbook")
 
 /obj/item/weapon/spellbook/CanUseTopic(var/mob/living/carbon/human/H)
 	if(!istype(H))
 		return STATUS_CLOSE
 
-	if(H.mind && (spellbook.book_flags & LOCKED) && H.mind.special_role == "apprentice") //make sure no scrubs get behind the lock
+	if(H.mind && (spellbook.book_flags & LOCKED) && H.mind.special_role == ANTAG_APPRENTICE) //make sure no scrubs get behind the lock
 		return STATUS_CLOSE
 
 	return ..()
 
 /obj/item/weapon/spellbook/OnTopic(var/mob/living/carbon/human/user, href_list)
-	if(href_list["lock"])
+	if(href_list["lock"] && !(spellbook.book_flags & NO_LOCKING))
 		if(spellbook.book_flags & LOCKED)
 			spellbook.book_flags &= ~LOCKED
 		else
@@ -169,7 +171,7 @@ var/list/artefact_feedback = list(/obj/structure/closet/wizard/armor = 		"HS",
 
 	else if(href_list["temp"])
 		temp = null
-		. = TOPIC_REFRESH        
+		. = TOPIC_REFRESH
 
 	else if(href_list["book"])
 		if(initial(spellbook.max_uses) != spellbook.max_uses || uses != spellbook.max_uses)
@@ -216,7 +218,7 @@ var/list/artefact_feedback = list(/obj/structure/closet/wizard/armor = 		"HS",
 					playsound(get_turf(user),'sound/effects/phasein.ogg',50,1)
 		. = TOPIC_REFRESH
 
-	else if(href_list["reset"])
+	else if(href_list["reset"] && !(spellbook.book_flags & NOREVERT))
 		var/area/wizard_station/A = get_area(user)
 		if(istype(A))
 			uses = spellbook.max_uses

@@ -30,11 +30,11 @@ var/list/admin_datums = list()
 	rank = initial_rank
 	rights = initial_rights
 	admin_datums[ckey] = src
-	if(rights & R_DEBUG) //grant profile access
-		world.SetConfig("APP/admin", ckey, "role=admin")
 
 /datum/admins/proc/associate(client/C)
 	if(istype(C))
+		if(admin_datums[C.ckey] != src)
+			return
 		owner = C
 		owner.holder = src
 		owner.add_admin_verbs()	//TODO

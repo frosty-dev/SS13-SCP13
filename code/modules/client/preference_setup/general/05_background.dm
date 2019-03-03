@@ -2,7 +2,7 @@
 	var/med_record = ""
 	var/sec_record = ""
 	var/gen_record = ""
-	var/nanotrasen_relation = "Neutral"
+	var/economic_status = "Average"
 	var/memory = ""
 
 	//Some faction information.
@@ -23,7 +23,7 @@
 	from_file(S["citizenship"],pref.citizenship)
 	from_file(S["faction"],pref.faction)
 	from_file(S["religion"],pref.religion)
-	from_file(S["nanotrasen_relation"],pref.nanotrasen_relation)
+	from_file(S["economic_status"],pref.economic_status)
 	from_file(S["memory"],pref.memory)
 
 /datum/category_item/player_setup_item/general/background/save_character(var/savefile/S)
@@ -34,7 +34,7 @@
 	to_file(S["citizenship"],pref.citizenship)
 	to_file(S["faction"],pref.faction)
 	to_file(S["religion"],pref.religion)
-	to_file(S["nanotrasen_relation"],pref.nanotrasen_relation)
+	to_file(S["economic_status"],pref.economic_status)
 	to_file(S["memory"],pref.memory)
 
 /datum/category_item/player_setup_item/general/background/sanitize_character()
@@ -43,11 +43,11 @@
 	if(!pref.faction)     pref.faction =     "None"
 	if(!pref.religion)    pref.religion =    "None"
 
-	pref.nanotrasen_relation = sanitize_inlist(pref.nanotrasen_relation, COMPANY_ALIGNMENTS, initial(pref.nanotrasen_relation))
+	pref.economic_status = sanitize_inlist(pref.economic_status, ECONOMIC_CLASS, initial(pref.economic_status))
 
 /datum/category_item/player_setup_item/general/background/content(var/mob/user)
 	. += "<b>Background Information</b><br>"
-	. += "[GLOB.using_map.company_name] Relation: <a href='?src=\ref[src];nt_relation=1'>[pref.nanotrasen_relation]</a><br/>"
+	. += "Economic Status: <a href='?src=\ref[src];nt_relation=1'>[pref.economic_status]</a><br/>"
 	. += "Home System: <a href='?src=\ref[src];home_system=1'>[pref.home_system]</a><br/>"
 	. += "Citizenship: <a href='?src=\ref[src];citizenship=1'>[pref.citizenship]</a><br/>"
 	. += "Faction: <a href='?src=\ref[src];faction=1'>[pref.faction]</a><br/>"
@@ -68,9 +68,9 @@
 
 /datum/category_item/player_setup_item/general/background/OnTopic(var/href,var/list/href_list, var/mob/user)
 	if(href_list["nt_relation"])
-		var/new_relation = input(user, "Choose your relation to [GLOB.using_map.company_name]. Note that this represents what others can find out about your character by researching your background, not what your character actually thinks.", CHARACTER_PREFERENCE_INPUT_TITLE, pref.nanotrasen_relation)  as null|anything in COMPANY_ALIGNMENTS
-		if(new_relation && CanUseTopic(user))
-			pref.nanotrasen_relation = new_relation
+		var/new_class = input(user, "Choose your relation to [GLOB.using_map.company_name]. Note that this represents what others can find out about your character by researching your background, not what your character actually thinks.", CHARACTER_PREFERENCE_INPUT_TITLE, pref.economic_status)  as null|anything in ECONOMIC_CLASS
+		if(new_class && CanUseTopic(user))
+			pref.economic_status = new_class
 			return TOPIC_REFRESH
 
 	else if(href_list["home_system"])
@@ -78,7 +78,9 @@
 		if(!choice || !CanUseTopic(user))
 			return TOPIC_NOACTION
 		if(choice == "Other")
-			var/raw_choice = sanitize(input(user, "Please enter a home system.", CHARACTER_PREFERENCE_INPUT_TITLE)  as text|null, MAX_NAME_LEN)
+			var/raw_choice = input(user, "Please enter a home system.", CHARACTER_PREFERENCE_INPUT_TITLE)  as text|null
+			raw_choice = sanitize(raw_choice, MAX_NAME_LEN * 2)
+			raw_choice = sanitize_a2u(raw_choice)
 			if(raw_choice && CanUseTopic(user))
 				pref.home_system = raw_choice
 		else
@@ -90,7 +92,9 @@
 		if(!choice || !CanUseTopic(user))
 			return TOPIC_NOACTION
 		if(choice == "Other")
-			var/raw_choice = sanitize(input(user, "Please enter your current citizenship.", CHARACTER_PREFERENCE_INPUT_TITLE) as text|null, MAX_NAME_LEN)
+			var/raw_choice = input(user, "Please enter your current citizenship.", CHARACTER_PREFERENCE_INPUT_TITLE) as text|null
+			raw_choice = sanitize(raw_choice, MAX_NAME_LEN * 2)
+			raw_choice = sanitize_a2u(raw_choice)
 			if(raw_choice && CanUseTopic(user))
 				pref.citizenship = raw_choice
 		else
@@ -102,7 +106,9 @@
 		if(!choice || !CanUseTopic(user))
 			return TOPIC_NOACTION
 		if(choice == "Other")
-			var/raw_choice = sanitize(input(user, "Please enter a faction.", CHARACTER_PREFERENCE_INPUT_TITLE)  as text|null, MAX_NAME_LEN)
+			var/raw_choice = input(user, "Please enter a faction.", CHARACTER_PREFERENCE_INPUT_TITLE)  as text|null
+			raw_choice = sanitize(raw_choice, MAX_NAME_LEN * 2)
+			raw_choice = sanitize_a2u(raw_choice)
 			if(raw_choice)
 				pref.faction = raw_choice
 		else
@@ -114,33 +120,43 @@
 		if(!choice || !CanUseTopic(user))
 			return TOPIC_NOACTION
 		if(choice == "Other")
-			var/raw_choice = sanitize(input(user, "Please enter a religon.", CHARACTER_PREFERENCE_INPUT_TITLE)  as text|null, MAX_NAME_LEN)
+			var/raw_choice = input(user, "Please enter a religon.", CHARACTER_PREFERENCE_INPUT_TITLE)  as text|null
+			raw_choice = sanitize(raw_choice, MAX_NAME_LEN * 2)
+			raw_choice = sanitize_a2u(raw_choice)
 			if(raw_choice)
-				pref.religion = sanitize(raw_choice)
+				pref.religion = raw_choice
 		else
 			pref.religion = choice
 		return TOPIC_REFRESH
 
 	else if(href_list["set_medical_records"])
-		var/new_medical = sanitize(input(user,"Enter medical information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.med_record)) as message|null, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		var/new_medical = input(user,"Enter medical information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.med_record)) as message|null
+		new_medical = sanitize(new_medical, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		new_medical = sanitize_a2u(new_medical)
 		if(!isnull(new_medical) && !jobban_isbanned(user, "Records") && CanUseTopic(user))
 			pref.med_record = new_medical
 		return TOPIC_REFRESH
 
 	else if(href_list["set_general_records"])
-		var/new_general = sanitize(input(user,"Enter employment information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.gen_record)) as message|null, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		var/new_general = input(user,"Enter employment information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.gen_record)) as message|null
+		new_general = sanitize(new_general, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		new_general = sanitize_a2u(new_general)
 		if(!isnull(new_general) && !jobban_isbanned(user, "Records") && CanUseTopic(user))
 			pref.gen_record = new_general
 		return TOPIC_REFRESH
 
 	else if(href_list["set_security_records"])
-		var/sec_medical = sanitize(input(user,"Enter security information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.sec_record)) as message|null, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		var/sec_medical = input(user,"Enter security information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.sec_record)) as message|null
+		sec_medical = sanitize(sec_medical, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		sec_medical = sanitize_a2u(sec_medical)
 		if(!isnull(sec_medical) && !jobban_isbanned(user, "Records") && CanUseTopic(user))
 			pref.sec_record = sec_medical
 		return TOPIC_REFRESH
 
 	else if(href_list["set_memory"])
-		var/memes = sanitize(input(user,"Enter memorized information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.memory)) as message|null, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		var/memes = input(user,"Enter memorized information here.",CHARACTER_PREFERENCE_INPUT_TITLE, html_decode(pref.memory)) as message|null
+		memes = sanitize(memes, MAX_PAPER_MESSAGE_LEN, extra = 0)
+		memes = sanitize_a2u(memes)
 		if(!isnull(memes) && CanUseTopic(user))
 			pref.memory = memes
 		return TOPIC_REFRESH

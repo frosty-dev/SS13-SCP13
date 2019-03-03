@@ -3,6 +3,8 @@ body					{font-family: Verdana, sans-serif;}
 
 h1, h2, h3, h4, h5, h6	{color: #0000ff;font-family: Georgia, Verdana, sans-serif;}
 
+em						{font-style: normal;font-weight: bold;}
+
 .motd					{color: #638500;font-family: Verdana, sans-serif;}
 .motd h1, .motd h2, .motd h3, .motd h4, .motd h5, .motd h6
 						{color: #638500;text-decoration: underline;}
@@ -18,12 +20,11 @@ h1, h2, h3, h4, h5, h6	{color: #0000ff;font-family: Georgia, Verdana, sans-serif
 
 .ooc .everyone			{color: #002eb8;}
 .ooc .looc				{color: #3a9696;}
-.ooc .elevated			{color: #2798C0;}
+.ooc .elevated			{color: #306082;}
 .ooc .moderator			{color: #184880;}
-.ooc .developer			{color: #1b521f;}
-.ooc .admin				{color: #b82e00;}
+.ooc .developer			{color: #b55801;}
+.ooc .admin				{color: #992d22;}
 .ooc .aooc				{color: #960018;}
-.ooc .dooc				{color: #CC0099;}
 
 .staffwarn				{color: #ff0000; font-weight:bold; font-size: 150%;}
 /* Admin: Private Messages */
@@ -35,30 +36,28 @@ h1, h2, h3, h4, h5, h6	{color: #0000ff;font-family: Georgia, Verdana, sans-serif
 /* Admin: Channels */
 .mod_channel			{color: #735638;	font-weight: bold;}
 .mod_channel .admin		{color: #b82e00;	font-weight: bold;}
-.dev_channel .admin		{color: #b82e00;	font-weight: bold;}
-.admin_channel			{color: #9611d4;	font-weight: bold;}
-.dev_channel			{color: #b82e00;}
+.admin_channel			{color: #386aff;	font-weight: bold;}
 
 /* Radio: Misc */
 .deadsay				{color: #530fad;}
-.radio					{color: #008000;}
+.radio					{color: #408010;}
 .deptradio				{color: #ff00ff;}	/* when all other department colors fail */
 .newscaster				{color: #750000;}
 
 /* Radio Channels */
-.comradio				{color: #193a7a;}
+.comradio				{color: #204090;}
 .syndradio				{color: #6d3f40;}
-.centradio				{color: #5c5c8a;}
+.centradio				{color: #5c5c7c;}
 .airadio				{color: #ff00ff;}
-.entradio				{color: #339966;}
+.entradio				{color: #666666;}
 
-.secradio				{color: #a30000;}
+.secradio				{color: #930000;}
 .engradio				{color: #a66300;}
-.medradio				{color: #008160;}
+.medradio				{color: #009190;}
 .sciradio				{color: #993399;}
-.supradio				{color: #5f4519;}
-.srvradio				{color: #6eaa2c;}
-.expradio				{color: #a3a332;}
+.supradio				{color: #7f6539;}
+.srvradio				{color: #709b00;}
+.expradio				{color: #929820;}
 
 /* Miscellaneous */
 .name					{font-weight: bold;}
@@ -83,9 +82,7 @@ h1.alert, h2.alert		{color: #000000;}
 .notice					{color: #000099;}
 .alium					{color: #00ff00;}
 .cult					{color: #800080; font-weight: bold; font-style: italic;}
-.safe					{color: #3BC92A;}
-.euclid					{color: #F3BE0B; font-style: italic;}
-.keter					{color: #FF0000; font-weight: bold; font-style: italic;}
+.fountain				{color: #800080; font-style: italic; font-size: 175%;}
 
 .reflex_shoot			{color: #000099; font-style: italic;}
 
@@ -96,6 +93,7 @@ h1.alert, h2.alert		{color: #000000;}
 .tajaran_signlang		{color: #941c1c;}
 .skrell					{color: #00ced1;}
 .soghun					{color: #228b22;}
+.yeosa					{color: #218b89;}
 .nabber_lang			{color: #525252;}
 .solcom					{color: #22228b;}
 .changeling				{color: #800080;}
@@ -105,6 +103,7 @@ h1.alert, h2.alert		{color: #000000;}
 .terran					{color: #9c250b;}
 .moon					{color: #422863;}
 .spacer					{color: #ff6600;}
+.adherent				{color: #526c7a;}
 
 .interface				{color: #330033;}
 

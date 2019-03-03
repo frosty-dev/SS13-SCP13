@@ -5,7 +5,7 @@ GLOBAL_LIST_EMPTY(scp012s)
 	icon = 'icons/mob/scp012.dmi'
 	desc = "An old paper of handwritten sheet music, titled \"On Mount Golgotha\". The writing is in a conspicuous blood red."
 	w_class = ITEM_SIZE_NO_CONTAINER //Quick fix that may need more work in the future.
-	nothrow = TRUE
+	//nothrow = TRUE
 	SCP = /datum/scp/SCP_012
 	anchored = 1
 	var/ticks = 0

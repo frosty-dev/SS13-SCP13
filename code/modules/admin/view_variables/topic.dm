@@ -65,6 +65,27 @@
 
 		cmd_mass_modify_object_variables(A, href_list["varnamemass"])
 
+	else if(href_list["datumwatch"] && href_list["varnamewatch"])
+		var/datum/D = locate(href_list["datumwatch"])
+		if(D)
+			if(!watched_variables[D])
+				watched_variables[D] = list()
+			watched_variables[D] |= href_list["varnamewatch"]
+			watched_variables()
+
+			if(!watched_variables_window.is_processing)
+				START_PROCESSING(SSprocessing, watched_variables_window)
+
+	else if(href_list["datumunwatch"] && href_list["varnameunwatch"])
+		var/datum/D = locate(href_list["datumunwatch"])
+		if(D && watched_variables[D])
+			watched_variables[D] -= href_list["varnameunwatch"]
+			var/list/datums_watched_vars = watched_variables[D]
+			if(!datums_watched_vars.len)
+				watched_variables -= D
+		if(!watched_variables.len && watched_variables_window.is_processing)
+			STOP_PROCESSING(SSprocessing, watched_variables_window)
+
 	else if(href_list["mob_player_panel"])
 		if(!check_rights(0))	return
 
@@ -183,11 +204,10 @@
 		switch(action_type)
 			if("Strict type")
 				var/i = 0
-				for(var/obj in global.obj_list)
-					var/obj/A = obj
-					if(A.type == O_type)
+				for(var/obj/Obj in world)
+					if(Obj.type == O_type)
 						i++
-						qdel(A)
+						qdel(Obj)
 				if(!i)
 					to_chat(usr, "No objects of this type exist")
 					return
@@ -195,10 +215,10 @@
 				message_admins("<span class='notice'>[key_name(usr)] deleted all objects of type [O_type] ([i] objects deleted)</span>")
 			if("Type and subtypes")
 				var/i = 0
-				for(var/obj in global.obj_list)
-					if(istype(obj,O_type))
+				for(var/obj/Obj in world)
+					if(istype(Obj,O_type))
 						i++
-						qdel(obj)
+						qdel(Obj)
 				if(!i)
 					to_chat(usr, "No objects of this type exist")
 					return
@@ -474,7 +494,7 @@
 			to_chat(usr, "This can only be done on mobs with clients")
 			return
 
-		GLOB.nanomanager.close_uis(H)
+		SSnano.close_uis(H)
 		H.client.cache.Cut()
 		var/datum/asset/assets = get_asset_datum(/datum/asset/nanoui)
 		assets.send(H)

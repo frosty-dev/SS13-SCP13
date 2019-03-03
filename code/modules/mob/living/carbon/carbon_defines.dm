@@ -32,6 +32,8 @@
 	var/last_taste_time = 0
 	var/last_taste_text = ""
 
+	var/is_sleeping = 0
+
 	// organ-related variables, see organ.dm and human_organs.dm
 	var/list/internal_organs = list()
 	var/list/organs = list()

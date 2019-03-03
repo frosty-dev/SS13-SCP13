@@ -20,6 +20,7 @@ Small, little HP, poisonous.
 	density = 1
 	min_gas = null
 	mob_size = MOB_MINISCULE
+	can_escape = 1
 	pass_flags = PASS_FLAG_TABLE
 	melee_damage_lower = 5
 	melee_damage_upper = 10
@@ -39,8 +40,7 @@ Small, little HP, poisonous.
 				continue
 		L += a
 
-	for (var/mecha in global.mecha_list)
-		var/obj/mecha/M = mecha
+	for (var/obj/mecha/M in mechas_list)
 		if (M.z == src.z && get_dist(src, M) <= dist)
 			L += M
 
@@ -82,7 +82,6 @@ Small, little HP, poisonous.
 		var/mob/living/carbon/human/H = target
 		if(!do_mob(user, H, 30))
 			return
-		user.drop_from_inventory(src)
 		V.attach(H)
 		qdel(src)
 		return

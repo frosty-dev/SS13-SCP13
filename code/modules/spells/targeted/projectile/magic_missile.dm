@@ -18,12 +18,11 @@
 	proj_step_delay = 5
 
 	hud_state = "wiz_mm"
-
+	// TODO@inf-dev: поменять ~bear1ake
 	amt_paralysis = 3
 	amt_stunned = 3
 
 	amt_dam_fire = 10
-	cast_prox_range = 0
 
 /spell/targeted/projectile/magic_missile/prox_cast(var/list/targets, atom/spell_holder)
 	spell_holder.visible_message("<span class='danger'>\The [spell_holder] pops with a flash!</span>")
@@ -54,3 +53,4 @@
 	proj_trail = 1
 	proj_trail_lifespan = 5
 	proj_trail_icon_state = "magicmd"
+

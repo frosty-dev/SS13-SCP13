@@ -61,10 +61,14 @@
 /datum/gear/accessory/ntaward/New()
 	..()
 	var/ntawards = list()
-	ntawards["sciences medal"] = /obj/item/clothing/accessory/medal/bronze/nanotrasen
+	ntawards["generic medal"] = /obj/item/clothing/accessory/medal/iron/nanotrasen
 	ntawards["nanotrasen service"] = /obj/item/clothing/accessory/medal/silver/nanotrasen
-	ntawards["command medal"] = /obj/item/clothing/accessory/medal/gold/nanotrasen
 	gear_tweaks += new/datum/gear_tweak/path(ntawards)
+
+/datum/gear/accessory/ntaward_sci
+	display_name = "NanoTrasen science award"
+	path = /obj/item/clothing/accessory/medal/bronze/nanotrasen
+	cost = 8
 
 //have to break up armbands to restrict access
 /datum/gear/accessory/armband_security
@@ -82,7 +86,7 @@
 /datum/gear/accessory/armband_emt
 	display_name = "EMT armband"
 	path = /obj/item/clothing/accessory/armband/medgreen
-//	allowed_roles = list(/datum/job/doctor)
+	allowed_roles = list(/datum/job/doctor)
 
 /datum/gear/accessory/armband_engineering
 	display_name = "engineering armband"
@@ -96,3 +100,8 @@
 /datum/gear/accessory/armband_nt
 	display_name = "NanoTrasen armband"
 	path = /obj/item/clothing/accessory/armband/whitered
+
+/datum/gear/accessory/ftupin
+	display_name = "Free Trade Union pin"
+	path = /obj/item/clothing/accessory/ftupin
+

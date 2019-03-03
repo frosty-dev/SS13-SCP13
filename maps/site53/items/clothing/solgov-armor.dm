@@ -41,3 +41,29 @@
 
 /obj/item/clothing/suit/armor/pcarrier/medium/command/security
 	starting_accessories = list(/obj/item/clothing/accessory/armorplate/medium, /obj/item/clothing/accessory/storage/pouches, /obj/item/clothing/accessory/armor/tag/solgov/com/sec)
+
+/obj/item/clothing/head/helmet/chaos
+	name = "tactical hazmat helmet"
+	desc = "An armored hazmat helmet. Has a distinct orange hue."
+	icon_state = "tac_helmet"
+	armor = list(melee = 80, bullet = 60, laser = 50,energy = 25, bomb = 50, bio = 100, rad = 60)
+	cold_protection = HEAD
+	min_cold_protection_temperature = SPACE_HELMET_MIN_COLD_PROTECTION_TEMPERATURE
+	item_flags = ITEM_FLAG_THICKMATERIAL|ITEM_FLAG_AIRTIGHT
+	body_parts_covered = HEAD|FACE|EYES
+	siemens_coefficient = 0.5
+	permeability_coefficient = 0
+
+/obj/item/clothing/suit/armor/pcarrier/scp/ntf
+	starting_accessories = list(/obj/item/clothing/accessory/armorplate/merc, /obj/item/clothing/accessory/storage/pouches/large, /obj/item/clothing/accessory/legguards/merc, /obj/item/clothing/accessory/armguards/merc)
+
+/obj/item/clothing/suit/armor/chaos
+	name = "tactical hazmat suit"
+	desc = "An armored hazmat suit with a distinct orange appearance."
+	icon_state = "tac_hazmat"
+	item_state = "tac_hazmat"
+	permeability_coefficient = 0
+	gas_transfer_coefficient = 0
+	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
+	armor = list(melee = 80, bullet = 65, laser = 65, energy = 15, bomb = 80, bio = 100, rad = 60)
+

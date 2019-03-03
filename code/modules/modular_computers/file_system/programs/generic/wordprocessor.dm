@@ -1,6 +1,6 @@
 /datum/computer_file/program/wordprocessor
 	filename = "wordprocessor"
-	filedesc = "Word"
+	filedesc = "NanoWord"
 	extended_desc = "This program allows the editing and preview of text documents."
 	program_icon_state = "word"
 	program_key_state = "atmos_key"
@@ -13,15 +13,7 @@
 	var/loaded_data
 	var/error
 	var/is_edited
-
-/datum/computer_file/program/wordprocessor/proc/get_file(var/filename)
-	var/obj/item/weapon/computer_hardware/hard_drive/HDD = computer.hard_drive
-	if(!HDD)
-		return
-	var/datum/computer_file/data/F = HDD.find_file_by_name(filename)
-	if(!istype(F))
-		return
-	return F
+	usage_flags = PROGRAM_ALL
 
 /datum/computer_file/program/wordprocessor/proc/open_file(var/filename)
 	var/datum/computer_file/data/F = get_file(filename)
@@ -33,7 +25,7 @@
 /datum/computer_file/program/wordprocessor/proc/save_file(var/filename)
 	var/datum/computer_file/data/F = get_file(filename)
 	if(!F) //try to make one if it doesn't exist
-		F = create_file(filename, loaded_data)
+		F = create_file(filename, loaded_data, /datum/computer_file/data/text)
 		return !isnull(F)
 	var/datum/computer_file/data/backup = F.clone()
 	var/obj/item/weapon/computer_hardware/hard_drive/HDD = computer.hard_drive
@@ -47,22 +39,6 @@
 		return 0
 	is_edited = 0
 	return 1
-
-/datum/computer_file/program/wordprocessor/proc/create_file(var/newname, var/data = "")
-	if(!newname)
-		return
-	var/obj/item/weapon/computer_hardware/hard_drive/HDD = computer.hard_drive
-	if(!HDD)
-		return
-	if(get_file(newname))
-		return
-	var/datum/computer_file/data/F = new/datum/computer_file/data()
-	F.filename = newname
-	F.filetype = "TXT"
-	F.stored_data = data
-	F.calculate_size()
-	if(HDD.store_file(F))
-		return F
 
 /datum/computer_file/program/wordprocessor/Topic(href, href_list)
 	if(..())
@@ -95,8 +71,8 @@
 		\[grid\] - \[/grid\] : Table without visible borders, for layouts.
 		\[row\] - New table row.
 		\[cell\] - New table cell.
-		\[logo\] - Inserts NT logo image.
-		\[bluelogo\] - Inserts blue NT logo image.
+		\[logo\] - Inserts corporate logo image.
+		\[bluelogo\] - Inserts blue corporate logo image.
 		\[solcrest\] - Inserts SCG crest image.
 		\[terraseal\] - Inserts TCC seal"}
 
@@ -133,7 +109,7 @@
 		var/newname = sanitize(input(usr, "Enter file name:", "New File") as text|null)
 		if(!newname)
 			return 1
-		var/datum/computer_file/data/F = create_file(newname)
+		var/datum/computer_file/data/F = create_file(newname, "", /datum/computer_file/data/text)
 		if(F)
 			open_file = F.filename
 			loaded_data = ""
@@ -146,7 +122,7 @@
 		var/newname = sanitize(input(usr, "Enter file name:", "Save As") as text|null)
 		if(!newname)
 			return 1
-		var/datum/computer_file/data/F = create_file(newname, loaded_data)
+		var/datum/computer_file/data/F = create_file(newname, loaded_data, /datum/computer_file/data/text)
 		if(F)
 			open_file = F.filename
 		else
@@ -228,7 +204,7 @@
 		data["filedata"] = pencode2html(PRG.loaded_data)
 		data["filename"] = "UNNAMED"
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "word_processor.tmpl", "Word Processor", 575, 700, state = state)
 		ui.auto_update_layout = 1

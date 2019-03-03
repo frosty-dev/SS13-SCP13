@@ -4,7 +4,7 @@
 	icon = 'icons/obj/xenoarchaeology.dmi'
 	icon_state = "suspension2"
 	density = 1
-	req_access = list()
+	req_access = list(access_research)
 	var/obj/item/weapon/cell/cell
 	var/obj/item/weapon/card/id/auth_card
 	var/locked = 1
@@ -87,8 +87,8 @@
 	else if(href_list["insertcard"])
 		var/obj/item/I = user.get_active_hand()
 		if (istype(I, /obj/item/weapon/card))
-			user.drop_item()
-			I.forceMove(src)
+			if(!user.unEquip(I, src))
+				return
 			auth_card = I
 			if(attempt_unlock(I, user))
 				to_chat(user, "<span class='info'>You insert [I], the console flashes \'<i>Access granted.</i>\'</span>")
@@ -98,9 +98,7 @@
 	else if(href_list["ejectcard"])
 		if(auth_card)
 			if(ishuman(user))
-				auth_card.loc = user.loc
-				if(!user.get_active_hand())
-					user.put_in_hands(auth_card)
+				user.put_in_hands(auth_card)
 				auth_card = null
 			else
 				auth_card.forceMove(loc)
@@ -148,9 +146,7 @@
 		if(panel_open)
 			if(cell)
 				to_chat(user, "<span class='warning'>There is a power cell already installed.</span>")
-			else
-				user.drop_item()
-				W.forceMove(src)
+			else if(user.unEquip(W, src))
 				cell = W
 				to_chat(user, "<span class='info'>You insert the power cell.</span>")
 				icon_state = "suspension1"

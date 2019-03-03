@@ -68,7 +68,7 @@
 	silicon_allowed = TRUE
 
 /datum/evacuation_option/abandon_site/execute(mob/user)
-	if (!ticker || !evacuation_controller)
+	if (!evacuation_controller)
 		return
 	if (evacuation_controller.deny)
 		to_chat(user, "Unable to initiate evacuation procedures.")
@@ -90,7 +90,7 @@
 	silicon_allowed = TRUE
 
 /datum/evacuation_option/end_shift/execute(mob/user)
-	if (!ticker || !evacuation_controller)
+	if (!evacuation_controller)
 		return
 	if (evacuation_controller.deny)
 		to_chat(user, "Unable to end work shift.")
@@ -112,7 +112,7 @@
 	silicon_allowed = FALSE
 
 /datum/evacuation_option/cancel_abandon_site/execute(mob/user)
-	if (ticker && evacuation_controller && evacuation_controller.cancel_evacuation())
+	if (evacuation_controller && evacuation_controller.cancel_evacuation())
 		log_and_message_admins("[key_name(user)] has cancelled abandonment of the site.")
 
 /datum/evacuation_option/cancel_end_shift
@@ -123,7 +123,7 @@
 	silicon_allowed = FALSE
 
 /datum/evacuation_option/cancel_end_shift/execute(mob/user)
-	if (ticker && evacuation_controller && evacuation_controller.cancel_evacuation())
+	if (evacuation_controller && evacuation_controller.cancel_evacuation())
 		log_and_message_admins("[key_name(user)] has cancelled the shift change.")
 
 // /obj/screen/fullscreen/bluespace_overlay

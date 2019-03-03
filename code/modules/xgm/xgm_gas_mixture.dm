@@ -192,7 +192,8 @@
 	//group_multiplier gets divided out in volume/gas[gasid] - also, V/(m*T) = R/(partial pressure)
 	var/molar_mass = gas_data.molar_mass[gasid]
 	var/specific_heat = gas_data.specific_heat[gasid]
-	return R_IDEAL_GAS_EQUATION * ( log( (IDEAL_GAS_ENTROPY_CONSTANT*volume/(gas[gasid] * temperature)) * (molar_mass*specific_heat*temperature)**(2/3) + 1 ) +  15 )
+	var/safe_temp = max(temperature, TCMB) // We're about to divide by this.
+	return R_IDEAL_GAS_EQUATION * ( log( (IDEAL_GAS_ENTROPY_CONSTANT*volume/(gas[gasid] * safe_temp)) * (molar_mass*specific_heat*safe_temp)**(2/3) + 1 ) +  15 )
 
 	//alternative, simpler equation
 	//var/partial_pressure = gas[gasid] * R_IDEAL_GAS_EQUATION * temperature / volume
@@ -202,11 +203,11 @@
 //Updates the total_moles count and trims any empty gases.
 /datum/gas_mixture/proc/update_values()
 	total_moles = 0
-	for(. in gas)
-		if(gas[.] <= 0)
-			gas -= .
+	for(var/g in gas)
+		if(gas[g] <= 0)
+			gas -= g
 		else
-			total_moles += gas[.]
+			total_moles += gas[g]
 
 
 //Returns the pressure of the gas mix.  Only accurate if there have been no gas modifications since update_values() has been called.
@@ -339,11 +340,6 @@
 			return 0
 
 	return 1
-
-
-/datum/gas_mixture/proc/react()
-	zburn(null, force_burn=0, no_check=0) //could probably just call zburn() here with no args but I like being explicit.
-
 
 //Rechecks the gas_mixture and adjusts the graphic list if needed.
 //Two lists can be passed by reference if you need know specifically which graphics were added and removed.

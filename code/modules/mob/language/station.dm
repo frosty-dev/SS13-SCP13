@@ -1,24 +1,14 @@
 /datum/language/diona
 	name = LANGUAGE_ROOTLOCAL
 	desc = "A complex language known instinctively by Dionaea, 'spoken' by emitting modulated radio waves. This version uses high frequency waves for quick communication at short ranges."
-	speech_verb = "creaks and rustles"
-	ask_verb = "creaks"
-	exclaim_verb = "rustles"
+	speech_verb = "шуршит"
+	ask_verb = "скрипит"
+	exclaim_verb = "шелестит"
 	colour = "soghun"
 	key = "q"
 	flags = RESTRICTED
 	syllables = list("hs","zt","kr","st","sh")
-
-/datum/language/eyepod
-	name = LANGUAGE_EYEPOD
-	desc = "A complex language known instinctively by Eyepods, 'spoken' by emitting modulated radio waves. This version uses high frequency waves for quick communication at short ranges."
-	speech_verb = "babbles"
-	ask_verb = "babbles curiously"
-	exclaim_verb = "babbles excitedly"
-	colour = "soghun"
-	key = "y"
-	flags = RESTRICTED
-	syllables = list("bi","ki","di","ti","ri","li","si","ki","mi","ni","chi","ee","ii","qi")
+	shorthand = "RT"
 
 /datum/language/diona/get_random_name()
 	var/new_name = "[pick(list("To Sleep Beneath","Wind Over","Embrace of","Dreams of","Witnessing","To Walk Beneath","Approaching the"))]"
@@ -30,16 +20,17 @@
 	desc = "A complex language known instinctively by Dionaea, 'spoken' by emitting modulated radio waves. This version uses low frequency waves for slow communication at long ranges."
 	key = "w"
 	flags = RESTRICTED | HIVEMIND
+	shorthand = "N/A"
 
 /datum/language/unathi
 	name = LANGUAGE_UNATHI
 	desc = "The common language of Moghes, composed of sibilant hisses and rattles. Spoken natively by Unathi."
-	speech_verb = "hisses"
-	ask_verb = "hisses"
-	exclaim_verb = "roars"
+	speech_verb = "шипит"
+	ask_verb = "шипит"
+	exclaim_verb = "грозно рычит"
 	colour = "soghun"
 	key = "o"
-	flags = RESTRICTED
+	flags = WHITELISTED
 	space_chance = 40
 	syllables = list(
 		"za", "az", "ze", "ez", "zi", "iz", "zo", "oz", "zu", "uz", "zs", "sz",
@@ -50,20 +41,22 @@
 		"ra", "ar", "re", "er", "ri", "ir", "ro", "or", "ru", "ur", "rs", "sr",
 		"a",  "a",  "e",  "e",  "i",  "i",  "o",  "o",  "u",  "u",  "s",  "s"
 	)
+	shorthand = "UT"
 
 /datum/language/tajaran
 	name = LANGUAGE_SIIK_MAAS
 	desc = "The traditionally employed tongue of Ahdomai, composed of expressive yowls and chirps. Native to the Tajaran."
-	speech_verb = "mrowls"
-	ask_verb = "mrowls"
-	exclaim_verb = "yowls"
+	speech_verb = "мурчит"
+	ask_verb = "мурчит"
+	exclaim_verb = "воет"
 	colour = "tajaran"
 	key = "j"
-	flags = RESTRICTED
+	flags = WHITELISTED
 	syllables = list("mrr","rr","tajr","kir","raj","kii","mir","kra","ahk","nal","vah","khaz","jri","ran","darr",
 	"mi","jri","dynh","manq","rhe","zar","rrhaz","kal","chur","eech","thaa","dra","jurl","mah","sanu","dra","ii'r",
 	"ka","aasi","far","wa","baq","ara","qara","zir","sam","mak","hrar","nja","rir","khan","jun","dar","rik","kah",
 	"hal","ket","jurl","mah","tul","cresh","azu","ragh","mro","mra","mrro","mrra")
+	shorthand = "TJ"
 
 /datum/language/tajaran/get_random_name(var/gender)
 
@@ -77,29 +70,30 @@
 /datum/language/skrell
 	name = LANGUAGE_SKRELLIAN
 	desc = "A melodic and complex language spoken by the Skrell of Qerrbalak. Some of the notes are inaudible to humans."
-	speech_verb = "warbles"
-	ask_verb = "warbles"
-	exclaim_verb = "warbles"
+	speech_verb = "поет"
+	ask_verb = "поет"
+	exclaim_verb = "поет"
 	colour = "skrell"
 	key = "k"
-	flags = RESTRICTED
+	flags = WHITELISTED
 	syllables = list("qr","qrr","xuq","qil","quum","xuqm","vol","xrim","zaoo","qu-uu","qix","qoo","zix","*","!")
+	shorthand = "SK"
 
 /datum/language/human
 	name = LANGUAGE_SOL_COMMON
 	desc = "A bastardized hybrid of informal English and elements of Mandarin Chinese; the common language of the Sol system."
-	speech_verb = "says"
-	whisper_verb = "whispers"
+	speech_verb = "говорит"
+	whisper_verb = "шепчет"
 	colour = "solcom"
 	key = "1"
-	flags = RESTRICTED
+	shorthand = "Sol"
 
 	//syllables are at the bottom of the file
 
 /datum/language/human/get_spoken_verb(var/msg_end)
 	switch(msg_end)
 		if("!")
-			return pick("exclaims","shouts","yells") //TODO: make the basic proc handle lists of verbs.
+			return pick("восклицает")
 		if("?")
 			return ask_verb
 	return speech_verb
@@ -116,15 +110,15 @@
 /datum/language/machine
 	name = LANGUAGE_EAL
 	desc = "An efficient language of encoded tones developed by synthetics and cyborgs."
-	speech_verb = "whistles"
-	ask_verb = "chirps"
-	exclaim_verb = "whistles loudly"
+	speech_verb = "свистит"
+	ask_verb = "щебечет"
+	exclaim_verb = "громко свистит"
 	colour = "changeling"
 	key = "6"
-	flags = RESTRICTED
+	flags = NO_STUTTER
 	syllables = list("beep","beep","beep","beep","beep","boop","boop","boop","bop","bop","dee","dee","doo","doo","hiss","hss","buzz","buzz","bzz","ksssh","keey","wurr","wahh","tzzz")
 	space_chance = 10
-	flags = RESTRICTED
+	shorthand = "EAL"
 
 /datum/language/machine/can_speak_special(var/mob/living/speaker)
 	return speaker.isSynthetic()
@@ -133,6 +127,25 @@
 	if(prob(70))
 		return "[pick(list("PBU","HIU","SINA","ARMA","OSI"))]-[rand(100, 999)]"
 	return pick(GLOB.ai_names)
+
+/datum/language/resomi
+	name = LANGUAGE_RESOMI
+	desc = "A trilling language spoken by the diminutive Resomi."
+	speech_verb = "щебечет"
+	ask_verb = "чирикает"
+	exclaim_verb = "верещит"
+	colour = "alien"
+	key = "e"
+	flags = WHITELISTED
+	space_chance = 50
+	syllables = list(
+			"ca", "ra", "ma", "sa", "na", "ta", "la", "sha", "scha", "a", "a",
+			"ce", "re", "me", "se", "ne", "te", "le", "she", "sche", "e", "e",
+			"ci", "ri", "mi", "si", "ni", "ti", "li", "shi", "schi", "i", "i"
+		)
+
+/datum/language/resomi/get_random_name(gender)
+	return ..(gender, 1, 4, 1.5)
 
 //Syllable Lists
 /*
@@ -198,29 +211,31 @@
 /datum/language/tajsign
 	name = LANGUAGE_SIIK_TAJR
 	desc = "A type of sign language mostly based on tail movements that was used during the Tajaran rebellion."
-	signlang_verb = list("uses their tail to convey", "gestures with their tail", "gestures with their tail elaborately")
+	signlang_verb = list("делает пасы хвостом", "жестикулирует хвостом", "искусно жестикулирует хвостом")
 	colour = "tajaran"
 	key = "l"
-	flags = RESTRICTED
+	flags = WHITELISTED | SIGNLANG | NO_STUTTER | NONVERBAL
+	shorthand = "TS"
 
 /datum/language/confederate
 	name = LANGUAGE_INDEPENDENT
 	desc = "The official language of the Terran Colonial Confederation, evolved from a pidgin of Eastern European languages and English."
-	speech_verb = "speaks"
+	speech_verb = "проговаривает"
 	colour = "terran"
 	key = "r"
 	syllables = list("rus","zem","ave","groz","ski","ska","ven","konst","pol","lin","svy",
 	"danya","da","mied","zan","das","krem","myka","to","st","no","na","ni",
 	"ko","ne","en","po","ra","li","on","byl","cto","eni","ost","ol","ego","ver","stv","pro")
-	flags = RESTRICTED
+	shorthand = "IN"
 
 /datum/language/nabber
 	name = LANGUAGE_NABBER
 	desc = "A strange language that can be understood both by the sounds made and by the movement needed to create those sounds."
-	signlang_verb = list("chitters", "grinds its mouthparts", "chitters and grinds its mouthparts")
+	signlang_verb = list("скрипит", "перемалывает жвалами", "скрипит и перемалывает жвалами")
 	key = "n"
-	flags = RESTRICTED | SIGNLANG | NO_STUTTER | NONVERBAL
+	flags = WHITELISTED | SIGNLANG | NO_STUTTER | NONVERBAL
 	colour = ".nabber_lang"
+	shorthand = "SD"
 
 /datum/language/nabber/get_random_name(var/gender)
 	if(gender == FEMALE)
@@ -236,4 +251,37 @@
 	syllables = list ("die", "en", "skei", "van", "son", "der", "aar", "ch", "op", "ruk", "aa", "be", "ne", "het",
  	"ek", "ras", "ver", "zan", "das", "waa", "geb", "vol", "lu", "min", "breh", "rus", "stv", "ee", "goe", "sk",
  	"la", "ver", "we", "ge", "luk", "an", "ar", "at", "es", "et", "bel", "du", "jaa", "ch", "kk", "gh", "ll", "uu", "wat")
+	shorthand = "SP"
+
+/datum/language/yeosa
+	name = LANGUAGE_YEOSA
+	desc = "A language of Moghes consisting of a combination of spoken word and gesticulation. While it is uncommonly spoken in the drier regions, it enjoys popular usage as the official tongue of the Yeosa clans."
+	speech_verb = "шипит"
+	ask_verb = "трещит"
+	exclaim_verb = "рявкает"
+	colour = "yeosa"
+	key = "h"
+	flags = WHITELISTED
+	space_chance = 40
+	syllables = list(
+		"azs","zis","zau","azua","skiu","zuakz","izo","aei","ki","kut","zo",
+		"za", "az", "ze", "ez", "zi", "iz", "zo", "oz", "zu", "uz", "zs", "sz",
+		"ha", "ah", "he", "eh", "hi", "ih", "ho", "oh", "hu", "uh", "hs", "sh",
+		"la", "al", "le", "el", "li", "il", "lo", "ol", "lu", "ul", "ls", "sl",
+		"ka", "ak", "ke", "ek", "ki", "ik", "ko", "ok", "ku", "uk", "ks", "sk",
+		"sa", "as", "se", "es", "si", "is", "so", "os", "su", "us", "ss", "ss",
+		"ra", "ar", "re", "er", "ri", "ir", "ro", "or", "ru", "ur", "rs", "sr",
+		"a",  "a",  "e",  "e",  "i",  "i",  "o",  "o",  "u",  "u",  "s",  "s"
+	)
+	shorthand = "YU"
+
+/datum/language/eyepod
+	name = LANGUAGE_EYEPOD
+	desc = "A complex language known instinctively by Eyepods, 'spoken' by emitting modulated radio waves. This version uses high frequency waves for quick communication at short ranges."
+	speech_verb = "babbles"
+	ask_verb = "babbles curiously"
+	exclaim_verb = "babbles excitedly"
+	colour = "soghun"
+	key = "y"
 	flags = RESTRICTED
+	syllables = list("bi","ki","di","ti","ri","li","si","ki","mi","ni","chi","ee","ii","qi")

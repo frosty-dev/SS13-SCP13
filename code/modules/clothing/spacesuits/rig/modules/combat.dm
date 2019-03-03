@@ -27,14 +27,11 @@
 	origin_tech = list(TECH_COMBAT = 3, TECH_MAGNET = 3, TECH_ENGINEERING = 5)
 
 /obj/item/rig_module/grenade_launcher
-
 	name = "mounted grenade launcher"
 	desc = "A shoulder-mounted micro-explosive dispenser."
 	selectable = 1
 	icon_state = "grenadelauncher"
 	use_power_cost = 2 KILOWATTS	// 2kJ per shot, a mass driver that propels the grenade?
-
-	suit_overlay = "grenade"
 
 	interface_name = "integrated grenade launcher"
 	interface_desc = "Discharges loaded grenades against the wearer's location."
@@ -68,7 +65,6 @@
 		return 0
 
 	to_chat(user, "<font color='blue'><b>You slot \the [input_device] into the suit module.</b></font>")
-	user.drop_from_inventory(input_device)
 	qdel(input_device)
 	accepted_item.charges++
 	return 1
@@ -99,11 +95,13 @@
 	charge.charges--
 	var/obj/item/weapon/grenade/new_grenade = new charge.product_type(get_turf(H))
 	H.visible_message("<span class='danger'>[H] launches \a [new_grenade]!</span>")
+	log_and_message_admins("fired a grenade ([new_grenade.name]) from a rigsuit grenade launcher.")
 	new_grenade.activate(H)
 	new_grenade.throw_at(target,fire_force,fire_distance)
 
 /obj/item/rig_module/grenade_launcher/cleaner
 	name = "mounted cleaning grenade launcher"
+	interface_name = "cleaning grenade launcher"
 	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard cleaning foam grenades."
 
 	charges = list(
@@ -112,6 +110,7 @@
 
 /obj/item/rig_module/grenade_launcher/smoke
 	name = "mounted smoke grenade launcher"
+	interface_name = "smoke grenade launcher"
 	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard smoke grenades."
 
 	charges = list(
@@ -120,10 +119,20 @@
 
 /obj/item/rig_module/grenade_launcher/mfoam
 	name = "mounted foam grenade launcher"
+	interface_name = "foam grenade launcher"
 	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard metal foam grenades."
 
 	charges = list(
 		list("metal foam grenade",   "metal foam grenade",   /obj/item/weapon/grenade/chem_grenade/metalfoam,  4),
+		)
+
+/obj/item/rig_module/grenade_launcher/light
+	name = "mounted illumination grenade launcher"
+	interface_name = "illumination grenade launcher"
+	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard illumination grenades."
+
+	charges = list(
+		list("illumination grenade",   "illumination grenade",   /obj/item/weapon/grenade/light,  6),
 		)
 
 /obj/item/rig_module/mounted
@@ -148,6 +157,7 @@
 	. = ..()
 	if(gun)
 		gun = new gun(src)
+		gun.have_safety = FALSE
 
 /obj/item/rig_module/mounted/engage(atom/target)
 
@@ -244,6 +254,18 @@
 	blade.creator = M
 	M.put_in_hands(blade)
 
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		var/obj/item/weapon/rig/light/ninja/rig
+		for(var/obj/item/weapon/rig/R in H.back)
+			if(istype(R, /obj/item/weapon/rig/light/ninja))
+				rig = R
+		if(rig)
+			for(var/obj/item/rig_module/stealth_field/S in rig.installed_modules)
+				if(S && H.is_cloaked())
+					S.deactivate()
+
+
 /obj/item/rig_module/mounted/energy_blade/deactivate()
 
 	..()
@@ -254,7 +276,6 @@
 		return
 
 	for(var/obj/item/weapon/melee/energy/blade/blade in M.contents)
-		M.drop_from_inventory(blade)
 		qdel(blade)
 
 /obj/item/rig_module/fabricator
@@ -284,7 +305,7 @@
 
 	if(target)
 		var/obj/item/firing = new fabrication_type()
-		firing.forceMove(get_turf(src))
+		firing.dropInto(loc)
 		H.visible_message("<span class='danger'>[H] launches \a [firing]!</span>")
 		firing.throw_at(target,fire_force,fire_distance)
 	else

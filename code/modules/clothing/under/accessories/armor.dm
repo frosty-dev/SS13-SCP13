@@ -2,9 +2,9 @@
 /obj/item/clothing/accessory/storage/pouches
 	name = "storage pouches"
 	desc = "A collection of black pouches that can be attached to a plate carrier. Carries up to two items."
-	icon_override = 'icons/mob/onmob/modular_armor.dmi'
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon_override = 'icons/mob/onmob/onmob_modular_armor.dmi'
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/onmob_modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "pouches"
 	gender = PLURAL
 	slot = ACCESSORY_SLOT_ARMOR_S
@@ -31,6 +31,7 @@
 	desc = "A collection of black pouches that can be attached to a plate carrier. Carries up to four items."
 	icon_state = "lpouches"
 	slots = 4
+	slowdown = 0.6
 
 /obj/item/clothing/accessory/storage/pouches/large/blue
 	desc = "A collection of blue pouches that can be attached to a plate carrier. Carries up to four items."
@@ -52,7 +53,7 @@
 /obj/item/clothing/accessory/armorplate
 	name = "light armor plate"
 	desc = "A basic armor plate made of steel-reinforced synthetic fibers. Attaches to a plate carrier."
-	icon = 'icons/obj/clothing/modular_armor.dmi'
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
 	icon_state = "armor_light"
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO
 	armor = list(melee = 25, bullet = 30, laser = 30, energy = 10, bomb = 25, bio = 0, rad = 0)
@@ -71,21 +72,22 @@
 	name = "tactical armor plate"
 	desc = "A medium armor plate with additional ablative coating. Attaches to a plate carrier."
 	icon_state = "armor_tactical"
-	armor = list(melee = 40, bullet = 40, laser = 60, energy = 35, bomb = 30, bio = 0, rad = 0)
+	armor = list(melee = 50, bullet = 50, laser = 60, energy = 35, bomb = 30, bio = 0, rad = 0)
 
 /obj/item/clothing/accessory/armorplate/merc
 	name = "heavy armor plate"
 	desc = "A ceramics-reinforced synthetic armor plate, providing state of of the art protection. Attaches to a plate carrier."
 	icon_state = "armor_merc"
 	armor = list(melee = 60, bullet = 60, laser = 60, energy = 40, bomb = 40, bio = 0, rad = 0)
+	slowdown = 0.5
 
 //Arm guards
 /obj/item/clothing/accessory/armguards
 	name = "arm guards"
 	desc = "A pair of black arm pads reinforced with armor plating. Attaches to a plate carrier."
-	icon_override = 'icons/mob/onmob/modular_armor.dmi'
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon_override = 'icons/mob/onmob/onmob_modular_armor.dmi'
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/onmob_modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "armguards"
 	gender = PLURAL
 	body_parts_covered = ARMS
@@ -107,6 +109,10 @@
 /obj/item/clothing/accessory/armguards/tan
 	desc = "A pair of tan arm pads reinforced with armor plating. Attaches to a plate carrier."
 	icon_state = "armguards_tan"
+
+/obj/item/clothing/accessory/armguards/tactical
+	desc = "A pair of black arm pads reinforced with additional ablative coating. Attaches to a plate carrier."
+	armor = list(melee = 50, bullet = 50, laser = 60, energy = 35, bomb = 30, bio = 0, rad = 0)
 
 /obj/item/clothing/accessory/armguards/merc
 	name = "heavy arm guards"
@@ -139,9 +145,9 @@
 /obj/item/clothing/accessory/legguards
 	name = "leg guards"
 	desc = "A pair of armored leg pads in black. Attaches to a plate carrier."
-	icon_override = 'icons/mob/onmob/modular_armor.dmi'
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon_override = 'icons/mob/onmob/onmob_modular_armor.dmi'
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/onmob_modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "legguards"
 	gender = PLURAL
 	body_parts_covered = LEGS
@@ -164,6 +170,10 @@
 	desc = "A pair of armored leg pads in tan. Attaches to a plate carrier."
 	icon_state = "legguards_tan"
 
+/obj/item/clothing/accessory/legguards/tactical
+	desc = "A pair of armored leg pads reinforced with additional ablative coating. Attaches to a plate carrier."
+	armor = list(melee = 50, bullet = 50, laser = 60, energy = 35, bomb = 30, bio = 0, rad = 0)
+
 /obj/item/clothing/accessory/legguards/merc
 	name = "heavy leg guards"
 	desc = "A pair of heavily armored leg pads in red-trimmed black. Attaches to a plate carrier."
@@ -176,6 +186,7 @@
 	icon_state = "legguards_riot"
 	armor = list(melee = 75, bullet = 33, laser = 50, energy = 10, bomb = 25, bio = 0, rad = 0)
 	siemens_coefficient = 0.5
+	slowdown = 0.5
 
 /obj/item/clothing/accessory/legguards/ballistic
 	name = "ballistic leg guards"
@@ -183,6 +194,7 @@
 	icon_state = "legguards_ballistic"
 	armor = list(melee = 42, bullet = 75, laser = 42, energy = 10, bomb = 25, bio = 0, rad = 0)
 	siemens_coefficient = 0.7
+	slowdown = 0.5
 
 /obj/item/clothing/accessory/legguards/ablative
 	name = "ablative leg guards"
@@ -190,15 +202,16 @@
 	icon_state = "legguards_ablative"
 	armor = list(melee = 35, bullet = 35, laser = 75, energy = 50, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0
+	slowdown = 0.5
 
 
 //Decorative attachments
 /obj/item/clothing/accessory/armor/tag
 	name = "master armor tag"
 	desc = "A collection of various tags for placing on the front of a plate carrier."
-	icon_override = 'icons/mob/onmob/modular_armor.dmi'
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon_override = 'icons/mob/onmob/onmob_modular_armor.dmi'
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/onmob_modular_armor.dmi', slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "null"
 	slot = ACCESSORY_SLOT_ARMOR_M
 
@@ -266,9 +279,9 @@
 /obj/item/clothing/accessory/armor/helmcover
 	name = "helmet cover"
 	desc = "A fabric cover for armored helmets."
-	icon_override = 'icons/mob/onmob/modular_armor.dmi'
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/modular_armor.dmi', slot_head_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon_override = 'icons/mob/onmob/onmob_modular_armor.dmi'
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	accessory_icons = list(slot_tie_str = 'icons/mob/onmob/onmob_modular_armor.dmi', slot_head_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "null"
 	slot = ACCESSORY_SLOT_HELM_C
 
@@ -293,8 +306,8 @@
 	icon_state = "helmcover_tan"
 
 /obj/item/clothing/accessory/armor/helmcover/nt
-	name = "\improper NanoTrasen helmet cover"
-	desc = "A fabric cover for armored helmets. This one has NanoTrasen's colors."
+	name = "corporate helmet cover"
+	desc = "A fabric cover for armored helmets. This one has corporate colors."
 	icon_state = "helmcover_nt"
 
 /obj/item/clothing/accessory/armor/helmcover/pcrc

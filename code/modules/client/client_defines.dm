@@ -13,8 +13,6 @@
 		//OTHER//
 		/////////
 	var/datum/preferences/prefs = null
-	var/move_delay		= 1
-	var/moving			= null
 	var/adminobs		= null
 
 	var/adminhelped = 0
@@ -26,8 +24,7 @@
 		///////////////
 	var/ambience_playing= null
 	var/played			= 0
-	var/next_scp106_sound = -1
-	var/next_scp012_sound = -1
+
 		////////////
 		//SECURITY//
 		////////////
@@ -47,5 +44,3 @@
 	var/related_accounts_cid = "Requires database"	//So admins know why it isn't working - Used to determine what other accounts previously logged in from this computer id
 
 	preload_rsc = 0 // This is 0 so we can set it to an URL once the player logs in and have them download the resources from a different server.
-	var/obj/screen/click_catcher/list/void = null
-	var/datum/donator/donator_holder = null

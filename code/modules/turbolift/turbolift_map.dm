@@ -23,10 +23,6 @@
 	..()
 
 /obj/turbolift_map_holder/Initialize()
-
-	// this wouldn't stop crashing SSatoms so now its disabled, fuck you - Kachnov
-	set waitfor = FALSE
-
 	. = ..()
 	// Create our system controller.
 	var/datum/turbolift/lift = new()
@@ -92,7 +88,7 @@
 			light_x1 = ux + 1
 			light_y1 = uy + 2
 			light_x2 = ux + lift_size_x - 1
-			light_y2 = uy + lift_size_y - 1
+			light_y2 = uy + lift_size_y - 2
 
 		if(EAST)
 
@@ -167,8 +163,6 @@
 				if(tx >= ux && tx <= ex && ty >= uy && ty <= ey)
 					floor_turfs += checking
 
-				CHECK_TICK
-
 		// Place exterior doors.
 		for(var/tx = door_x1 to door_x2)
 			for(var/ty = door_y1 to door_y2)
@@ -191,8 +185,6 @@
 						cfloor.doors += newdoor
 						newdoor.floor = cfloor
 
-				CHECK_TICK
-
 		// Place exterior control panel.
 		var/turf/placing = locate(ext_panel_x, ext_panel_y, cz)
 		var/obj/structure/lift/button/panel_ext = new(placing, lift)
@@ -203,8 +195,8 @@
 		// Place lights
 		var/turf/placing1 = locate(light_x1, light_y1, cz)
 		var/turf/placing2 = locate(light_x2, light_y2, cz)
-		var/obj/machinery/light/light1 = new(placing1, light)
-		var/obj/machinery/light/light2 = new(placing2, light)
+		var/obj/machinery/light/small/light1 = new(placing1, light)
+		var/obj/machinery/light/small/light2 = new(placing2, light)
 		if(udir == NORTH || udir == SOUTH)
 			light1.set_dir(WEST)
 			light2.set_dir(EAST)
@@ -224,8 +216,6 @@
 		var/area/A = locate(area_path)
 		cfloor.set_area_ref("\ref[A]")
 		az++
-
-		CHECK_TICK
 
 	// Place lift panel.
 	var/turf/T = locate(int_panel_x, int_panel_y, uz)

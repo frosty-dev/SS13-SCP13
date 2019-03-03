@@ -4,13 +4,10 @@
 
 	..()
 
-	if (transforming)
+	if (HasMovementHandler(/datum/movement_handler/mob/transformation/))
 		return
-	
-	if(!loc)
+	if (!loc)
 		return
-
-	var/active = client && client.inactivity < 50
 
 	if(machine && !CanMouseDrop(machine, src))
 		machine = null
@@ -32,17 +29,16 @@
 
 	update_pulling()
 
-	for(var/grab in grabs)
-		var/obj/item/grab/G = grab
+	for(var/obj/item/grab/G in src)
 		G.Process()
 
-	if (active)
-		handle_actions()
+	handle_actions()
 
-	update_canmove()
+	UpdateLyingBuckledAndVerbStatus()
 
-	if (active)
-		handle_regular_hud_updates()
+	handle_regular_hud_updates()
+
+	eye_blink()
 
 	return 1
 
@@ -89,6 +85,7 @@
 	handle_silent()
 	handle_drugged()
 	handle_slurring()
+	handle_confused()
 
 /mob/living/proc/handle_stunned()
 	if(stunned)
@@ -134,6 +131,11 @@
 /mob/living/proc/handle_disabilities()
 	handle_impaired_vision()
 	handle_impaired_hearing()
+
+/mob/living/proc/handle_confused()
+	if(confused)
+		confused = max(0, confused - 1)
+	return confused
 
 /mob/living/proc/handle_impaired_vision()
 	//Eyes

@@ -37,9 +37,26 @@
 	display_name = "camera"
 	path = /obj/item/device/camera
 
+/datum/gear/utility/photo_album
+	display_name = "photo album"
+	path = /obj/item/weapon/storage/photo_album
+
+/datum/gear/utility/film_roll
+	display_name = "film roll"
+	path = /obj/item/device/camera_film
+
 /datum/gear/accessory/stethoscope
 	display_name = "stethoscope (medical)"
 	path = /obj/item/clothing/accessory/stethoscope
+	cost = 2
+
+/datum/gear/utility/pen
+	display_name = "Multicolored Pen"
+	path = /obj/item/weapon/pen/multi
+
+/datum/gear/utility/hand_labeler
+	display_name = "hand labeler"
+	path = /obj/item/weapon/hand_labeler
 	cost = 2
 
 /****************
@@ -74,3 +91,8 @@ modular computers
 	display_name = "laptop computer, advanced"
 	path = /obj/item/modular_computer/laptop/preset/custom_loadout/advanced
 	cost = 6
+
+/datum/gear/utility/wheelchair
+	display_name = "compressed wheelchair kit"
+	path = /obj/item/wheelchair_kit
+	cost = 2

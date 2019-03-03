@@ -1,7 +1,8 @@
 /obj/machinery/beehive
-	name = "beehive"
+	name = "apiary"
 	icon = 'icons/obj/beekeeping.dmi'
-	icon_state = "beehive"
+	icon_state = "beehive-0"
+	desc = "A wooden box designed specifically to house our buzzling buddies. Far more efficient than traditional hives. Just insert a frame and a queen, close it up, and you're good to go!"
 	density = 1
 	anchored = 1
 
@@ -12,9 +13,13 @@
 	var/frames = 0
 	var/maxFrames = 5
 
-/obj/machinery/beehive/update_icon()
+/obj/machinery/beehive/Initialize()
+	. = ..()
+	update_icon()
+
+/obj/machinery/beehive/on_update_icon()
 	overlays.Cut()
-	icon_state = "beehive"
+	icon_state = "beehive-[closed]"
 	if(closed)
 		overlays += "lid"
 	if(frames)
@@ -23,12 +28,16 @@
 		overlays += "full[round(honeycombs / 100)]"
 	if(!smoked)
 		switch(bee_count)
-			if(1 to 40)
+			if(1 to 20)
 				overlays += "bees1"
-			if(41 to 80)
+			if(21 to 40)
 				overlays += "bees2"
-			if(81 to 100)
+			if(41 to 60)
 				overlays += "bees3"
+			if(61 to 80)
+				overlays += "bees4"
+			if(81 to 100)
+				overlays += "bees5"
 
 /obj/machinery/beehive/examine(var/mob/user)
 	. = ..()
@@ -67,7 +76,6 @@
 		++frames
 		user.visible_message("<span class='notice'>\The [user] loads \the [I] into \the [src].</span>", "<span class='notice'>You load \the [I] into \the [src].</span>")
 		update_icon()
-		user.drop_from_inventory(I)
 		qdel(I)
 		return
 	else if(istype(I, /obj/item/bee_pack))
@@ -157,8 +165,8 @@
 /obj/machinery/honey_extractor
 	name = "honey extractor"
 	desc = "A machine used to extract honey and wax from a beehive frame."
-	icon = 'icons/obj/virology.dmi'
-	icon_state = "centrifuge"
+	icon = 'icons/obj/honey_ext_new.dmi'
+	icon_state = "Honey_ext_New"
 	anchored = 1
 	density = 1
 
@@ -176,14 +184,16 @@
 			return
 		user.visible_message("<span class='notice'>\The [user] loads \the [H] into \the [src] and turns it on.</span>", "<span class='notice'>You load \the [H] into \the [src] and turn it on.</span>")
 		processing = H.honey
-		icon_state = "centrifuge_moving"
+		icon = 'icons/obj/honey_ext_new.dmi'
+		icon_state = "Honey_Ext_New_moving"
 		qdel(H)
 		spawn(50)
 			new /obj/item/honey_frame(loc)
 			new /obj/item/stack/wax(loc)
 			honey += processing
 			processing = 0
-			icon_state = "centrifuge"
+			icon = 'icons/obj/honey_ext_new.dmi'
+			icon_state = "Honey_ext_New"
 	else if(istype(I, /obj/item/weapon/reagent_containers/glass))
 		if(!honey)
 			to_chat(user, "<span class='notice'>There is no honey in \the [src].</span>")
@@ -231,9 +241,7 @@
 	if(do_after(user, 30, src))
 		user.visible_message("<span class='notice'>\The [user] constructs a beehive.</span>", "<span class='notice'>You construct a beehive.</span>")
 		new /obj/machinery/beehive(get_turf(user))
-		user.drop_from_inventory(src)
 		qdel(src)
-	return
 
 /obj/item/stack/wax
 	name = "wax"
@@ -241,13 +249,14 @@
 	desc = "Soft substance produced by bees. Used to make candles."
 	icon = 'icons/obj/beekeeping.dmi'
 	icon_state = "wax"
+	max_amount = 60
 
 /obj/item/stack/wax/New()
 	..()
 	recipes = wax_recipes
 
-var/global/list/datum/stack_recipe/wax_recipes = list( \
-	new/datum/stack_recipe("candle", /obj/item/weapon/flame/candle) \
+var/global/list/datum/stack_recipe/wax_recipes = list(
+	new/datum/stack_recipe/candle
 )
 
 /obj/item/bee_pack

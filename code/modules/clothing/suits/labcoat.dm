@@ -27,20 +27,6 @@
 	icon_open = "labcoat_cmoalt_open"
 	icon_closed = "labcoat_cmoalt"
 
-/obj/item/clothing/suit/storage/toggle/labcoat/donators/aptare
-	name = "Dr. Fields' Labcoat"
-	desc = "An augmented CMO labcoat with golden stripes and a name etched into the fabric on the left side; Dr. Matthew Fields."
-	icon_state = "labcoat_aptare_open"
-	icon_open = "labcoat_aptare_open"
-	icon_closed = "labcoat_aptare"
-
-/obj/item/clothing/suit/storage/toggle/labcoat/cmoalt
-	name = "chief medical officer labcoat"
-	desc = "A labcoat with command blue highlights."
-	icon_state = "labcoat_cmoalt_open"
-	icon_open = "labcoat_aptare_open"
-	icon_closed = "labcoat_aptare"
-
 /obj/item/clothing/suit/storage/toggle/labcoat/mad
 	name = "The Mad's labcoat"
 	desc = "It makes you look capable of konking someone on the noggin and shooting them into space."
@@ -50,7 +36,7 @@
 	icon_closed = "labgreen"
 
 /obj/item/clothing/suit/storage/toggle/labcoat/genetics
-	name = "labcoat"
+	name = "Geneticist labcoat"
 	desc = "A suit that protects against minor chemical spills. Has a blue stripe on the shoulder."
 	icon_state = "labcoat_gen_open"
 	icon_open = "labcoat_gen_open"
@@ -70,21 +56,6 @@
 	icon_open = "labcoat_vir_open"
 	icon_closed = "labcoat_vir"
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 60, rad = 0)
-
-/obj/item/clothing/suit/storage/toggle/labcoat/science
-	name = "labcoat"
-	desc = "A suit that protects against minor chemical spills. Has a red stripe on the shoulder and red trim on the sleeves, denoting it as a Sciebtust labcoat."
-	icon_state = "labcoat_nt_open"
-	icon_open = "labcoat_nt_open"
-	icon_closed = "labcoat_nt"
-
-/obj/item/clothing/suit/storage/toggle/labcoat/rd
-	name = "research director's labcoat"
-	desc = "A full-body labcoat covered in red and black designs, denoting it as a Foundation management coat. Judging by the amount of designs on it, it is only to be worn by the most enthusiastic of Foundation employees."
-	icon_state = "labcoat_rd_open"
-	icon_open = "labcoat_rd_open"
-	icon_closed = "labcoat_rd"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
 
 /obj/item/clothing/suit/storage/toggle/labcoat/blue
 	name = "blue-edged labcoat"
@@ -107,35 +78,55 @@
 	armor = list(melee = 10, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 20, rad = 0)
 	species_restricted = list(SPECIES_IPC)
 
-/obj/item/clothing/suit/storage/toggle/labcoat/rd2
-	name = "scientist labcoat"
-	desc = "A full-body labcoat. It has a small Foundation logo on the front."
-	icon_state = "labcoat_rd2_open"
-	icon_open = "labcoat_rd2_open"
-	icon_closed = "labcoat_rd2"
+/obj/item/clothing/suit/storage/toggle/labcoat/science
+	name = "\improper EXO labcoat"
+	desc = "A coat that protects against minor chemical spills. It has a green stripe on the shoulder and green trim on the sleeves, denoting it as a Expeditionary Corps Organisation labcoat."
+	icon_state = "labcoat_TL_open"
+	icon_open = "labcoat_TL_open"
+	icon_closed = "labcoat_TL"
+
+/obj/item/clothing/suit/storage/toggle/labcoat/science/nanotrasen
+	name = "\improper NanoTrasen labcoat"
+	desc = "A suit that protects against minor chemical spills. it has a red stripe on the shoulder and red trim on the sleeves, denoting it as a NanoTrasen labcoat."
+	icon_state = "labcoat_nt_open"
+	icon_open = "labcoat_nt_open"
+	icon_closed = "labcoat_nt"
+
+/obj/item/clothing/suit/storage/toggle/labcoat/science/heph
+	name = "\improper Hephaestus Industries labcoat"
+	desc = "A suit that protects against minor chemical spills. It has a cyan stripe on the shoulder and cyan trim on the sleeves, denoting it as a Hephaestus Industries labcoat."
+	icon_state = "labcoat_heph_open"
+	icon_open = "labcoat_heph_open"
+	icon_closed = "labcoat_heph"
+
+/obj/item/clothing/suit/storage/toggle/labcoat/science/dais
+	name = "\improper DAIS labcoat"
+	desc = "A labcoat with a the logo of Deimos Advanced Information Systems emblazoned on the back. It has a stylish blue \
+	trim and the pockets are reinforced to hold tools. It seems to have an insulated material woven in to prevent static shocks."
+	icon_state = "labcoat_dais"
+	icon_open = "labcoat_dais_open"
+	icon_closed = "labcoat_dais"
+	armor = list(melee = 5, bullet = 0, laser = 0,energy = 5, bomb = 0, bio = 0, rad = 0)//They don't need to protect against the environment very much.
+	siemens_coefficient = 0.5 //These guys work with electronics. DAIS's labcoats shouldn't conduct very well.
+
+/obj/item/clothing/suit/storage/toggle/labcoat/rd
+	name = "research director's labcoat"
+	desc = "A full-body labcoat covered in green and black designs, denoting it as a Expeditionary Corps Organisation management coat. Judging by the amount of designs on it, it is only to be worn by the most enthusiastic of employees."
+	icon_state = "labcoat_rd_open"
+	icon_open = "labcoat_rd_open"
+	icon_closed = "labcoat_rd"
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
-	
-// Donator labcoats
-/obj/item/clothing/suit/storage/toggle/labcoat/flip
-	name = "Alper Flip's labcoat"
-	desc = "A labcoat with a small Foundation logo on the front. The name 'Alper Flip' is sewn into the collar."
-	icon_state = "flip_labcoat_open"
-	icon_open = "flip_labcoat_open"
-	icon_closed = "flip_labcoat_closed"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
-	
-/obj/item/clothing/suit/storage/toggle/labcoat/cmoalt/fields
-	name = "Dr. Fields' labcoat"
-	desc = "A labcoat with a small Foundation logo on the front and a golden outline. The name 'Dr. Matthew Fields' is sewn in on the left-hand side."
-	icon_state = "fields_labcoat_open"
-	icon_open = "fields_labcoat_open"
-	icon_closed = "fields_labcoat_closed"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
-	
-/obj/item/clothing/suit/storage/toggle/labcoat/poehl
-	name = "Dr. Poehl's labcoat"
-	desc = "This dark custom labcoat has blue crosses on either sleeve, and the name tag on the left side front says 'Dr. Poehl'. You can see a few coffee stains on the front. There's a silver Walkman peeking out from one of the front pockets."
-	icon_state = "poehl_labcoat_open"
-	icon_open = "poehl_labcoat_open"
-	icon_closed = "poehl_labcoat_closed"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
+
+/obj/item/clothing/suit/storage/toggle/labcoat/rd/nanotrasen
+	name = "\improper NT research director's labcoat"
+	desc = "A full-body labcoat covered in red and black designs, denoting it as a NanoTrasen management coat. Judging by the amount of designs on it, it is only to be worn by the most enthusiastic of employees."
+	icon_state = "labcoat_rd_nt_open"
+	icon_open = "labcoat_rd_nt_open"
+	icon_closed = "labcoat_rd_nt"
+
+/obj/item/clothing/suit/storage/toggle/labcoat/rd/heph
+	name = "\improper HI research director's labcoat"
+	desc = "A full-body labcoat covered in cyan and black designs, denoting it as a corporate management coat. Judging by the amount of designs on it, it is only to be worn by the most enthusiastic of employees."
+	icon_state = "labcoat_rd_heph_open"
+	icon_open = "labcoat_rd_heph_open"
+	icon_closed = "labcoat_rd_heph"

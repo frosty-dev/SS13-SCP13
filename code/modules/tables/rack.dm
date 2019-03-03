@@ -7,8 +7,6 @@
 	can_reinforce = 0
 	flipped = -1
 
-	material = DEFAULT_TABLE_MATERIAL
-
 /obj/structure/table/rack/New()
 	..()
 	verbs -= /obj/structure/table/verb/do_flip
@@ -24,7 +22,7 @@
 /obj/structure/table/rack/update_desc()
 	return
 
-/obj/structure/table/rack/update_icon()
+/obj/structure/table/rack/on_update_icon()
 	return
 
 /obj/structure/table/rack/can_connect()
@@ -34,41 +32,13 @@
 	to_chat(user, "<span class='warning'>You cannot dismantle \the [src].</span>")
 	return
 
-/obj/structure/table/rack/bograck
-	name = "strange rack"
-	desc ="Must be the color."
-	icon = 'icons/obj/objects.dmi'
-	icon_state = "bograck"
-	can_plate = 0
-	can_reinforce = 0
-	flipped = -1
-
 /obj/structure/table/rack/dark
 	color = COLOR_GRAY40
 
-/obj/structure/table/rack/bog
-	name = "locker room table"
-	desc ="Must be the color."
-	icon = 'icons/obj/objects.dmi'
-	icon_state = "bograck"
-	can_plate = 0
-	can_reinforce = 0
-	flipped = -1
-
-/obj/structure/table/rack/lockerroomtablenorth
-	name = "locker room table"
-	desc = "A nice table that you could tie your shoes on or put your towels on."
-	icon = 'icons/obj/tables.dmi'
-	icon_state = "benchn"
-	can_plate = 0
-	can_reinforce = 0
-	flipped = -1
-
-/obj/structure/table/rack/lockerroomtableeast
-	name = "locker room table"
-	desc = "A nice table that you could tie your shoes on or put your towels on."
-	icon = 'icons/obj/tables.dmi'
-	icon_state = "benche"
-	can_plate = 0
-	can_reinforce = 0
-	flipped = -1
+/obj/structure/table/rack/wooden
+	name = "wooden altar"
+	desc = "A simple wooden altar covered in cloth."
+	icon = 'icons/obj/cult.dmi'
+	icon_state = "churchaltar"
+	color = COLOR_WHITE
+	material = "wood"

@@ -1,5 +1,5 @@
 /obj/item/weapon/gun/energy/ionrifle
-	name = "ion rifle"
+	name = "Mk60 ion rifle"
 	desc = "The NT Mk60 EW Halicon is a man portable anti-armor weapon designed to disable mechanical threats, produced by NT. Not the best of its type."
 	icon_state = "ionrifle"
 	item_state = "ionrifle"
@@ -19,7 +19,7 @@
 	..(max(severity, 2)) //so it doesn't EMP itself, I guess
 
 /obj/item/weapon/gun/energy/ionrifle/small
-	name = "ion pistol"
+	name = "Mk72 ion pistol"
 	desc = "The NT Mk72 EW Preston is a personal defense weapon designed to disable mechanical threats."
 	icon_state = "ionpistol"
 	item_state = "ionpistol"
@@ -62,6 +62,11 @@
 		list(mode_name="induce specific mutations", projectile_type=/obj/item/projectile/energy/floramut/gene, modifystate="floramut"),
 		)
 
+/obj/item/weapon/gun/energy/floragun/resolve_attackby(atom/A)
+	if(istype(A,/obj/machinery/portable_atmospherics/hydroponics))
+		return FALSE // do afterattack, i.e. fire, at pointblank at trays.
+	return ..()
+
 /obj/item/weapon/gun/energy/floragun/afterattack(obj/target, mob/user, adjacent_flag)
 	//allow shooting into adjacent hydrotrays regardless of intent
 	if(adjacent_flag && istype(target,/obj/machinery/portable_atmospherics/hydroponics))
@@ -75,12 +80,12 @@
 	set category = "Object"
 	set src in view(1)
 
-	var/genemask = input("Choose a gene to modify.") as null|anything in plant_controller.plant_gene_datums
+	var/genemask = input("Choose a gene to modify.") as null|anything in SSplants.plant_gene_datums
 
 	if(!genemask)
 		return
 
-	gene = plant_controller.plant_gene_datums[genemask]
+	gene = SSplants.plant_gene_datums[genemask]
 
 	to_chat(usr, "<span class='info'>You set the [src]'s targeted genetic area to [genemask].</span>")
 
@@ -150,11 +155,15 @@
 	origin_tech = null
 	self_recharge = 1
 	charge_meter = 0
+	var/required_antag_type = MODE_WIZARD
+	have_safety = FALSE
 
 /obj/item/weapon/gun/energy/staff/special_check(var/mob/user)
-	if((user.mind && !wizards.is_antagonist(user.mind)))
-		to_chat(usr, "<span class='warning'>You focus your mind on \the [src], but nothing happens!</span>")
-		return 0
+	if(required_antag_type)
+		var/datum/antagonist/antag = get_antag_data(required_antag_type)
+		if(user.mind && !antag.is_antagonist(user.mind))
+			to_chat(usr, "<span class='warning'>You focus your mind on \the [src], but nothing happens!</span>")
+			return 0
 
 	return ..()
 
@@ -168,29 +177,17 @@
 /obj/item/weapon/gun/energy/staff/animate
 	name = "staff of animation"
 	desc = "An artefact that spits bolts of life-force which causes objects which are hit by it to animate and come to life! This magic doesn't affect machines."
+	max_shots = 5
+	recharge_time = 5 SECONDS
 	projectile_type = /obj/item/projectile/animate
-	max_shots = 10
 
-obj/item/weapon/gun/energy/staff/focus
+/obj/item/weapon/gun/energy/staff/focus
 	name = "mental focus"
 	desc = "An artefact that channels the will of the user into destructive bolts of force. If you aren't careful with it, you might poke someone's brain out."
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "focus"
 	item_state = "focus"
-	slot_flags = SLOT_BELT|SLOT_BACK
-	w_class = ITEM_SIZE_LARGE
 	projectile_type = /obj/item/projectile/forcebolt
-	/*
-	attack_self(mob/living/user as mob)
-		if(projectile_type == /obj/item/projectile/forcebolt)
-			charge_cost = 400
-			to_chat(user, "<span class='warning'>The [src.name] will now strike a small area.</span>")
-			projectile_type = /obj/item/projectile/forcebolt/strong
-		else
-			charge_cost = 200
-			to_chat(user, "<span class='warning'>The [src.name] will now strike only a single person.</span>")
-			projectile_type = /obj/item/projectile/forcebolt"
-	*/
 
 /obj/item/weapon/gun/energy/plasmacutter
 	name = "plasma cutter"
@@ -204,7 +201,7 @@ obj/item/weapon/gun/energy/staff/focus
 	w_class = ITEM_SIZE_NORMAL
 	force = 8
 	origin_tech = list(TECH_MATERIAL = 4, TECH_PHORON = 4, TECH_ENGINEERING = 6, TECH_COMBAT = 3)
-	matter = list(DEFAULT_WALL_MATERIAL = 4000)
+	matter = list(MATERIAL_STEEL = 4000)
 	projectile_type = /obj/item/projectile/beam/plasmacutter
 	max_shots = 10
 	self_recharge = 1
@@ -213,3 +210,4 @@ obj/item/weapon/gun/energy/staff/focus
 	name = "mounted plasma cutter"
 	use_external_power = 1
 	max_shots = 4
+	have_safety = FALSE

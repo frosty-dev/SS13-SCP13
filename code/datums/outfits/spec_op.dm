@@ -41,31 +41,30 @@
 	name = "Spec Ops - Death commando"
 
 /decl/hierarchy/outfit/death_command/equip(var/mob/living/carbon/human/H)
-	deathsquad.equip(H)
+	GLOB.deathsquad.equip(H)
 	return 1
 
 /decl/hierarchy/outfit/syndicate_command
 	name = "Spec Ops - Syndicate commando"
 
 /decl/hierarchy/outfit/syndicate_command/equip(var/mob/living/carbon/human/H)
-	commandos.equip(H)
+	GLOB.commandos.equip(H)
 	return 1
 
 /decl/hierarchy/outfit/mercenary
-	name = "Spec Ops - Chaos Insurgency"
-	gloves = /obj/item/clothing/gloves/thick/combat
-	suit = /obj/item/clothing/suit/armor/chaos
-	uniform = /obj/item/clothing/under/ci
-	shoes = /obj/item/clothing/shoes/ci
-	head = /obj/item/clothing/head/helmet/chaos
-	l_ear = /obj/item/device/radio/headset/syndicate
-	belt = /obj/item/weapon/storage/belt/security
+	name = "Spec Ops - Mercenary"
+	uniform = /obj/item/clothing/under/syndicate
+	shoes = /obj/item/clothing/shoes/combat
+	l_ear = /obj/item/device/radio/headset/syndicate/alt
+	belt = /obj/item/weapon/storage/belt/holster/security
+	glasses = /obj/item/clothing/glasses/sunglasses
+	gloves = /obj/item/clothing/gloves/thick/swat
 
-//	l_pocket = /obj/item/weapon/reagent_containers/pill/cyanide
+	l_pocket = /obj/item/weapon/reagent_containers/pill/cyanide
 
 	id_slot = slot_wear_id
 	id_type = /obj/item/weapon/card/id/syndicate
-	id_pda_assignment = "Operative"
+	id_pda_assignment = "Mercenary"
 
 	flags = OUTFIT_HAS_BACKPACK|OUTFIT_RESET_EQUIPMENT
 

@@ -149,7 +149,15 @@
 		return
 
 	if(can_fall())
-		handle_fall(below)
+		// We spawn here to let the current move operation complete before we start falling. fall() is normally called from
+		// Entered() which is part of Move(), by spawn()ing we let that complete.  But we want to preserve if we were in client movement
+		// or normal movement so other move behavior can continue.
+		var/mob/M = src
+		var/is_client_moving = (ismob(M) && M.moving)
+		spawn(0)
+			if(is_client_moving) M.moving = 1
+			handle_fall(below)
+			if(is_client_moving) M.moving = 0
 
 //For children to override
 /atom/movable/proc/can_fall(var/anchor_bypass = FALSE, var/turf/location_override = src.loc)
@@ -159,16 +167,25 @@
 	if(anchored && !anchor_bypass)
 		return FALSE
 
+	var/turf/below = GetBelow(src)
+
 	//Override will make checks from different location used for prediction
 	if(location_override)
-		if(locate(/obj/structure/lattice, location_override) || locate(/obj/structure/catwalk, location_override))
+		if(locate(/obj/structure/lattice, location_override) || locate(/obj/structure/catwalk, location_override) || locate(/obj/structure/ladder, location_override))
 			return FALSE
 
-		var/turf/below = GetBelow(location_override)
+		below = GetBelow(location_override)
 		for(var/atom/A in below)
 			if(!A.CanPass(src, location_override))
 				return FALSE
 
+
+	if(locate(/obj/structure/lattice, loc))
+		return FALSE
+
+	//Ladders too
+	if(below && locate(/obj/structure/ladder) in below)
+		return FALSE
 
 	return TRUE
 
@@ -198,7 +215,7 @@
 		return species.can_fall(src)
 
 /atom/movable/proc/handle_fall(var/turf/landing)
-	Move(landing)
+	forceMove(landing)
 	if(locate(/obj/structure/stairs) in landing)
 		return 1
 	else
@@ -229,14 +246,10 @@
 		return
 
 	..()
-
-	if(!istype(landing, /turf/simulated/open))
-		if(statscheck(dex, 25, 0, src) && !lying)
-			to_chat(src, "<span class = 'notice'>You land softly.</span>")
-			return
-
-	playsound(src.loc, 'sound/effects/trauma2.ogg', 75, 1)//Splat
-	var/damage = 25
+	playsound(loc, pick(GLOB.smash_sound), 50, 1, -1)
+	if(client)
+		shake_camera(src, 7, 0.5)
+	var/damage = 10
 	apply_damage(rand(0, damage), BRUTE, BP_HEAD)
 	apply_damage(rand(0, damage), BRUTE, BP_CHEST)
 	apply_damage(rand(0, damage), BRUTE, BP_L_LEG)

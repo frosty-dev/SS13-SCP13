@@ -1,12 +1,12 @@
 /obj/item/weapon/paper/carbon
-	name = "paper"
+	name = "sheet of paper"
 	icon_state = "paper_stack"
 	item_state = "paper"
-	var copied = 0
-	var iscopy = 0
+	var/copied = 0
+	var/iscopy = 0
 
 
-/obj/item/weapon/paper/carbon/update_icon()
+/obj/item/weapon/paper/carbon/on_update_icon()
 	if(iscopy)
 		if(info)
 			icon_state = "cpaper_words"

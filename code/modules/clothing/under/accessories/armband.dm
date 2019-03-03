@@ -3,8 +3,6 @@
 	desc = "A fancy red armband!"
 	icon_state = "red"
 	slot = ACCESSORY_SLOT_ARMBAND
-	species_restricted = null
-	sprite_sheets = list(SPECIES_NABBER = 'icons/mob/species/nabber/ties.dmi')
 
 /obj/item/clothing/accessory/armband/cargo
 	name = "cargo armband"
@@ -37,7 +35,7 @@
 	icon_state = "medblueband"
 
 /obj/item/clothing/accessory/armband/whitered
-	name = "\improper NanoTrasen armband"
+	name = "\improper corporate armband"
 	desc = "An armband, worn by the crew to display which department they're assigned to. This one is white and red."
 	icon_state = "whitered"
 

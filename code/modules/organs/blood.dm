@@ -41,8 +41,7 @@
 		if(bloodstr.total_volume)
 			var/chem_share = round(0.3 * amt * (bloodstr.total_volume/vessel.total_volume), 0.01)
 			bloodstr.remove_any(chem_share * bloodstr.total_volume)
-		if (!istype(loc, /obj/structure/disposalpipe))
-			blood_splatter(tar, src, (ddir && ddir>0), spray_dir = ddir)
+		blood_splatter(tar, src, (ddir && ddir>0), spray_dir = ddir)
 		return amt
 	return 0
 
@@ -55,14 +54,21 @@
 	var/bled = 0
 	spawn(0)
 		for(var/i = 1 to BLOOD_SPRAY_DISTANCE)
+			var/turf/old_sprayloc = sprayloc
 			sprayloc = get_step(sprayloc, spraydir)
 			if(!istype(sprayloc) || sprayloc.density)
 				break
+			var/hit_dense_obj
 			var/hit_mob
 			for(var/thing in sprayloc)
 				var/atom/A = thing
 				if(!A.simulated)
 					continue
+
+				if(isobj(A))
+					if(A.density == 1)
+						hit_dense_obj = TRUE
+						break
 
 				if(ishuman(A))
 					var/mob/living/carbon/human/H = A
@@ -87,7 +93,11 @@
 				if(hit_mob || !A.CanPass(src, sprayloc))
 					break
 
-			drip(amt, sprayloc, spraydir)
+			if(hit_dense_obj)
+				drip(amt, old_sprayloc, spraydir)
+				sprayloc = old_sprayloc
+			else
+				drip(amt, sprayloc, spraydir)
 			bled += amt
 			if(hit_mob) break
 			sleep(1)
@@ -99,7 +109,10 @@
 		return 0
 	if(!amt)
 		return 0
-	return vessel.remove_reagent(/datum/reagent/blood, amt * (src.mob_size/MOB_MEDIUM))
+
+	amt *= ((src.mob_size/MOB_MEDIUM) ** 0.5)
+
+	return vessel.remove_reagent(/datum/reagent/blood, amt)
 
 /****************************************************
 				BLOOD TRANSFERS
@@ -144,7 +157,7 @@
 	if (injected.data["antibodies"] && prob(5))
 		antibodies |= injected.data["antibodies"]
 	var/list/chems = list()
-	chems = params2list(injected.data["trace_chem"])
+	chems = injected.data["trace_chem"]
 	for(var/C in chems)
 		src.reagents.add_reagent(C, (text2num(chems[C]) / species.blood_volume) * amount)//adds trace chemicals to owner's blood
 	reagents.update_total()
@@ -196,7 +209,8 @@
 		//AB is a universal receiver.
 	return 0
 
-/mob/living/carbon/human/proc/regenerate_blood(amount)
+/mob/living/carbon/human/proc/regenerate_blood(var/amount, var/volume_scale = TRUE)
+	amount *= (species.blood_volume / SPECIES_BLOOD_DEFAULT)
 	var/blood_volume_raw = vessel.get_reagent_amount(/datum/reagent/blood)
 	amount = max(0,min(amount, species.blood_volume - blood_volume_raw))
 	if(amount)
@@ -271,7 +285,7 @@ proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large,var/spra
 /mob/living/carbon/human/proc/get_blood_circulation()
 	var/obj/item/organ/internal/heart/heart = internal_organs_by_name[BP_HEART]
 	var/blood_volume = get_blood_volume()
-	if(!heart || (heart.pulse == PULSE_NONE && !(status_flags & FAKEDEATH) && heart.robotic < ORGAN_ROBOT))
+	if(!heart || (heart.pulse == PULSE_NONE && !(status_flags & FAKEDEATH) && !BP_IS_ROBOTIC(heart)))
 		blood_volume *= 0.25
 	else
 		var/pulse_mod = 1
@@ -283,6 +297,8 @@ proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large,var/spra
 			if(PULSE_2FAST, PULSE_THREADY)
 				pulse_mod *= 1.25
 		blood_volume *= max(0.3, (1-(heart.damage / heart.max_damage))) * pulse_mod
+		if(!heart.open && chem_effects[CE_BLOCKAGE])
+			blood_volume *= max(0, 1-chem_effects[CE_BLOCKAGE])
 	return min(blood_volume, 100)
 
 //Whether the species needs blood to carry oxygen. Used in get_blood_oxygenation and may be expanded based on blood rather than species in the future.
@@ -292,17 +308,16 @@ proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large,var/spra
 //Percentage of maximum blood volume, affected by the condition of circulation organs, affected by the oxygen loss. What ultimately matters for brain
 /mob/living/carbon/human/proc/get_blood_oxygenation()
 	var/blood_volume = get_blood_circulation()
+	if(blood_carries_oxygen())
+		if(is_asystole()) // Heart is missing or isn't beating and we're not breathing (hardcrit)
+			return min(blood_volume, BLOOD_VOLUME_SURVIVE)
 
-	if(is_asystole()) // Heart is missing or isn't beating and we're not breathing (hardcrit)
-		return min(blood_volume, BLOOD_VOLUME_SURVIVE)
-
-	if(!need_breathe())
-		return blood_volume
-
-	if(!blood_carries_oxygen())
+		if(!need_breathe())
+			return blood_volume
+	else
 		blood_volume = 100
 
-	var/blood_volume_mod = max(0, 1 - getOxyLoss()/(maxHealth/2))
+	var/blood_volume_mod = max(0, 1 - getOxyLoss()/(species.total_health/2))
 	var/oxygenated_mult = 0
 	if(chem_effects[CE_OXYGENATED] == 1) // Dexalin.
 		oxygenated_mult = 0.5
@@ -311,3 +326,11 @@ proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large,var/spra
 	blood_volume_mod = blood_volume_mod + oxygenated_mult - (blood_volume_mod * oxygenated_mult)
 	blood_volume = blood_volume * blood_volume_mod
 	return min(blood_volume, 100)
+
+/mob/living/carbon/human/proc/cure_virus(var/virus_uuid)
+	if(vessel && virus_uuid)
+		for(var/datum/reagent/blood/B in vessel.reagent_list)
+			var/list/viruses = list()
+			viruses = B.data["virus2"]
+			viruses.Remove(virus_uuid)
+			B.data["virus2"] = viruses

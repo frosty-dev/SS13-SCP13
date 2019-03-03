@@ -1,29 +1,10 @@
-/obj/item/device/gps
-	name = "relay positioning device"
-	desc = "Triangulates the approximate co-ordinates using a nearby satellite network."
-	icon = 'icons/obj/device.dmi'
-	icon_state = "locator"
-	item_state = "locator"
-	origin_tech = list(TECH_MATERIAL = 2, TECH_DATA = 2, TECH_BLUESPACE = 2)
-	matter = list(DEFAULT_WALL_MATERIAL = 500)
-	w_class = ITEM_SIZE_SMALL
-
-/obj/item/device/gps/attack_self(var/mob/user as mob)
-	var/turf/T = get_turf(src)
-	to_chat(user, "<span class='notice'>\icon[src] \The [src] flashes <i>[T.x]:[T.y]:[T.z]</i>.</span>")
-
-/obj/item/device/gps/examine(var/mob/user)
-	..()
-	var/turf/T = get_turf(src)
-	to_chat(user, "<span class='notice'>\The [src]'s screen shows: <i>[T.x]:[T.y]:[T.z]</i>.</span>")
-
 /obj/item/device/measuring_tape
 	name = "measuring tape"
 	desc = "A coiled metallic tape used to check dimensions and lengths."
 	icon = 'icons/obj/xenoarchaeology.dmi'
 	icon_state = "measuring"
 	origin_tech = list(TECH_MATERIAL = 1)
-	matter = list(DEFAULT_WALL_MATERIAL = 100)
+	matter = list(MATERIAL_STEEL = 100)
 	w_class = ITEM_SIZE_SMALL
 
 /obj/item/weapon/storage/bag/fossils
@@ -56,7 +37,7 @@
 	icon_state = "flashgun"
 	item_state = "lampgreen"
 	origin_tech = list(TECH_BLUESPACE = 3, TECH_MAGNET = 3)
-	matter = list(DEFAULT_WALL_MATERIAL = 10000,"glass" = 5000)
+	matter = list(MATERIAL_STEEL = 10000,MATERIAL_GLASS = 5000)
 	w_class = ITEM_SIZE_SMALL
 	slot_flags = SLOT_BELT
 
@@ -113,7 +94,7 @@
 	icon_state = "crap"
 	item_state = "analyzer"
 	origin_tech = list(TECH_MAGNET = 2, TECH_ENGINEERING = 2, TECH_BLUESPACE = 2)
-	matter = list(DEFAULT_WALL_MATERIAL = 1000,"glass" = 1000)
+	matter = list(MATERIAL_STEEL = 1000,MATERIAL_GLASS = 1000)
 	w_class = ITEM_SIZE_SMALL
 	slot_flags = SLOT_BELT
 	var/list/positive_locations = list()
@@ -140,7 +121,7 @@
 			D.coords = "[M.x]:[M.y]:[M.z]"
 			D.time = stationtime2text()
 			D.record_index = positive_locations.len + 1
-			D.material = M.mineral ? M.mineral.display_name : "Rock"
+			D.material = M.mineral ? M.mineral.ore_name : "Rock"
 
 			//find the first artifact and store it
 			if(M.finds.len)
@@ -170,13 +151,6 @@
 			positive_locations.Add(D)
 
 			to_chat(user, "<span class='notice'>\icon[src] [src] pings [pick("madly","wildly","excitedly","crazily")]!</span>")
-
-	update_interaction_window(user)
-
-/obj/item/device/depth_scanner/proc/update_interaction_window(var/mob/living/user)
-	set waitfor = FALSE
-	if (winexists(user, "depth_scanner") != "" && winget(user, "depth_scanner", "is-visible") == "true")
-		interact(user)
 
 /obj/item/device/depth_scanner/attack_self(var/mob/living/user)
 	interact(user)
@@ -247,7 +221,7 @@
 	var/turf/T = get_turf(src)
 	var/zlevels = GetConnectedZlevels(T.z)
 	var/cur_dist = world.maxx+world.maxy
-	for(var/obj/item/device/radio/beacon/R in global.device_list)
+	for(var/obj/item/device/radio/beacon/R in world)
 		if((R.z in zlevels) && R.frequency == tracking_freq)
 			var/check_dist = get_dist(src,R)
 			if(check_dist < cur_dist)

@@ -65,15 +65,15 @@ note dizziness decrements automatically in the mob's Life() proc.
 	is_jittery = 1
 	while(jitteriness > 100)
 		var/amplitude = min(4, jitteriness / 100)
-		pixel_x = default_pixel_x + rand(-amplitude, amplitude)
-		pixel_y = default_pixel_y + rand(-amplitude/3, amplitude/3)
-
+		do_jitter(amplitude)
 		sleep(1)
 	//endwhile - reset the pixel offsets to zero
 	is_jittery = 0
-	pixel_x = default_pixel_x
-	pixel_y = default_pixel_y
+	do_jitter(0)
 
+/mob/proc/do_jitter(amplitude)
+	pixel_x = default_pixel_x + rand(-amplitude, amplitude)
+	pixel_y = default_pixel_y + rand(-amplitude/3, amplitude/3)
 
 //handles up-down floaty effect in space and zero-gravity
 /mob/var/is_floating = 0
@@ -229,3 +229,12 @@ note dizziness decrements automatically in the mob's Life() proc.
 		return
 	playsound(T, "sparks", 50, 1)
 	anim(T,src,'icons/mob/mob.dmi',,"phaseout",,dir)
+
+/atom/movable/proc/receive_damage(atom/A)
+	var/pixel_x_diff = rand(-2,2)
+	var/pixel_y_diff = rand(-2,2)
+	animate(src, pixel_x = pixel_x + pixel_x_diff, pixel_y = pixel_y + pixel_y_diff, time = 2)
+	animate(pixel_x = initial(pixel_x), pixel_y = initial(pixel_y), time = 2)
+
+/mob/living/receive_damage(atom/A)
+	..()

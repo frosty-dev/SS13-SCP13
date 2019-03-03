@@ -1,19 +1,20 @@
 //admin verb groups - They can overlap if you so wish. Only one of each verb will exist in the verbs list regardless
 var/list/admin_verbs_default = list(
-	/datum/admins/proc/show_player_panel,	//shows an interface for individual players, with various links (links require additional flags,
-	/client/proc/player_panel,
-	/client/proc/secrets,
+//	/client/proc/secrets,
 	/client/proc/deadmin_self,			//destroys our own admin datum so we can play as a regular player,
 	/client/proc/hide_verbs,			//hides all our adminverbs,
+	/client/proc/getserverlog,			//allows us to fetch server logs (diary) for other days,
 	/client/proc/hide_most_verbs,		//hides all our hideable adminverbs,
-	/client/proc/debug_variables,		//allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify,
-	/client/proc/debug_variables2,
-	/client/proc/debug_global_variables,//as above but for global variables,
+//	/client/proc/debug_variables,		//allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify,
+//	/client/proc/watched_variables,
+//	/client/proc/debug_global_variables,//as above but for global variables,
 //	/client/proc/check_antagonists,		//shows all antags,
-	/client/proc/cmd_mentor_check_new_players
 //	/client/proc/deadchat				//toggles deadchat on/off,
 	)
 var/list/admin_verbs_admin = list(
+	/client/proc/cmd_mentor_check_new_players,
+	/datum/admins/proc/show_player_panel,	//shows an interface for individual players, with various links (links require additional flags,
+	/client/proc/player_panel,
 	/client/proc/player_panel_new,		//shows an interface for all players, with links to various panels,
 	/client/proc/invisimin,				//allows our mob to go invisible/visible,
 //	/datum/admins/proc/show_traitor_panel,	//interface which shows a mob's mind, -Removed due to rare practical use. Moved to debug verbs ~Errorage,
@@ -35,7 +36,6 @@ var/list/admin_verbs_admin = list(
 	/client/proc/cmd_admin_check_contents,	//displays the contents of an instance,
 	/datum/admins/proc/access_news_network,	//allows access of newscasters,
 	/client/proc/giveruntimelog,		//allows us to give access to runtime logs to somebody,
-	/client/proc/getserverlog,			//allows us to fetch server logs (diary) for other days,
 	/client/proc/jumptocoord,			//we ghost and jump to a coordinate,
 	/client/proc/Getmob,				//teleports a mob to our location,
 	/client/proc/Getkey,				//teleports a mob with a certain ckey to our location,
@@ -62,7 +62,6 @@ var/list/admin_verbs_admin = list(
 	/client/proc/investigate_show,		//various admintools for investigation. Such as a singulo grief-log,
 	/datum/admins/proc/toggleooc,		//toggles ooc on/off for everyone,
 	/datum/admins/proc/toggleaooc,		//toggles aooc on/off for everyone,
-	/datum/admins/proc/toggledooc,      //toggles dooc on/off for everyone,
 	/datum/admins/proc/togglelooc,		//toggles looc on/off for everyone,
 	/datum/admins/proc/toggleoocdead,	//toggles ooc on/off for everyone who is dead,
 	/datum/admins/proc/toggledsay,		//toggles dsay on/off for everyone,
@@ -72,12 +71,13 @@ var/list/admin_verbs_admin = list(
 	/datum/admins/proc/PlayerNotes,
 	/client/proc/cmd_mod_say,
 	/datum/admins/proc/show_player_info,
-	/client/proc/free_slot,			//frees slot for chosen job,
+	/client/proc/free_slot_submap,
+	/client/proc/free_slot_crew,			//frees slot for chosen job,
 	/client/proc/cmd_admin_change_custom_event,
 	/client/proc/cmd_admin_rejuvenate,
 	/client/proc/toggleghostwriters,
 	/client/proc/toggledrones,
-	/datum/admins/proc/show_skills,
+	///datum/admins/proc/show_skills,
 	/client/proc/check_customitem_activity,
 	/client/proc/man_up,
 	/client/proc/global_man_up,
@@ -94,17 +94,22 @@ var/list/admin_verbs_admin = list(
 	/client/proc/change_security_level,
 	/client/proc/view_chemical_reaction_logs,
 	/client/proc/makePAI,
-	/datum/admins/proc/paralyze_mob,
 	/client/proc/fixatmos,
 	/client/proc/list_traders,
 	/client/proc/add_trader,
 	/client/proc/remove_trader,
-	/datum/admins/proc/sendFax
-)
+	/datum/admins/proc/sendFax,
+	/client/proc/secrets,
+	/client/proc/debug_variables,		//allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify,
+//	/datum/admins/proc/whitelist_panel,
+	/client/proc/debug_global_variables,
+	/client/proc/reestablish_db_connection
+	)
 var/list/admin_verbs_ban = list(
 	/client/proc/unban_panel,
 	/client/proc/jobbans,
-	/client/proc/cmd_admin_cryo
+	/client/proc/DB_ban_panel,
+	/client/proc/stickybanpanel
 	)
 var/list/admin_verbs_sounds = list(
 	/client/proc/play_local_sound,
@@ -114,7 +119,7 @@ var/list/admin_verbs_sounds = list(
 
 var/list/admin_verbs_fun = list(
 	/client/proc/object_talk,
-	/datum/admins/proc/cmd_admin_dress,
+	/client/proc/cmd_admin_dress,
 	/client/proc/cmd_admin_gib_self,
 	/client/proc/drop_bomb,
 	/client/proc/everyone_random,
@@ -130,16 +135,24 @@ var/list/admin_verbs_fun = list(
 	/datum/admins/proc/call_supply_drop,
 	/datum/admins/proc/call_drop_pod,
 	/client/proc/create_dungeon,
-	/datum/admins/proc/ai_hologram_set
+	/datum/admins/proc/ai_hologram_set,
+	/datum/admins/proc/intercom,		//send a fake intercom message, like an arrivals announcement,
+	/datum/admins/proc/intercom_convo,	//send a fake intercom conversation, like an ATC exchange,
+	/datum/admins/proc/pmp_control_panel,
+	/proc/possess,
+	/proc/release
 	)
 
 var/list/admin_verbs_spawn = list(
 	/datum/admins/proc/spawn_fruit,
+	/datum/admins/proc/spawn_fluid_verb,
 	/datum/admins/proc/spawn_custom_item,
 	/datum/admins/proc/check_custom_items,
 	/datum/admins/proc/spawn_plant,
 	/datum/admins/proc/spawn_atom,		// allows us to spawn instances,
+	/client/proc/game_panel,
 	/client/proc/respawn_character,
+	/client/proc/respawn_as_self,
 	/client/proc/virus2_editor,
 	/client/proc/spawn_chemdisp_cartridge
 	)
@@ -147,6 +160,7 @@ var/list/admin_verbs_server = list(
 	/datum/admins/proc/capture_map_part,
 	/client/proc/Set_Holiday,
 	/datum/admins/proc/startnow,
+	/datum/admins/proc/endnow,
 	/datum/admins/proc/restart,
 	/datum/admins/proc/delay,
 	/datum/admins/proc/toggleaban,
@@ -164,13 +178,16 @@ var/list/admin_verbs_server = list(
 	/datum/admins/proc/toggle_space_ninja,
 	/client/proc/toggle_random_events,
 	/client/proc/check_customitem_activity,
-	/client/proc/nanomapgen_DumpImage
+	/client/proc/nanomapgen_DumpImage,
+	/client/proc/cmd_toggle_admin_help,
+	/client/proc/observe_delay
 	)
 var/list/admin_verbs_debug = list(
-	/client/proc/getruntimelog,                     // allows us to access runtime logs to somebody,
+	/client/proc/getruntimelog, // allows us to access runtime logs to somebody,
+	/datum/admins/proc/jump_to_fluid_source,
+	/datum/admins/proc/jump_to_fluid_active,
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
-	/client/proc/kill_air,
 	/client/proc/ZASSettings,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/debug_controller,
@@ -181,7 +198,6 @@ var/list/admin_verbs_debug = list(
 	/client/proc/cmd_debug_tog_aliens,
 	/client/proc/air_report,
 	/client/proc/reload_admins,
-	/client/proc/reload_donators,
 	/client/proc/reload_mentors,
 	/client/proc/restart_controller,
 	/client/proc/print_random_map,
@@ -192,7 +208,6 @@ var/list/admin_verbs_debug = list(
 	/datum/admins/proc/map_template_load,
 	/datum/admins/proc/map_template_load_new_z,
 	/datum/admins/proc/map_template_upload,
-	/client/proc/show_plant_genes,
 	/client/proc/enable_debug_verbs,
 	/client/proc/callproc,
 	/client/proc/callproc_target,
@@ -202,14 +217,17 @@ var/list/admin_verbs_debug = list(
 	/client/proc/jumptomob,
 	/client/proc/jumptocoord,
 	/client/proc/dsay,
-	/client/proc/cmd_dev_say,
 	/datum/admins/proc/run_unit_test,
 	/turf/proc/view_chunk,
 	/turf/proc/update_chunk,
 	/datum/admins/proc/capture_map,
 	/datum/admins/proc/view_runtimes,
+	/client/proc/secrets,
+	/client/proc/debug_variables,		//allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify,
+	/client/proc/debug_global_variables,
 	/client/proc/cmd_analyse_health_context,
 	/client/proc/cmd_analyse_health_panel,
+	/client/proc/reestablish_db_connection,
 	/client/proc/visualpower,
 	/client/proc/visualpower_remove
 	)
@@ -217,8 +235,7 @@ var/list/admin_verbs_debug = list(
 var/list/admin_verbs_paranoid_debug = list(
 	/client/proc/callproc,
 	/client/proc/callproc_target,
-	/client/proc/debug_controller,
-	/client/proc/cmd_dev_say
+	/client/proc/debug_controller
 	)
 
 var/list/admin_verbs_possess = list(
@@ -230,6 +247,9 @@ var/list/admin_verbs_permissions = list(
 	)
 var/list/admin_verbs_rejuv = list(
 	/client/proc/respawn_character
+	)
+var/list/admin_verbs_judge = list(
+	/datum/admins/proc/PlayerNotes
 	)
 
 //verbs which can be hidden - needs work
@@ -259,7 +279,7 @@ var/list/admin_verbs_hideable = list(
 	/client/proc/play_sound,
 	/client/proc/play_server_sound,
 	/client/proc/object_talk,
-	/datum/admins/proc/cmd_admin_dress,
+	/client/proc/cmd_admin_dress,
 	/client/proc/cmd_admin_gib_self,
 	/client/proc/drop_bomb,
 	/client/proc/cinematic,
@@ -289,7 +309,6 @@ var/list/admin_verbs_hideable = list(
 	/client/proc/callproc_target,
 	/client/proc/Debug2,
 	/client/proc/reload_admins,
-	/client/proc/kill_air,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/debug_controller,
 	/client/proc/startSinglo,
@@ -298,16 +317,15 @@ var/list/admin_verbs_hideable = list(
 	/client/proc/cmd_debug_tog_aliens,
 	/client/proc/air_report,
 	/client/proc/enable_debug_verbs,
-	/client/proc/cmd_dev_say,
 	/client/proc/roll_dices,
 	/proc/possess,
-	/proc/release
+	/proc/release,
 	)
 var/list/admin_verbs_mod = list(
 	/client/proc/cmd_admin_pm_context,	// right-click adminPM interface,
 	/client/proc/cmd_admin_pm_panel,	// admin-pm list,
 	/client/proc/debug_variables,		// allows us to -see- the variables of any instance in the game.,
-	/client/proc/debug_variables2,
+	/client/proc/watched_variables,
 	/client/proc/debug_global_variables,// as above but for global variables,
 	/datum/admins/proc/PlayerNotes,
 	/client/proc/admin_ghost,			// allows us to ghost/reenter body at will,
@@ -315,59 +333,28 @@ var/list/admin_verbs_mod = list(
 	/datum/admins/proc/show_player_info,
 	/client/proc/player_panel_new,
 	/client/proc/dsay,
-	/datum/admins/proc/show_skills,
+	///datum/admins/proc/show_skills,
 	/datum/admins/proc/show_player_panel,
 	/client/proc/check_antagonists,
 	/client/proc/cmd_admin_subtle_message, // send an message to somebody as a 'voice in their head',
 	/client/proc/aooc,
 	/datum/admins/proc/sendFax,
-	/client/proc/FRules
-
+	/datum/admins/proc/paralyze_mob,
+	/datum/admins/proc/view_persistent_data
 )
-
 
 var/list/admin_verbs_mentor = list(
 	/client/proc/cmd_admin_pm_context,
 	/client/proc/cmd_admin_pm_panel,
-	/datum/admins/proc/PlayerNotes,
+//	/datum/admins/proc/PlayerNotes,
 	/client/proc/admin_ghost,
 	/client/proc/cmd_mod_say,
-	/datum/admins/proc/show_player_info,
+	/datum/admins/proc/show_skills
+//	/datum/admins/proc/show_player_info,
 //	/client/proc/dsay,
-	/client/proc/cmd_admin_subtle_message,
-	/client/proc/dooc
-)
-/* NEW VARS
-var/list/admin_verbs_mentor = list(
-	/client/proc/cmd_mod_say,
-
-var/list/admin_verbs_trialmod = list(
-	/client/proc/cmd_mod_say,
-
-var/list/admin_verbs_mod = list(
-	/client/proc/cmd_mod_say,
-
-var/list/admin_verbs_trialadmin = list(
-	/client/proc/cmd_mod_say,
-
-var/list/admin_verbs_admin = list(
-	/client/proc/cmd_mod_say,
-
-var/list/admin_verbs_senstaff = list(
-	/client/proc/cmd_mod_say,
-
-var/list/admin_verbs_assdev = list(
-	/client/proc/cmd_dev_say
+//	/client/proc/cmd_admin_subtle_message
 )
 
-var/list/admin_verbs_dev = list(
-	/client/proc/cmd_dev_say
-)
-
-var/list/admin_verbs_sendev = list(
-	/client/proc/cmd_dev_say
-)
-*/
 /client/proc/add_admin_verbs()
 	if(holder)
 		verbs += admin_verbs_default
@@ -380,7 +367,7 @@ var/list/admin_verbs_sendev = list(
 			verbs += admin_verbs_debug
 			if(config.debugparanoid && !(holder.rights & R_ADMIN))
 				verbs.Remove(admin_verbs_paranoid_debug)			//Right now it's just callproc but we can easily add others later on.
-		if(holder.rights & R_POSSESS)		verbs += admin_verbs_possess
+		if(holder.rights & R_JUDGE)	     	verbs += admin_verbs_judge
 		if(holder.rights & R_PERMISSIONS)	verbs += admin_verbs_permissions
 		if(holder.rights & R_STEALTH)		verbs += /client/proc/stealth
 		if(holder.rights & R_REJUVINATE)	verbs += admin_verbs_rejuv
@@ -389,30 +376,6 @@ var/list/admin_verbs_sendev = list(
 		if(holder.rights & R_MOD)			verbs += admin_verbs_mod
 		if(holder.rights & R_MENTOR)		verbs += admin_verbs_mentor
 
-
-// NEW SYSTEM
-/*
-/client/proc/add_admin_verbs()
-	if(holder)
-		verbs += admin_verbs_default
-		if(holder.rights & R_MENTOR)		verbs += admin_verbs_mentor
-		if(holder.rights & R_TRIALMOD)			verbs += admin_verbs_trialmod
-		if(holder.rights & R_MOD)			verbs += admin_verbs_mod
-		if(holder.rights & R_TRIALADMIN)			verbs += admin_verbs_trialadmin
-		if(holder.rights & R_ADMIN)		verbs += admin_verbs_admin
-		if(holder.rights & R_DEBUG)
-			verbs += admin_verbs_debug
-			if(config.debugparanoid && !(holder.rights & R_ADMIN))
-				verbs.Remove(admin_verbs_paranoid_debug)			//Right now it's just callproc but we can easily add others later on.
-		if(holder.rights & R_SENSTAFF)		verbs += admin_verbs_possess
-		if(holder.rights & R_PERMISSIONS)	verbs += admin_verbs_permissions
-		if(holder.rights & R_STEALTH)		verbs += /client/proc/stealth
-		if(holder.rights & R_REJUVINATE)	verbs += admin_verbs_rejuv
-		if(holder.rights & R_SOUNDS)		verbs += admin_verbs_sounds
-		if(holder.rights & R_ASSDEV)			verbs += admin_verbs_assdev
-		if(holder.rights & R_DEV)			verbs += admin_verbs_dev
-		if(holder.rights & R_SENDEV)		verbs += admin_verbs_sendev
-*/
 /client/proc/remove_admin_verbs()
 	verbs.Remove(
 		admin_verbs_default,
@@ -491,6 +454,7 @@ var/list/admin_verbs_sendev = list(
 		var/mob/body = mob
 		var/mob/observer/ghost/ghost = body.ghostize(1)
 		ghost.admin_ghosted = 1
+		log_admin("[key_name(usr)] used aghost.")
 		if(body)
 			body.teleop = ghost
 			if(!body.key)
@@ -518,6 +482,7 @@ var/list/admin_verbs_sendev = list(
 	set category = "Admin"
 	if(holder)
 		holder.player_panel_old()
+		log_admin("[key_name(usr)] opened old player panel.")
 	feedback_add_details("admin_verb","PP") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	return
 
@@ -526,6 +491,7 @@ var/list/admin_verbs_sendev = list(
 	set category = "Admin"
 	if(holder)
 		holder.player_panel_new()
+		log_admin("[key_name(usr)] opened player panel.")
 	feedback_add_details("admin_verb","PPN") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	return
 
@@ -579,7 +545,7 @@ var/list/admin_verbs_sendev = list(
 /client/proc/colorooc()
 	set category = "Fun"
 	set name = "OOC Text Color"
-	if(!can_select_ooc_color(src))	return
+	if(!holder)	return
 	var/response = alert(src, "Please choose a distinct color that is easy to read and doesn't mix with all the other chat and radio frequency colors.", "Change own OOC color", "Pick new color", "Reset to default", "Cancel")
 	if(response == "Pick new color")
 		prefs.ooccolor = input(src, "Please select your OOC colour.", "OOC colour") as color
@@ -604,7 +570,7 @@ var/list/admin_verbs_sendev = list(
 	var/datum/preferences/D
 	var/client/C = GLOB.ckey_directory[warned_ckey]
 	if(C)	D = C.prefs
-	else	D = preferences_datums[warned_ckey]
+	else	D = SScharacter_setup.preferences_datums[warned_ckey]
 
 	if(!D)
 		to_chat(src, "<font color='red'>Error: warn(): No such ckey found.</font>")
@@ -613,19 +579,19 @@ var/list/admin_verbs_sendev = list(
 	if(++D.warns >= MAX_WARNS)					//uh ohhhh...you'reee iiiiin trouuuubble O:)
 		ban_unban_log_save("[ckey] warned [warned_ckey], resulting in a [AUTOBANTIME] minute autoban.")
 		if(C)
-			message_admins("[key_name_admin(src)] has warned [key_name_admin(C)] resulting in a [AUTOBANTIME] minute ban.")
+			message_admins("[key_name_admin(src, 0)] has warned [key_name_admin(C)] resulting in a [AUTOBANTIME] minute ban.")
 			to_chat(C, "<font color='red'><BIG><B>You have been autobanned due to a warning by [ckey].</B></BIG><br>This is a temporary ban, it will be removed in [AUTOBANTIME] minutes.</font>")
 			qdel(C)
 		else
-			message_admins("[key_name_admin(src)] has warned [warned_ckey] resulting in a [AUTOBANTIME] minute ban.")
+			message_admins("[key_name_admin(src, 0)] has warned [warned_ckey] resulting in a [AUTOBANTIME] minute ban.")
 		AddBan(warned_ckey, D.last_id, "Autobanning due to too many formal warnings", ckey, 1, AUTOBANTIME)
 		feedback_inc("ban_warn",1)
 	else
 		if(C)
-			to_chat(C, "<font color='red'><BIG><B>You have been formally warned by an administrator.</B></BIG><br>Further warnings will result in an autoban.</font>")
-			message_admins("[key_name_admin(src)] has warned [key_name_admin(C)]. They have [MAX_WARNS-D.warns] strikes remaining.")
+			to_chat(C, "<font color='red'><BIG><B>Вы были формально предупреждены администратором [key_name_admin(src, 0)].</B></BIG><br>Дальнейшие предупреждени&#255; приведут к автобану.</font>")
+			message_admins("[key_name_admin(src, 0)] has warned [key_name_admin(C)]. They have [MAX_WARNS-D.warns] strikes remaining.")
 		else
-			message_admins("[key_name_admin(src)] has warned [warned_ckey] (DC). They have [MAX_WARNS-D.warns] strikes remaining.")
+			message_admins("[key_name_admin(src, 0)] has warned [warned_ckey] (DC). They have [MAX_WARNS-D.warns] strikes remaining.")
 
 	feedback_add_details("admin_verb","WARN") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
@@ -658,7 +624,7 @@ var/list/admin_verbs_sendev = list(
 	log_and_message_admins("created an admin explosion at [epicenter.loc].")
 	feedback_add_details("admin_verb","DB") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
-/client/proc/give_disease2(mob/T as mob in GLOB.mob_list) // -- Giacom
+/client/proc/give_disease2(mob/T as mob in SSmobs.mob_list) // -- Giacom
 	set category = "Fun"
 	set name = "Give Disease"
 	set desc = "Gives a Disease to a mob."
@@ -712,19 +678,6 @@ var/list/admin_verbs_sendev = list(
 		for (var/mob/V in hearers(mob.control_object))
 			V.show_message("<b>[mob.control_object.name]</b> says: \"" + msg + "\"", 2)
 	feedback_add_details("admin_verb","OT") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
-/client/proc/kill_air() // -- TLE
-	set category = "Debug"
-	set name = "Kill Air"
-	set desc = "Toggle Air Processing"
-	if(SSsetup.air_processing_killed)
-		SSsetup.air_processing_killed = 0
-		to_chat(usr, "<b>Enabled air processing.</b>")
-	else
-		SSsetup.air_processing_killed = 1
-		to_chat(usr, "<b>Disabled air processing.</b>")
-	feedback_add_details("admin_verb","KA") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-	log_and_message_admins("used 'kill air'.")
 
 /client/proc/readmin_self()
 	set name = "Re-Admin self"
@@ -936,13 +889,37 @@ var/list/admin_verbs_sendev = list(
 		holder.PlayerNotes()
 	return
 
-/client/proc/free_slot()
-	set name = "Free Job Slot"
+/client/proc/free_slot_submap()
+	set name = "Free Job Slot (Submap)"
+	set category = "Admin"
+	if(!holder) return
+
+	var/list/jobs = list()
+	for(var/thing in SSmapping.submaps)
+		var/datum/submap/submap = thing
+		for(var/otherthing in submap.jobs)
+			var/datum/job/submap/job = submap.jobs[otherthing]
+			if(!job.is_position_available())
+				jobs["[job.title] - [submap.name]"] = job
+
+	if(!LAZYLEN(jobs))
+		to_chat(usr, "There are no fully staffed offsite jobs.")
+		return
+
+	var/job_name = input("Please select job slot to free", "Free job slot")  as null|anything in jobs
+	if(job_name)
+		var/datum/job/submap/job = jobs[job_name]
+		if(istype(job) && !job.is_position_available())
+			job.make_position_available()
+			message_admins("An offsite job slot for [job_name] has been opened by [key_name_admin(usr)]")
+
+/client/proc/free_slot_crew()
+	set name = "Free Job Slot (Crew)"
 	set category = "Admin"
 	if(holder)
 		var/list/jobs = list()
 		for (var/datum/job/J in job_master.occupations)
-			if (J.current_positions >= J.total_positions && J.total_positions != -1)
+			if(!J.is_position_available())
 				jobs += J.title
 		if (!jobs.len)
 			to_chat(usr, "There are no fully staffed jobs.")
@@ -981,13 +958,13 @@ var/list/admin_verbs_sendev = list(
 			to_chat(src, "<b>Enabled maint drones.</b>")
 			message_admins("Admin [key_name_admin(usr)] has enabled maint drones.", 1)
 
-/client/proc/man_up(mob/T as mob in GLOB.mob_list)
+/client/proc/man_up(mob/T as mob in SSmobs.mob_list)
 	set category = "Fun"
 	set name = "Man Up"
 	set desc = "Tells mob to man up and deal with it."
 
-	to_chat(T, "<span class='notice'><b><font size=3>Man up and deal with it.</font></b></span>")
-	to_chat(T, "<span class='notice'>Move on.</span>")
+	to_chat(T, "<span class='notice'><b><font size=3>Возьми себ&#255; в руки и реши проблему.</font></b></span>")
+	to_chat(T, "<span class='notice'>Начни сейчас.</span>")
 
 	log_and_message_admins("told [key_name(T)] to man up and deal with it.")
 
@@ -996,13 +973,13 @@ var/list/admin_verbs_sendev = list(
 	set name = "Man Up Global"
 	set desc = "Tells everyone to man up and deal with it."
 
-	for (var/mob/T as mob in GLOB.mob_list)
-		to_chat(T, "<br><center><span class='notice'><b><font size=4>Man up.<br> Deal with it.</font></b><br>Move on.</span></center><br>")
+	for (var/mob/T as mob in SSmobs.mob_list)
+		to_chat(T, "<br><center><span class='notice'><b><font size=4>Возьми себ&#255; в руки.<br> Решай проблемы.</font></b><br>Начни сейчас.</span></center><br>")
 		sound_to(T, 'sound/voice/ManUp1.ogg')
 
 	log_and_message_admins("told everyone to man up and deal with it.")
 
-/client/proc/give_spell(mob/T as mob in GLOB.mob_list) // -- Urist
+/client/proc/give_spell(mob/T as mob in SSmobs.mob_list) // -- Urist
 	set category = "Fun"
 	set name = "Give Spell"
 	set desc = "Gives a spell to a mob."
@@ -1011,3 +988,20 @@ var/list/admin_verbs_sendev = list(
 	T.add_spell(new S)
 	feedback_add_details("admin_verb","GS") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	log_and_message_admins("gave [key_name(T)] the spell [S].")
+
+/client/proc/observe_delay()
+	set name = "Change roundstart observe delay"
+	set category = "Server"
+
+	if(!holder)
+		return
+
+	var/oldtime = config.observe_delay
+	var/newtime = input("Set a new time. Its must be in MINUTES (not in seconds/byond tick). Set 0 to remove delay.", "Set Delay") as num|null
+
+	if(newtime <= 0)
+		message_admins("Admin [key_name_admin(usr)] has disabled observe delay.", 1)
+	else
+		message_admins("Admin [key_name_admin(usr)] has changed observe delay from [oldtime] to [newtime] minutes.", 1)
+
+	config.observe_delay = newtime

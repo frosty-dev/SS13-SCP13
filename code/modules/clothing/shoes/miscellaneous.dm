@@ -39,21 +39,6 @@
 	heat_protection = FEET
 	max_heat_protection_temperature = SHOE_MAX_HEAT_PROTECTION_TEMPERATURE
 
-/obj/item/clothing/shoes/ci
-	name = "tactical boots"
-	desc = "Standard issue tactical boots."
-	icon_state = "tac_boots"
-	force = 5
-	armor = list(melee = 80, bullet = 60, laser = 60,energy = 25, bomb = 50, bio = 10, rad = 0)
-	item_flags = ITEM_FLAG_NOSLIP
-	siemens_coefficient = 0.6
-	can_hold_knife = 1
-
-	cold_protection = FEET
-	min_cold_protection_temperature = SHOE_MIN_COLD_PROTECTION_TEMPERATURE
-	heat_protection = FEET
-	max_heat_protection_temperature = SHOE_MAX_HEAT_PROTECTION_TEMPERATURE
-
 /obj/item/clothing/shoes/jungleboots
 	name = "jungle boots"
 	desc = "A pair of durable brown boots. Waterproofed for use planetside."
@@ -193,3 +178,9 @@
 	name = "athletic shoes"
 	desc = "A pair of sleek atheletic shoes. Made by and for the sporty types."
 	icon_state = "sportshoe"
+
+/obj/item/clothing/shoes/laceup/sneakies
+	desc = "The height of fashion, and they're pre-polished. Upon further inspection, the soles appear to be on backwards. They look uncomfortable."
+	species_restricted = list(SPECIES_HUMAN, SPECIES_IPC)
+	move_trail = /obj/effect/decal/cleanable/blood/tracks/footprints/reversed
+	item_flags = ITEM_FLAG_SILENT

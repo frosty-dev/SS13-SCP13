@@ -50,6 +50,7 @@
 	item_state = "bgloves"
 	siemens_coefficient = 0.50
 	permeability_coefficient = 0.05
+	item_flags = ITEM_FLAG_THICKMATERIAL
 
 	cold_protection = HANDS
 	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECTION_TEMPERATURE
@@ -79,14 +80,6 @@
 	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECTION_TEMPERATURE
 	heat_protection = HANDS
 	max_heat_protection_temperature = GLOVES_MAX_HEAT_PROTECTION_TEMPERATURE
-
-/obj/item/clothing/gloves/thick/bggloves
-	desc = "Thick tactical gloves, commonly worn by security forces."
-	name = "\improper tactical gloves"
-	icon_state = "wear-gloves"
-	item_state = "bg_gloves"
-	force = 5
-	armor = list(melee = 80, bullet = 60, laser = 60,energy = 25, bomb = 50, bio = 10, rad = 0)
 
 /obj/item/clothing/gloves/thick/botany
 	desc = "These leather work gloves protect against thorns, barbs, prickles, spikes and other harmful objects of floral origin."
@@ -139,16 +132,6 @@
 	permeability_coefficient = 0.05
 	armor = list(melee = 30, bullet = 10, laser = 10, energy = 15, bomb = 20, bio = 0, rad = 0)
 
-/obj/item/clothing/gloves/tactical/scp
-	desc = "These grey tactical gloves are made from a durable synthetic, and have hardened knuckles."
-	name = "tactical gloves"
-	icon_state = "G_Gloves_IH"
-	item_state = "G_Gloves_OM"
-	force = 5
-	siemens_coefficient = 0.50
-	permeability_coefficient = 0.05
-	armor = list(melee = 30, bullet = 10, laser = 10, energy = 15, bomb = 20, bio = 0, rad = 0)
-
 /obj/item/clothing/gloves/guards
 	desc = "A pair of synthetic gloves and arm pads reinforced with armor plating."
 	name = "arm guards"
@@ -160,14 +143,3 @@
 	permeability_coefficient = 0.03
 	armor = list(melee = 40, bullet = 40, laser = 40, energy = 25, bomb = 30, bio = 0, rad = 0)
 
-/obj/item/clothing/gloves/rubber
-	desc = "Heavy black gloves designed to protect the wearer from hazards."
-	name = "rubber gloves"
-	icon_state = "rubber_gloves"
-	item_state = "rubber_gloves"
-	body_parts_covered = HANDS
-	w_class = ITEM_SIZE_NORMAL
-	siemens_coefficient = 0
-	permeability_coefficient = 0.05
-	germ_level = 0
-	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 90, rad = 90)

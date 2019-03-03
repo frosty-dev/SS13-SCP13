@@ -1,23 +1,18 @@
-var/datum/antagonist/deathsquad/mercenary/commandos
+GLOBAL_DATUM_INIT(commandos, /datum/antagonist/deathsquad/mercenary, new)
 
 /datum/antagonist/deathsquad/mercenary
 	id = MODE_COMMANDO
 	landmark_id = "Syndicate-Commando"
-	role_text = "Chaos Commando"
-	role_text_plural = "Chaos Commandos"
-	welcome_text = "You are in the employ of the Chaos Insurgency, hostile to Foundation interests."
-	id_type = /obj/item/weapon/card/id/centcom/ERT
+	role_text = "Syndicate Commando"
+	role_text_plural = "Commandos"
+	welcome_text = "You are in the employ of a criminal syndicate hostile to corporate interests."
+	id_type = /obj/item/weapon/card/id/syndicate_command
 	flags = ANTAG_RANDOM_EXCEPTED
 
 	hard_cap = 4
 	hard_cap_round = 8
 	initial_spawn_req = 4
 	initial_spawn_target = 6
-
-
-/datum/antagonist/deathsquad/mercenary/New()
-	..(1)
-	commandos = src
 
 /datum/antagonist/deathsquad/mercenary/equip(var/mob/living/carbon/human/player)
 
@@ -30,7 +25,8 @@ var/datum/antagonist/deathsquad/mercenary/commandos
 	player.equip_to_slot_or_del(new /obj/item/ammo_magazine/box/c45(player), slot_in_backpack)
 	player.equip_to_slot_or_del(new /obj/item/weapon/rig/merc(player), slot_back)
 	player.equip_to_slot_or_del(new /obj/item/weapon/gun/energy/pulse_rifle(player), slot_r_hand)
+	player.equip_to_slot_or_del(new /obj/item/weapon/melee/energy/sword(player), slot_l_hand)
 
-	create_id("Chaos Commando", player)
+	create_id("Commando", player)
 	create_radio(SYND_FREQ, player)
 	return 1

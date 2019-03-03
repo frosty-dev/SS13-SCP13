@@ -100,7 +100,7 @@
 	for(var/obj/machinery/power/terminal/T in terminals)
 		T.master = null
 	terminals = null
-	for(var/datum/nano_module/rcon/R in global.nano_module_list)
+	for(var/datum/nano_module/rcon/R in world)
 		R.FindDevices()
 	return ..()
 
@@ -316,7 +316,7 @@
 // Proc: update_icon()
 // Parameters: None
 // Description: Allows us to use special icon overlay for critical SMESs
-/obj/machinery/power/smes/buildable/update_icon()
+/obj/machinery/power/smes/buildable/on_update_icon()
 	if (failing)
 		overlays.Cut()
 		overlays += image('icons/obj/power.dmi', "smes-crit")
@@ -390,11 +390,10 @@
 				if (failure_probability && prob(failure_probability))
 					total_system_failure(failure_probability, user)
 					return
-
+				if(!user.unEquip(W, src))
+					return
 				to_chat(usr, "You install the coil into the SMES unit!")
-				user.drop_item()
 				component_parts += W
-				W.forceMove(src)
 				recalc_coils()
 			else
 				to_chat(usr, "<span class='warning'>You can't insert more coils to this SMES unit!</span>")

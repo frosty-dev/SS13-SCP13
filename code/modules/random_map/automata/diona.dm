@@ -44,7 +44,7 @@
 			existing.growth = new_growth
 			existing.update_icon()
 
-/obj/structure/diona/vines/update_icon()
+/obj/structure/diona/vines/on_update_icon()
 	icon_state = "vines[growth]"
 
 /obj/structure/diona/bulb
@@ -54,7 +54,7 @@
 
 /obj/structure/diona/bulb/New(var/newloc)
 	..()
-	set_light(3,3,"#557733")
+	set_light(0.3, 0.1, 3, 2, "#557733")
 
 /datum/random_map/automata/diona
 	iterations = 3

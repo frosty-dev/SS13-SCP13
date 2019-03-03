@@ -70,7 +70,6 @@
 /obj/structure/closet/jcloset_torch/WillContain()
 	return list(
 		/obj/item/device/radio/headset/headset_service,
-		/obj/item/weapon/cartridge/janitor,
 		/obj/item/clothing/gloves/thick,
 		/obj/item/device/flashlight,
 		/obj/item/weapon/caution = 4,

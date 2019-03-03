@@ -14,9 +14,10 @@
 	var/allowed_directions = DOWN
 	var/obj/structure/ladder/target_up
 	var/obj/structure/ladder/target_down
+	var/base_icon = "ladder"
 
 	var/const/climb_time = 2 SECONDS
-	var/static/list/climbsounds = list('sound/effects/ladder.ogg','sound/effects/ladder2.ogg','sound/effects/ladder3.ogg','sound/effects/ladder4.ogg')
+	var/static/list/climbsounds = list('sound/effects/ladder.ogg', 'sound/effects/ladder2.ogg', 'sound/effects/ladder3.ogg', 'sound/effects/ladder4.ogg')
 
 /obj/structure/ladder/Initialize()
 	. = ..()
@@ -26,6 +27,8 @@
 			if(L.allowed_directions & UP)
 				target_down = L
 				L.target_up = src
+				var/turf/T = get_turf(src)
+				T.ReplaceWithLattice()
 				return
 	update_icon()
 
@@ -55,21 +58,23 @@
 /obj/structure/ladder/attack_robot(var/mob/M)
 	climb(M)
 
+/obj/structure/ladder/attack_generic(var/mob/user, var/damage)
+	climb(user)
+
 /obj/structure/ladder/proc/instant_climb(var/mob/M)
-	var/target_ladder = getTargetLadder(M)
+	var/atom/target_ladder = getTargetLadder(M)
 	if(target_ladder)
-		M.forceMove(get_turf(target_ladder))
+		M.dropInto(target_ladder.loc)
 
 /obj/structure/ladder/proc/climb(var/mob/M)
 	if(!M.may_climb_ladders(src))
 		return
 
+	add_fingerprint(M)
 	var/obj/structure/ladder/target_ladder = getTargetLadder(M)
 	if(!target_ladder)
 		return
-
-	// hacky istype() code to fix a mysterious bug with this and SCPs
-	if(!M.Move(get_turf(src)) && !isscp106(M) && !isscp049(M))
+	if(!M.Move(get_turf(src)))
 		to_chat(M, "<span class='notice'>You fail to reach \the [src].</span>")
 		return
 
@@ -93,7 +98,7 @@
 	instant_climb(M)
 
 /obj/structure/ladder/proc/getTargetLadder(var/mob/M)
-	if((!target_up && !target_down) || (target_up && !istype(target_up.loc, /turf) || (target_down && !istype(target_down.loc,/turf))))
+	if((!target_up && !target_down) || (target_up && !istype(target_up.loc, /turf/simulated/open) || (target_down && !istype(target_down.loc, /turf))))
 		to_chat(M, "<span class='notice'>\The [src] is incomplete and can't be climbed.</span>")
 		return
 	if(target_down && target_up)
@@ -150,8 +155,8 @@
 /obj/structure/ladder/CanPass(obj/mover, turf/source, height, airflow)
 	return airflow || !density
 
-/obj/structure/ladder/update_icon()
-	icon_state = "ladder[!!(allowed_directions & UP)][!!(allowed_directions & DOWN)]"
+/obj/structure/ladder/on_update_icon()
+	icon_state = "[base_icon][!!(allowed_directions & UP)][!!(allowed_directions & DOWN)]"
 
 /obj/structure/ladder/up
 	allowed_directions = UP
@@ -162,7 +167,7 @@
 	icon_state = "ladder11"
 
 /obj/structure/stairs
-	name = "Stairs"
+	name = "stairs"
 	desc = "Stairs leading to another deck.  Not too useful if the gravity goes out."
 	icon = 'icons/obj/stairs.dmi'
 	density = 0
@@ -171,30 +176,33 @@
 	plane = ABOVE_TURF_PLANE
 	layer = RUNE_LAYER
 
-	Initialize()
-		for(var/turf/turf in locs)
-			var/turf/simulated/open/above = GetAbove(turf)
-			if(!above)
-				warning("Stair created without level above: ([loc.x], [loc.y], [loc.z])")
-				return INITIALIZE_HINT_QDEL
-			if(!istype(above))
-				above.ChangeTurf(/turf/simulated/open)
-		. = ..()
+/obj/structure/stairs/Initialize()
+	for(var/turf/turf in locs)
+		var/turf/simulated/open/above = GetAbove(turf)
+		if(!above)
+			warning("Stair created without level above: ([loc.x], [loc.y], [loc.z])")
+			return INITIALIZE_HINT_QDEL
+		if(!istype(above))
+			above.ChangeTurf(/turf/simulated/open)
+	. = ..()
 
 /obj/structure/stairs/CheckExit(atom/movable/mover as mob|obj, turf/target as turf)
 	if(get_dir(loc, target) == dir && upperStep(mover.loc))
 		return FALSE
-	. = ..()
+	return ..()
 
 /obj/structure/stairs/Bumped(atom/movable/A)
-	// This is hackish but whatever.
 	var/turf/target = get_step(GetAbove(A), dir)
-	if(target.Enter(A, src)) // Pass src to be ignored to avoid infinate loop
+	var/turf/source = A.loc
+	var/turf/above = GetAbove(A)
+	if(above.CanZPass(source, UP) && target.Enter(A, src))
 		A.forceMove(target)
 		if(isliving(A))
 			var/mob/living/L = A
 			if(L.pulling)
 				L.pulling.forceMove(target)
+	else
+		to_chat(A, "<span class='warning'>Something blocks the path.</span>")
 
 /obj/structure/stairs/proc/upperStep(var/turf/T)
 	return (T == loc)
@@ -202,7 +210,7 @@
 /obj/structure/stairs/CanPass(obj/mover, turf/source, height, airflow)
 	return airflow || !density
 
-	// type paths to make mapping easier.
+// type paths to make mapping easier.
 /obj/structure/stairs/north
 	dir = NORTH
 	bound_height = 64

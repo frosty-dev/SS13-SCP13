@@ -1,6 +1,6 @@
 /proc/count_drones()
 	var/drones = 0
-	for(var/mob/living/silicon/robot/drone/D in GLOB.silicon_mob_list)
+	for(var/mob/living/silicon/robot/drone/D in world)
 		if(D.key && D.client)
 			drones++
 	return drones
@@ -40,7 +40,7 @@
 
 /obj/machinery/drone_fabricator/Process()
 
-	if(ticker.current_state < GAME_STATE_PLAYING)
+	if(GAME_STATE < RUNLEVEL_GAME)
 		return
 
 	if(stat & NOPOWER || !produce_drones)
@@ -95,7 +95,7 @@
 
 /proc/try_drone_spawn(var/mob/user, var/obj/machinery/drone_fabricator/fabricator)
 
-	if(ticker.current_state < GAME_STATE_PLAYING)
+	if(GAME_STATE < RUNLEVEL_GAME)
 		to_chat(user, "<span class='danger'>The game hasn't started yet!</span>")
 		return
 
@@ -103,7 +103,7 @@
 		to_chat(user, "<span class='danger'>That verb is not currently permitted.</span>")
 		return
 
-	if(jobban_isbanned(user,"Cyborg"))
+	if(jobban_isbanned(user,"Robot"))
 		to_chat(user, "<span class='danger'>You are banned from playing synthetics and cannot spawn as a drone.</span>")
 		return
 
@@ -118,7 +118,7 @@
 	if(!fabricator)
 
 		var/list/all_fabricators = list()
-		for(var/obj/machinery/drone_fabricator/DF in SSmachines.all_machinery)
+		for(var/obj/machinery/drone_fabricator/DF in SSmachines.machinery)
 			if((DF.stat & NOPOWER) || !DF.produce_drones || DF.drone_progress < 100)
 				continue
 			all_fabricators[DF.fabricator_tag] = DF

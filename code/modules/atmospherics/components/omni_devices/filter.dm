@@ -99,7 +99,7 @@
 
 	data = build_uidata()
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 
 	if (!ui)
 		ui = new(user, src, ui_key, "omni_filter.tmpl", "Omni Filter Control", 330, 330)
@@ -120,22 +120,22 @@
 
 		var/input = 0
 		var/output = 0
-		var/filter = 1
+		var/is_filter = 1
 		var/f_type = null
 		switch(P.mode)
 			if(ATM_INPUT)
 				input = 1
-				filter = 0
+				is_filter = 0
 			if(ATM_OUTPUT)
 				output = 1
-				filter = 0
+				is_filter = 0
 			if(ATM_O2 to ATM_H2)
 				f_type = mode_send_switch(P.mode)
 
 		portData[++portData.len] = list("dir" = dir_name(P.dir, capitalize = 1), \
 										"input" = input, \
 										"output" = output, \
-										"filter" = filter, \
+										"filter" = is_filter, \
 										"f_type" = f_type)
 
 	if(portData.len)
@@ -189,7 +189,7 @@
 				switch_filter(dir_flag(href_list["dir"]), mode_return_switch(new_filter))
 
 	update_icon()
-	GLOB.nanomanager.update_uis(src)
+	SSnano.update_uis(src)
 	return
 
 /obj/machinery/atmospherics/omni/filter/proc/mode_return_switch(var/mode)

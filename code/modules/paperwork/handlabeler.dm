@@ -6,7 +6,7 @@
 	var/label = null
 	var/labels_left = 30
 	var/mode = 0	//off or on.
-	matter = list(DEFAULT_WALL_MATERIAL = 100)
+	matter = list(MATERIAL_STEEL = 100)
 
 /obj/item/weapon/hand_labeler/attack()
 	return
@@ -29,6 +29,7 @@
 		var/datum/extension/labels/L = get_extension(A, /datum/extension/labels)
 		if(!L.CanAttachLabel(user, label))
 			return
+	playsound(src,'sound/effects/FOLEY_Gaffer_Tape_Tear_mono.ogg',100,1)
 	A.attach_label(user, src, label)
 
 /atom/proc/attach_label(var/user, var/atom/labeler, var/label_text)

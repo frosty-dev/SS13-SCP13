@@ -1,37 +1,70 @@
-# SCP13 Repository
+# Модифицированный baystation12
+[![Build Status](https://travis-ci.org/infinitystation/Baystation12.svg?branch=master)](https://travis-ci.org/infinitystation/Baystation12)  
 
-[Website](https://www.scp13.site) - [Code](https://github.com/SS13-SCP13/SS13-SCP13)
+**Код**: https://github.com/infinitystation/Baystation12  
+**Сайт разработчика:** https://infinity-ss13.info/  
+**Discord**: https://discord.gg/N4atUkH  
+**Используемые карты:** Sierra, Модифицированный Bearcat 
 
-[![Build Status](https://travis-ci.org/SS13-SCP13/SS13-SCP13.svg?branch=master)](https://travis-ci.org/SS13-SCP13/SS13-SCP13)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ss13-scp13/ss13-scp13.svg)](http://isitmaintained.com/project/ss13-scp13/ss13-scp13 "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/ss13-scp13/ss13-scp13.svg)](http://isitmaintained.com/project/ss13-scp13/ss13-scp13 "Percentage of issues still open")
-[![forthebadge](https://forthebadge.com/images/badges/built-with-science.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/no-ragrets.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/powered-by-responsibility.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/its-not-a-lie-if-you-believe-it.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/thats-how-they-get-you.svg)](https://forthebadge.com)
-
+**Сайт оригинального разработчика:** https://baystation12.net  
+**Оригинальный код:** https://github.com/Baystation12/Baystation12  
 
 ---
 
-### LICENSE
-The code for SCP13 is licensed under the [GNU Affero General Public License v3](http://www.gnu.org/licenses/agpl.html), which can be found in full in LICENSE-AGPL3.txt.
+## ЗАГРУЗКА
 
-Code with a git authorship date prior to `1420675200 +0000` (2015/01/08 00:00) is licensed under the GNU General Public License version 3, which can be found in full in LICENSE-GPL3.txt.
+Есть несколько способов скачать билд проекта.
 
-All code where the authorship dates are not prior to `1420675200 +0000` is assumed to be licensed under AGPL v3, if you wish to license under GPL v3 please make this clear in the commit message and any added files.
+Вариант 1:  
+Скачать здесь в *.zip файле.  
+Кнопка в правой части экрана.
 
-If you wish to develop and host this codebase in a closed source manner you may use all commits prior to `1420675200 +0000`, which are licensed under GPL v3.  The major change here is that if you host a server using any code licensed under AGPLv3 you are required to provide full source code for your servers users as well including addons and modifications you have made.
+Вариант 2:  
+1. Установить любой другой git-клиент.  
+SourceTree, Github for Windows, git-scm, TortoiseGit или любой другой.  
+2. Зайти в клиент и клонировать репозиторий по ссылке:  
+https://github.com/infinitystation/Baystation12.git
 
-See [here](https://www.gnu.org/licenses/why-affero-gpl.html) for more information.
+## УСТАНОВКА
+0. Убедитесь, что у вас есть BYOND. Скачать можно здесь: http://www.byond.com/.  
+1. Откройте файл baystation12.dme с помощью Dream Maker.
+2. Нажмите Build, затем на Compile или нажмите Ctrl + K.
+3. Дождитесь сообщения:  
+```
+...
+saving baystation12.dmb (DEBUG mode)
+baystation12.dmb - 0 errors, 0 warnings
+```  
+Если будут проблемы, пишите в дискорд.
 
-tgui clientside is licensed as a subproject under the MIT license.
-Font Awesome font files, used by tgui, are licensed under the SIL Open Font License v1.1
-tgui assets are licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+## СОДЕЙСТВИЕ РАЗРАБОТКЕ БИЛДА
+Обратиться разработчикам здесь:  
+https://discord.gg/N4atUkH  
 
-See tgui/LICENSE.md for the MIT license.
-See tgui/assets/fonts/SIL-OFL-1.1-LICENSE.md for the SIL Open Font License.
+## ЗАПУСК
+0. Убедитесь, что у вас есть BYOND. Скачать можно здесь: http://www.byond.com/.  
+1. Откройте BYOND и нажмите на Menu (Шестеренка), затем на Start Dream Daemon. Или нажмите Ctrl + D.
+2. Выберите с файл с помощью кнопки [...].
+3. Напишите порт и нажмите кнопку [GO].
+4. Как только появится строка "Initializations Complete" нажмите кнопку входа, которая обозначена стрелкой.
 
-All assets including icons and sound are under a [Creative Commons 3.0 BY-SA license](http://creativecommons.org/licenses/by-sa/3.0/) unless otherwise indicated.
+## ЗАПУСК БЕЗ БАЗЫ ДАННЫХ
+На случай если вы не имеете базу данных на СУБД MySQL или MariaDB, вам нужно будет изменить конфигурацию билда для запуска.  
+1. Закомментируйте ENABLE_STAT_TRACKING в файле config/dbconfig.txt при помощи #. Должно получится вот так `#ENABLE_STAT_TRACKING`.
+2. Закомментируйте SQL_ENABLED в файле config/config.txt при помощи #. Должно получится вот так `#SQL_ENABLED`.  
 
-### GETTING THE CODE
-The simplest way to obtain the code is using the github .zip feature.
-The recommended way is to download our most recent releases, as they are confirmed to be stable and compiling.
+## ПОЛНОМОЧИЯ АДМИНИСТРАТОРА
+Для получения полномочий администратора на вашем сервере, необходимо дописать файл config/admins.txt таким образом:  
+`byond-логин - GameMaster`  
+При этом, byond-логин должен быть в нижнем регистре и содержать только буквы и цифры (только буквы и цифры).
 
-Compiling, running and administrating the code is unsupported by official staff of this project. If you're unfamiliar with this process, you're ill-advised to undertake this process.
+## ЛИЦЕНЗИЯ
+Весь исходный код после 8-го Января 2015-го года в 03:00 по Московскому времени лицензируется на условиях лицензионного соглашения [GNU Affero General Public License v3](http://www.gnu.org/licenses/agpl.html).  
+в том числе и инструменты, если в их файле readme не указано другое. Подробнее в файлах LICENSE-AGPLv3.txt или LICENSE-GPLv3.txt.  
+
+Исходный код клиентской стороны tgui лицензируется как подпроект на условиях лицензионного соглашения MIT.  
+Файлы шрифтов Font Awesome, исползуемые tgui, лицензируется на условиях лицензионного соглашения SIL Open Font License v1.1  
+Ресурсы tgui лицензируется на условиях лицензионного соглашения Creative Commons BY-SA 4.0 [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).  
+Подробнее в файлах tgui/LICENSE.md и tgui/assets/fonts/SIL-OFL-1.1-LICENSE.md.  
+
+Все содержимое, включая иконки и звуки, лицензируется на условиях лицензионного соглашения [Creative Commons 3.0 BY-SA license](http://creativecommons.org/licenses/by-sa/3.0/).

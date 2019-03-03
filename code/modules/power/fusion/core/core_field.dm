@@ -32,9 +32,9 @@
 		)
 
 	var/light_min_range = 2
-	var/light_min_power = 3
+	var/light_min_power = 0.2
 	var/light_max_range = 12
-	var/light_max_power = 12
+	var/light_max_power = 1
 
 	var/last_range
 	var/last_power
@@ -42,7 +42,7 @@
 /obj/effect/fusion_em_field/New(loc, var/obj/machinery/power/fusion_core/new_owned_core)
 	..()
 
-	set_light(light_min_range,light_min_power)
+	set_light(light_min_power, light_min_range / 10, light_min_range)
 	last_range = light_min_range
 	last_power = light_min_power
 
@@ -137,14 +137,14 @@
 		use_power = light_min_power + ceil((light_max_power-light_min_power)*temp_mod)
 
 	if(last_range != use_range || last_power != use_power)
-		set_light(use_range,use_power)
+		set_light(min(use_power, 1), use_range / 6, use_range) //cap first arg at 1 to avoid breaking lighting stuff.
 		last_range = use_range
 		last_power = use_power
 
 	check_instability()
 	Radiate()
 	if(radiation)
-		radiation_repository.radiate(src, round(radiation*0.001))
+		SSradiation.radiate(src, round(radiation*0.001))
 	return 1
 
 /obj/effect/fusion_em_field/proc/check_instability()
@@ -205,7 +205,7 @@
 
 /obj/effect/fusion_em_field/proc/Rupture()
 	visible_message("<span class='danger'>\The [src] shudders like a dying animal before flaring to eye-searing brightness and rupturing!</span>")
-	set_light(15, 15, "#ccccff")
+	set_light(1, 0.1, 15, 2, "#ccccff")
 	empulse(get_turf(src), ceil(plasma_temperature/1000), ceil(plasma_temperature/300))
 	sleep(5)
 	RadiateAll()
@@ -276,7 +276,7 @@
 	radiation += plasma_temperature/2
 	plasma_temperature = 0
 
-	radiation_repository.radiate(src, round(radiation*0.001))
+	SSradiation.radiate(src, round(radiation*0.001))
 	Radiate()
 
 /obj/effect/fusion_em_field/proc/Radiate()
@@ -308,11 +308,11 @@
 /obj/effect/fusion_em_field/proc/change_size(var/newsize = 1)
 	var/changed = 0
 	var/static/list/size_to_icon = list(
-			"3" = 'icons/effects/96x96.dmi',
-			"5" = 'icons/effects/160x160.dmi',
-			"7" = 'icons/effects/224x224.dmi',
-			"9" = 'icons/effects/288x288.dmi',
-			"11" = 'icons/effects/352x352.dmi',
+			"3" = 'icons/effects/96x96.dmi', 
+			"5" = 'icons/effects/160x160.dmi', 
+			"7" = 'icons/effects/224x224.dmi', 
+			"9" = 'icons/effects/288x288.dmi', 
+			"11" = 'icons/effects/352x352.dmi', 
 			"13" = 'icons/effects/416x416.dmi'
 			)
 

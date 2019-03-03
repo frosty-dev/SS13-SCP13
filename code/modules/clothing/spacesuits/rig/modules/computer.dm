@@ -180,13 +180,14 @@
 		else if(user)
 			user.put_in_hands(ai_card)
 		else
-			ai_card.forceMove(get_turf(src))
+			ai_card.dropInto(loc)
 	ai_card = null
 	integrated_ai = null
 	update_verb_holder()
 
-/obj/item/rig_module/ai_container/proc/integrate_ai(var/obj/item/ai,var/mob/user)
-	if(!ai) return
+/obj/item/rig_module/ai_container/proc/integrate_ai(var/obj/item/ai,var/mob/user) //вырублено, пока не пофиксим/понерфим это говно
+	to_chat(user, "<span class='warning'>This feature is currently disabled.</span>")
+/*	if(!ai) return
 
 	// The ONLY THING all the different AI systems have in common is that they all store the mob inside an item.
 	var/mob/living/ai_mob = locate(/mob/living) in ai.contents
@@ -208,9 +209,7 @@
 						return 0
 				else
 					return 0
-			else
-				user.drop_from_inventory(ai)
-				ai.forceMove(src)
+			else if(user.unEquip(ai, src))
 				ai_card = ai
 				to_chat(ai_mob, "<span class='notice'>You have been transferred to \the [holder]'s [src.name].</span>")
 				to_chat(user, "<span class='notice'>You load \the [ai_mob] into \the [holder]'s [src.name].</span>")
@@ -224,7 +223,7 @@
 			to_chat(user, "<span class='warning'>There is no active AI within \the [ai].</span>")
 	else
 		to_chat(user, "<span class='warning'>There is no active AI within \the [ai].</span>")
-	update_verb_holder()
+	update_verb_holder()*/
 	return
 
 /obj/item/rig_module/datajack
@@ -369,7 +368,7 @@
 	var/atom/interfaced_with // Currently draining power from this device.
 	var/total_power_drained = 0
 	var/drain_loc
-	var/max_draining_rate = 120 KILOWATTS // The same as unupgraded cyborg recharger.
+	var/max_draining_rate = 250 KILOWATTS
 
 /obj/item/rig_module/power_sink/deactivate()
 

@@ -9,7 +9,12 @@ var/list/ventcrawl_machinery = list(
 	/obj/item/device/radio/borg,
 	/obj/item/weapon/holder,
 	/obj/machinery/camera,
-	/mob/living/simple_animal/borer
+	/mob/living/simple_animal/borer,
+	/obj/item/clothing/head/culthood,
+	/obj/item/clothing/suit/cultrobes,
+	/obj/item/weapon/book/tome,
+	/obj/item/weapon/paper/,
+	/obj/item/weapon/melee/cultblade
 	)
 
 /mob/living/var/list/icon/pipes_shown = list()
@@ -44,6 +49,8 @@ var/list/ventcrawl_machinery = list(
 /mob/living/proc/is_allowed_vent_crawl_item(var/obj/item/carried_item)
 	if(is_type_in_list(carried_item, can_enter_vent_with))
 		return !get_inventory_slot(carried_item)
+	if(carried_item.w_class <= ITEM_SIZE_SMALL)
+		return 1
 
 /mob/living/carbon/is_allowed_vent_crawl_item(var/obj/item/carried_item)
 	if((carried_item in internal_organs) || (carried_item in stomach_contents))
@@ -57,11 +64,6 @@ var/list/ventcrawl_machinery = list(
 		return 1
 	if(carried_item in list(l_hand,r_hand))
 		return carried_item.w_class <= ITEM_SIZE_NORMAL
-	return ..()
-
-/mob/living/simple_animal/spiderbot/is_allowed_vent_crawl_item(var/obj/item/carried_item)
-	if(carried_item in list(held_item, radio, connected_ai, cell, camera, mmi))
-		return 1
 	return ..()
 
 /mob/living/proc/ventcrawl_carry()
@@ -90,7 +92,7 @@ var/list/ventcrawl_machinery = list(
 		pipe = pipes[1]
 	else
 		pipe = input("Crawl Through Vent", "Pick a pipe") as null|anything in pipes
-	if(canmove && pipe)
+	if(!is_physically_disabled() && pipe)
 		return pipe
 
 /mob/living/carbon/alien/ventcrawl_carry()

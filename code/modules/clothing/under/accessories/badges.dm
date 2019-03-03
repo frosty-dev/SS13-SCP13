@@ -10,18 +10,40 @@
 	icon_state = "detectivebadge"
 	slot_flags = SLOT_BELT | SLOT_TIE
 	slot = ACCESSORY_SLOT_INSIGNIA
+	high_visibility = 1
 	var/badge_string = "Detective"
 	var/stored_name
 
 /obj/item/clothing/accessory/badge/proc/set_name(var/new_name)
 	stored_name = new_name
-	name = "[initial(name)] ([stored_name])"
+
+/obj/item/clothing/accessory/badge/proc/set_desc(var/mob/living/carbon/human/H)
+
+/obj/item/clothing/accessory/badge/CanUseTopic(var/user)
+	if(user in view(get_turf(src)))
+		return STATUS_INTERACTIVE
+
+/obj/item/clothing/accessory/badge/OnTopic(var/mob/user, var/list/href_list)
+	if(href_list["look_at_me"])
+		if(istype(user))
+			user.examinate(src)
+			return TOPIC_HANDLED
+
+/obj/item/clothing/accessory/badge/get_examine_line()
+	. = ..()
+	. += "  <a href='?src=\ref[src];look_at_me=1'>\[View\]</a>"
+
+/obj/item/clothing/accessory/badge/examine(user)
+	..()
+	if(stored_name)
+		to_chat(user,"It reads: [stored_name], [badge_string].")
 
 /obj/item/clothing/accessory/badge/attack_self(mob/user as mob)
 
 	if(!stored_name)
 		to_chat(user, "You inspect your [src.name]. Everything seems to be in order and you give it a quick cleaning with your hand.")
 		set_name(user.real_name)
+		set_desc(user)
 		return
 
 	if(isliving(user))
@@ -33,6 +55,8 @@
 /obj/item/clothing/accessory/badge/attack(mob/living/carbon/human/M, mob/living/user)
 	if(isliving(user))
 		user.visible_message("<span class='danger'>[user] invades [M]'s personal space, thrusting \the [src] into their face insistently.</span>","<span class='danger'>You invade [M]'s personal space, thrusting \the [src] into their face insistently.</span>")
+		if(stored_name)
+			to_chat(M, "<span class='warning'>It reads: [stored_name], [badge_string].</span>")
 
 /obj/item/clothing/accessory/badge/PI
 	name = "private investigator's badge"
@@ -49,22 +73,36 @@
 	item_state = "holobadge"
 	badge_string = "Security"
 	var/badge_access = access_security
+	var/badge_number
 	var/emagged //emag_act removes access requirements
 
 /obj/item/clothing/accessory/badge/holo/NT
-	name = "\improper NT holobadge"
-	desc = "This glowing red badge marks the holder as a member of NanoTrasen corporate security."
-	color = "#b7310b" //brighter COLOR_NT_RED
-	badge_string = "NanoTrasen Security"
-	badge_access = access_research
+	name = "corporate holobadge"
+	desc = "This glowing green badge marks the holder as a member of corporate security."
+	icon_state = "ntholobadge"
+	color = null
+	badge_string = "Corporate Security"
+	badge_access = access_security
 
 /obj/item/clothing/accessory/badge/holo/cord
+	name = "neck holobadge"
 	icon_state = "holobadge-cord"
 	slot_flags = SLOT_MASK | SLOT_TIE
 
 /obj/item/clothing/accessory/badge/holo/NT/cord
+	name = "corporate neck holobadge"
 	icon_state = "holobadge-cord"
 	slot_flags = SLOT_MASK | SLOT_TIE
+
+/obj/item/clothing/accessory/badge/holo/set_name(var/new_name)
+	..()
+	badge_number = random_id(type,1000,9999)
+	name = "[initial(name)] ([badge_number])"
+
+/obj/item/clothing/accessory/badge/holo/examine(user)
+	..()
+	if(badge_number)
+		to_chat(user,"The badge number is [badge_number].")
 
 /obj/item/clothing/accessory/badge/holo/attack_self(mob/user as mob)
 	if(!stored_name)
@@ -82,19 +120,17 @@
 		return 1
 
 /obj/item/clothing/accessory/badge/holo/attackby(var/obj/item/O as obj, var/mob/user as mob)
-	if(istype(O, /obj/item/weapon/card/id) || istype(O, /obj/item/device/pda))
+	if(istype(O, /obj/item/weapon/card/id) || istype(O, /obj/item/modular_computer))
 
-		var/obj/item/weapon/card/id/id_card = null
+		var/obj/item/weapon/card/id/id_card = O.GetIdCard()
 
-		if(istype(O, /obj/item/weapon/card/id))
-			id_card = O
-		else
-			var/obj/item/device/pda/pda = O
-			id_card = pda.id
+		if(!id_card)
+			return
 
 		if((badge_access in id_card.access) || emagged)
 			to_chat(user, "You imprint your ID details onto the badge.")
-			set_name(user.real_name)
+			set_name(id_card.registered_name)
+			set_desc(user)
 		else
 			to_chat(user, "[src] rejects your ID, and flashes 'Insufficient access!'")
 		return
@@ -107,8 +143,8 @@
 					  /obj/item/clothing/accessory/badge/holo/cord = 2)
 
 /obj/item/weapon/storage/box/holobadgeNT
-	name = "\improper NT holobadge box"
-	desc = "A box containing NanoTrasen security holobadges."
+	name = "corporate holobadge box"
+	desc = "A box containing corporate security holobadges."
 	startswith = list(/obj/item/clothing/accessory/badge/holo/NT = 4,
 					  /obj/item/clothing/accessory/badge/holo/NT/cord = 2)
 
@@ -131,21 +167,69 @@
 	badge_string = "Office of Interstellar Intelligence"
 
 /obj/item/clothing/accessory/badge/nanotrasen
-	name = "\improper NanoTrasen badge"
-	desc = "A leather-backed plastic badge with a variety of information printed on it. Belongs to a NanoTrasen corporate executive."
+	name = "corporate badge"
+	desc = "A leather-backed plastic badge with a variety of information printed on it. Belongs to a corporate executive."
 	icon_state = "ntbadge"
-	badge_string = "NanoTrasen Corporate"
+	badge_string = "NanoTrasen Executive"
 
-/obj/item/clothing/accessory/badge/marshal
-	name = "colonial marshal's badge"
-	desc = "A leather-backed gold badge displaying the crest of the Colonial Marshals."
-	icon_state = "marshalbadge"
+/obj/item/clothing/accessory/badge/ocieagent
+	name = "\improper OCIE Agent's badge"
+	desc = "A leather-backed gold badge displaying the crest of the Office of Civil Investigation and Enforcement."
+	icon_state = "agentbadge"
 	slot_flags = SLOT_BELT | SLOT_TIE
 	slot = ACCESSORY_SLOT_INSIGNIA
-	badge_string = "Colonial Marshal Bureau"
+	badge_string = "Office of Civil Investigation and Enforcement"
+
+/obj/item/clothing/accessory/badge/tracker
+	name = "\improper Tracker's badge"
+	desc = "A blue leather-backed gold badge displaying the crest of the Office of Civil Investigation and Enforcement."
+	icon_state = "trackerbadge"
+	slot_flags = SLOT_BELT | SLOT_TIE
+	slot = ACCESSORY_SLOT_INSIGNIA
+	badge_string = "Office of Civil Investigation and Enforcement"
 
 /obj/item/clothing/accessory/badge/press
 	name = "press badge"
 	desc = "A leather-backed plastic badge displaying that the owner is certified press personnel."
 	icon_state = "pressbadge"
 	badge_string = "Journalist"
+	
+/obj/item/clothing/accessory/badge/tags/skrell
+	name = "\improper Skrellian holobadge"
+	desc = "A high tech Skrellian holobadge, designed to project information about the owner."
+	icon_state = "skrell_badge"
+	badge_string = null	//Will be the name of the SDTF.
+
+/obj/item/clothing/accessory/badge/tags/skrell/set_desc(var/mob/living/carbon/human/H)
+	if(!istype(H))
+		return
+	desc = "Blood type: [H.b_type]"
+	
+/obj/item/clothing/accessory/badge/tags/skrell/verb/set_sdtf()
+	set name = "Set SDTF Name"
+	set category = "Object"
+	set src in usr
+	
+	if(usr.incapacitated())
+		to_chat(usr, "<span class='warning'>You're unable to do that.</span>")
+		return
+	
+	var/obj/item/in_hand = usr.get_active_hand()
+	if(in_hand != src)
+		to_chat(usr, "<span class='warning'>You have to be holding [src] to modify it.</span>")
+		return
+	
+	badge_string = sanitize(input(usr, "Input your SDTF.", "SDTF Holobadge") as null|text, MAX_NAME_LEN)
+	
+	if(usr.incapacitated())	//Because things can happen while you're typing
+		to_chat(usr, "<span class='warning'>You're unable to do that.</span>")
+		return
+	in_hand = usr.get_active_hand()
+	if(in_hand != src)
+		to_chat(usr, "<span class='warning'>You have to be holding [src] to modify it.</span>")
+		return
+		
+	if(badge_string)
+		set_name(usr.real_name)
+		set_desc(usr)
+		verbs -= /obj/item/clothing/accessory/badge/tags/skrell/verb/set_sdtf

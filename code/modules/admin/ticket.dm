@@ -23,9 +23,9 @@ var/list/ticket_panels = list()
 	if(status == TICKET_ASSIGNED && !((closed_by.ckey in assigned_admin_ckeys()) || owner.ckey == closed_by.ckey) && alert(client_by_ckey(closed_by.ckey), "You are not assigned to this ticket. Are you sure you want to close it?",  "Close ticket?" , "Yes" , "No") != "Yes")
 		return
 
-	var/client/real_client = client_by_ckey(closed_by.ckey)
-	if(status == TICKET_ASSIGNED && (!real_client || !real_client.holder)) // non-admins can only close a ticket if no admin has taken it
-		return
+	//var/client/real_client = client_by_ckey(closed_by.ckey)
+	//if(status == TICKET_ASSIGNED && (!real_client || !real_client.holder)) // non-admins can only close a ticket if no admin has taken it
+		//return
 
 	src.status = TICKET_CLOSED
 	src.closed_by = closed_by
@@ -33,6 +33,7 @@ var/list/ticket_panels = list()
 	to_chat(client_by_ckey(src.owner.ckey), "<span class='notice'><b>Your ticket has been closed by [closed_by.ckey].</b></span>")
 	message_staff("<span class='notice'><b>[src.owner.key_name(0)]</b>'s ticket has been closed by <b>[closed_by.key_name(0)]</b>.</span>")
 	send2adminirc("[src.owner.key_name(0)]'s ticket has been closed by [closed_by.key_name(0)].")
+	send2admindiscord("[src.owner.key_name(0)]'s ticket has been closed by [closed_by.key_name(0)].")
 
 	update_ticket_panels()
 
@@ -53,6 +54,7 @@ var/list/ticket_panels = list()
 
 	message_staff("<span class='notice'><b>[assigned_admin.key_name(0)]</b> has assigned themself to <b>[src.owner.key_name(0)]'s</b> ticket.</span>")
 	send2adminirc("[assigned_admin.key_name(0)] has assigned themself to [src.owner.key_name(0)]'s ticket.")
+	send2admindiscord("[assigned_admin.key_name(0)] has assigned themself to [src.owner.key_name(0)]'s ticket.")
 	to_chat(client_by_ckey(src.owner.ckey), "<span class='notice'><b>[assigned_admin.ckey] has added themself to your ticket and should respond shortly. Thanks for your patience!</b></span>")
 
 	update_ticket_panels()
@@ -99,7 +101,6 @@ proc/get_open_ticket_by_client(var/datum/client_lite/owner)
 
 /datum/ticket_panel/proc/get_dat()
 	var/client/C = ticket_panel_window.user.client
-
 	if(!C)
 		return
 
@@ -200,6 +201,7 @@ proc/get_open_ticket_by_client(var/datum/client_lite/owner)
 		if("close")
 			ticket.close(client_repository.get_lite_client(usr.client))
 		if("pm")
+			ticket.take(client_repository.get_lite_client(usr.client))
 			if(usr.client.holder && ticket.owner.ckey != usr.ckey)
 				usr.client.cmd_admin_pm(client_by_ckey(ticket.owner.ckey), ticket = ticket)
 			else if(ticket.status == TICKET_ASSIGNED)
@@ -214,13 +216,13 @@ proc/get_open_ticket_by_client(var/datum/client_lite/owner)
 				if(!admin_found)
 					to_chat(usr, "<span class='warning'>Error: Private-Message: Client not found. They may have lost connection, so please be patient!</span>")
 			else
-				usr.client.adminhelp(input(usr,"", "adminhelp \"text\"") as text)
+				usr.client.adminhelp(sanitize_a0(input(usr,"", "adminhelp \"text\"") as text))
 
 /client/verb/view_tickets()
 	set name = "View Tickets"
 	set category = "Admin"
 
-	var/datum/ticket_panel/ticket_panel = new
+	var/datum/ticket_panel/ticket_panel = new()
 	ticket_panels[src] = ticket_panel
 	ticket_panel.ticket_panel_window = new(src.mob, "ticketpanel", "Ticket Manager", 1024, 768, ticket_panel)
 
@@ -229,11 +231,6 @@ proc/get_open_ticket_by_client(var/datum/client_lite/owner)
 
 /proc/update_ticket_panels()
 	for(var/client/C in ticket_panels)
-
-		if (isnull(C))
-			ticket_panels -= C
-			continue 
-
 		var/datum/ticket_panel/ticket_panel = ticket_panels[C]
 		if(C.mob != ticket_panel.ticket_panel_window.user)
 			C.view_tickets()

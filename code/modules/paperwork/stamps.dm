@@ -8,7 +8,7 @@
 	w_class = ITEM_SIZE_TINY
 	throw_speed = 7
 	throw_range = 15
-	matter = list(DEFAULT_WALL_MATERIAL = 60)
+	matter = list(MATERIAL_STEEL = 60)
 	attack_verb = list("stamped")
 
 /obj/item/weapon/stamp/captain
@@ -62,24 +62,6 @@
 /obj/item/weapon/stamp/cargo
 	name = "cargo rubber stamp"
 	icon_state = "stamp-cargo"
-
-// SCP STAMPS
-
-/obj/item/weapon/stamp/scp/facdir
-	name = "facility director's rubber stamp"
-	icon_state = "stamp-cap"
-
-/obj/item/weapon/stamp/scp/o5rep
-	name = "representative's rubber stamp"
-	icon_state = "stamp-cap"
-
-/obj/item/weapon/stamp/scp/hop
-	name = "head of personnel's rubber stamp"
-	icon_state = "stamp-hop"
-
-/obj/item/weapon/stamp/scp/cmo
-	name = "chief medical officer's rubber stamp"
-	icon_state = "stamp-cmo"
 
 // Syndicate stamp to forge documents.
 /obj/item/weapon/stamp/chameleon/attack_self(mob/user as mob)

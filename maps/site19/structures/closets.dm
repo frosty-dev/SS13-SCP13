@@ -2,6 +2,32 @@
  * Torch Excavation
  */
 
+/obj/structure/closet/secure_closet/crew
+	name = "crew equipment locker"
+	req_access = list(access_solgov_crew)
+	icon_state = "sol1"
+	icon_closed = "sol"
+	icon_locked = "sol1"
+	icon_opened = "solopen"
+	icon_off = "soloff"
+
+/obj/structure/closet/secure_closet/crew/WillContain()
+	return list(
+		/obj/item/device/radio,
+		/obj/item/weapon/crowbar,
+		/obj/item/device/flashlight,
+		/obj/item/weapon/storage/box
+	)
+
+/obj/structure/closet/secure_closet/crew/research
+	name = "research equipment locker"
+	req_access = list(access_nanotrasen)
+	icon_state = "nanot1"
+	icon_closed = "nanot"
+	icon_locked = "nanot1"
+	icon_opened = "nanotopen"
+	icon_off = "nanotoff"
+
 /obj/structure/closet/toolcloset/excavation
 	name = "excavation equipment closet"
 	desc = "It's a storage unit for excavation equipment."
@@ -24,7 +50,7 @@
 		/obj/item/clothing/glasses/science,
 		/obj/item/weapon/pickaxe,
 		/obj/item/device/measuring_tape,
-		/obj/item/weapon/pickaxe/hand,
+		/obj/item/weapon/pickaxe/xeno/hand,
 		/obj/item/weapon/storage/bag/fossils,
 		/obj/item/weapon/hand_labeler,
 		/obj/item/taperoll/research,
@@ -51,7 +77,6 @@
 /obj/random/torchcloset/spawn_choices()
 	return list(/obj/structure/closet,
 				/obj/structure/closet/firecloset,
-				/obj/structure/closet/firecloset/full,
 				/obj/structure/closet/emcloset,
 				/obj/structure/closet/jcloset_torch,
 				/obj/structure/closet/athletic_mixed,

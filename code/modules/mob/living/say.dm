@@ -36,6 +36,42 @@ var/list/department_radio_keys = list(
 	  ":Z" = "Entertainment",".Z" = "Entertainment",
 	  ":Y" = "Exploration",		".Y" = "Exploration",
 
+	  //localized radio keys by ~KareTa
+	  ":Í" = "right ear",	".Í" = "right ear",
+	  ":‰" = "left ear",	".‰" = "left ear",
+	  ":¯" = "intercom",	".¯" = "intercom",
+	  ":" = "department",	"." = "department",
+	  ":Ò" = "Command",		".Ò" = "Command",
+	  ":Ú" = "Science",		".Ú" = "Science",
+	  ":¸" = "Medical",		".¸" = "Medical",
+	  ":Û" = "Engineering",	".Û" = "Engineering",
+	  ":˚" = "Security",	".˚" = "Security",
+	  ":ˆ" = "whisper",		".ˆ" = "whisper",
+	  ":Â" = "Mercenary",	".Â" = "Mercenary",
+	  ":„" = "Supply",		".„" = "Supply",
+	  ":Ï" = "Service",		".Ï" = "Service",
+	  ":Á" = "AI Private",	".Á" = "AI Private",
+	  ":ˇ" = "Entertainment",".ˇ" = "Entertainment",
+	  ":Ì" = "Exploration",		".Ì" = "Exploration",
+
+	  ": " = "right ear",	". " = "right ear",
+	  ":ƒ" = "left ear",	".ƒ" = "left ear",
+	  ":ÿ" = "intercom",	".ÿ" = "intercom",
+	  ":–" = "department",	".–" = "department",
+	  ":—" = "Command",		".—" = "Command",
+	  ":“" = "Science",		".“" = "Science",
+	  ":‹" = "Medical",		".‹" = "Medical",
+	  ":”" = "Engineering",	".”" = "Engineering",
+	  ":€" = "Security",	".€" = "Security",
+	  ":÷" = "whisper",		".÷" = "whisper",
+	  ":≈" = "Mercenary",	".≈" = "Mercenary",
+	  ":√" = "Supply",		".√" = "Supply",
+	  ":Ã" = "Service",		".Ã" = "Service",
+	  ":«" = "AI Private",	".«" = "AI Private",
+	  ":ﬂ" = "Entertainment",".ﬂ" = "Entertainment",
+	  ":Õ" = "Exploration",		".Õ" = "Exploration",
+
+	  /*
 	  //kinda localization -- rastaf0
 	  //same keys as above, but on russian keyboard layout. This file uses cp1251 as encoding.
 	  ":√™" = "right ear",	".√™" = "right ear",
@@ -50,8 +86,8 @@ var/list/department_radio_keys = list(
 	  ":√∂" = "whisper",		".√∂" = "whisper",
 	  ":√•" = "Mercenary",	".√•" = "Mercenary",
 	  ":√©" = "Supply",		".√©" = "Supply",
+	  */
 )
-
 
 var/list/channel_to_radio_key = new
 proc/get_radio_key_from_channel(var/channel)
@@ -99,18 +135,22 @@ proc/get_radio_key_from_channel(var/channel)
 
 	. = 0
 
-	if((HULK in mutations) && health >= 25 && length(message))
+	if((MUTATION_HULK in mutations) && health >= 25 && length(message))
 		message = "[uppertext(message)]!!!"
 		verb = pick("yells","roars","hollers")
 		message_data[3] = 0
 		. = 1
-	if(slurring)
+	else if(slurring)
 		message = slur(message)
 		verb = pick("slobbers","slurs")
 		. = 1
-	if(stuttering)
-		message = stutter(message)
+	else if(stuttering)
+		message = NewStutter(message)
 		verb = pick("stammers","stutters")
+		. = 1
+	else if(has_chem_effect(CE_SQUEAKY, 1))
+		message = "<font face = 'Comic Sans MS'>[message]</font>"
+		verb = "squeaks"
 		. = 1
 
 	message_data[1] = message
@@ -136,6 +176,21 @@ proc/get_radio_key_from_channel(var/channel)
 		return "asks"
 	return verb
 
+/mob/living/proc/format_say_message(var/message = null)
+	if(!message)
+		return
+
+	message = replacetext(message, "&#255;", "__:√ü:_") // √ç√®√™√Æ√¨√≥ √¶√• √¢ √£√Æ√´√Æ√¢√≥ √≠√• √Ø√∞√®√§√•√≤ √≤√†√™√Æ√• √≠√†√Ø√®√±√†√≤√º? ~bear1ake@inf-dev
+	message = html_decode(message)
+
+	var/end_char = copytext(message, lentext(message), lentext(message) + 1)
+	if(!(end_char in list(".", "?", "!", "-", "~")))
+		message += "."
+
+	message = html_encode(message)
+	message = replacetext(message, "__:√ü:_", "&#255;")
+	return message
+
 /mob/living/say(var/message, var/datum/language/speaking = null, var/verb="says", var/alt_name="", whispering)
 	if(client)
 		if(client.prefs.muted & MUTE_IC)
@@ -146,6 +201,8 @@ proc/get_radio_key_from_channel(var/channel)
 		if(stat == 2)
 			return say_dead(message)
 		return
+
+	message = sanitize_a0(message)
 
 	var/prefix = copytext(message,1,2)
 	if(prefix == get_prefix_key(/decl/prefix/custom_emote))
@@ -177,7 +234,7 @@ proc/get_radio_key_from_channel(var/channel)
 		speaking.broadcast(src,trim(message))
 		return 1
 
-	if(is_muzzled())
+	if((is_muzzled()) && !(speaking && (speaking.flags & SIGNLANG)))
 		to_chat(src, "<span class='danger'>You're muzzled and cannot speak!</span>")
 		return
 
@@ -188,8 +245,8 @@ proc/get_radio_key_from_channel(var/channel)
 			verb = say_quote(message, speaking)
 
 	message = trim_left(message)
-
 	message = handle_autohiss(message, speaking)
+	message = format_say_message(message)
 
 	if(!(speaking && (speaking.flags & NO_STUTTER)))
 		var/list/message_data = list(message, verb, 0)
@@ -297,9 +354,18 @@ proc/get_radio_key_from_channel(var/channel)
 		eavesdroping_obj -= listening_obj
 		for(var/mob/M in eavesdroping)
 			if(M)
+				var/mob/living/carbon/human/H
+				var/temp
+				//for resomi
+				if(ishuman(M))
+					H = M
+					temp = (H.get_species() == SPECIES_RESOMI ? message : stars(message))
+				else
+					temp = stars(message)
 				show_image(M, speech_bubble)
-				M.hear_say(stars(message), verb, speaking, alt_name, italics, src, speech_sound, sound_vol)
-
+				M.hear_say(temp, verb, speaking, alt_name, italics, src, speech_sound, sound_vol)
+				if(M.client)
+					speech_bubble_recipients += M.client
 		for(var/obj/O in eavesdroping)
 			spawn(0)
 				if(O) //It's possible that it could be deleted in the meantime.

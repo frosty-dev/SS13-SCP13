@@ -1,5 +1,5 @@
 /obj/item/weapon/gun/energy/taser
-	name = "taser gun"
+	name = "Mk30 taser gun"
 	desc = "The NT Mk30 NL is a small, low capacity gun used for non-lethal takedowns. Produced by NT, it's actually a licensed version of a W-T design. It can switch between high and low intensity stun shots."
 	icon_state = "taser"
 	item_state = null	//so the human update icon uses the icon_state instead.
@@ -13,7 +13,7 @@
 		)
 
 /obj/item/weapon/gun/energy/taser/carbine
-	name = "taser carbine"
+	name = "Mk44 taser carbine"
 	desc = "The NT Mk44 NL is a high capacity gun used for non-lethal takedowns. It can switch between high and low intensity stun shots."
 	icon_state = "tasercarbine"
 	w_class = ITEM_SIZE_LARGE
@@ -35,6 +35,7 @@
 	name = "mounted taser gun"
 	self_recharge = 1
 	use_external_power = 1
+	have_safety = FALSE
 
 /obj/item/weapon/gun/energy/taser/mounted/cyborg
 	name = "taser gun"
@@ -43,8 +44,8 @@
 
 
 /obj/item/weapon/gun/energy/stunrevolver
-	name = "stun revolver"
-	desc = "A LAEP20 Zeus. Designed by Lawson Arms and produced under the wing of the FTU, several TSCs have been trying to get a hold of the blueprints for half a decade."
+	name = "X6 stun revolver"
+	desc = "An A&M X6 Zeus. Designed by al-Maliki & Mosley, but produced under the wing of the Free Trade Union. Industry spies have been trying to get a hold of the blueprints for half a decade."
 	icon_state = "stunrevolver"
 	item_state = "stunrevolver"
 	origin_tech = list(TECH_COMBAT = 3, TECH_MATERIAL = 3, TECH_POWER = 2)
@@ -53,8 +54,8 @@
 	combustion = 0
 
 /obj/item/weapon/gun/energy/stunrevolver/rifle
-	name = "stun rifle"
-	desc = "A LAEP38 Thor, a vastly oversized variant of the LAEP20 Zeus. Fires overcharged electrodes to take down hostile armored targets without harming them too much."
+	name = "X10 stun rifle"
+	desc = "An A&M X10 Thor. A vastly oversized variant of the A&M X6 Zeus. Fires overcharged electrodes to take down hostile armored targets without harming them too much."
 	icon_state = "stunrifle"
 	item_state = "stunrifle"
 	w_class = ITEM_SIZE_HUGE
@@ -74,7 +75,7 @@
 	w_class = ITEM_SIZE_NORMAL
 	item_state = "crossbow"
 	origin_tech = list(TECH_COMBAT = 2, TECH_MAGNET = 2, TECH_ILLEGAL = 5)
-	matter = list(DEFAULT_WALL_MATERIAL = 2000)
+	matter = list(MATERIAL_STEEL = 2000)
 	slot_flags = SLOT_BELT
 	silenced = 1
 	fire_sound = 'sound/weapons/Genhit.ogg'
@@ -95,11 +96,11 @@
 	w_class = ITEM_SIZE_LARGE
 	force = 10
 	one_hand_penalty = 1
-	matter = list(DEFAULT_WALL_MATERIAL = 200000)
+	matter = list(MATERIAL_STEEL = 200000)
 	projectile_type = /obj/item/projectile/energy/bolt/large
 
 /obj/item/weapon/gun/energy/plasmastun
-	name = "plasma pulse projector"
+	name = "MA21 plasma pulse projector"
 	desc = "The Mars Military Industries MA21 Selkie is a weapon that uses a laser pulse to ionise the local atmosphere, creating a disorienting pulse of plasma and deafening shockwave as the wave expands."
 	icon_state = "plasma_stun"
 	item_state = "plasma_stun"

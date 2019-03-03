@@ -2,6 +2,17 @@
 	name = "desert exoplanet"
 	desc = "An arid exoplanet with sparse biological resources but rich mineral deposits underground."
 	color = "#d6cca4"
+	possible_features = list(/datum/map_template/ruin/exoplanet/monolith,
+							 /datum/map_template/ruin/exoplanet/oasis,
+							 /datum/map_template/ruin/exoplanet/oasis/oasis2,
+							 /datum/map_template/ruin/exoplanet/oasis/oasis3,
+							 /datum/map_template/ruin/exoplanet/fountain,
+							 /datum/map_template/ruin/exoplanet/marooned,
+							 /datum/map_template/ruin/exoplanet/hydrobase,
+							 /datum/map_template/ruin/exoplanet/lodge,
+							 /datum/map_template/ruin/exoplanet/crashed_pod,
+							 /datum/map_template/ruin/exoplanet/drill_site,
+							 /datum/map_template/ruin/exoplanet/radshrine)
 
 /obj/effect/overmap/sector/exoplanet/desert/generate_map()
 	if(prob(70))
@@ -62,7 +73,7 @@
 	icon_state = "desert[rand(0,5)]"
 	..()
 
-/turf/simulated/floor/exoplanet/desert/fire_act(datum/gas_mixture/air, temperature, volume)
+/turf/simulated/floor/exoplanet/desert/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if((temperature > T0C + 1700 && prob(5)) || temperature > T0C + 3000)
 		SetName("molten silica")
 		icon_state = "sandglass"
@@ -113,6 +124,10 @@
 			else
 				user.visible_message("<span class='notice'>\The [buckled_mob] has been freed from \the [src] by \the [user].</span>")
 			unbuckle_mob()
+		else
+			busy = 0
+			to_chat(user, "<span class='warning'>You slip and fail to get out!</span>")
+			return
 
 /obj/structure/quicksand/unbuckle_mob()
 	..()
@@ -122,7 +137,7 @@
 	..()
 	update_icon()
 
-/obj/structure/quicksand/update_icon()
+/obj/structure/quicksand/on_update_icon()
 	if(!exposed)
 		return
 	icon_state = "open"

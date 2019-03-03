@@ -32,7 +32,7 @@
 	update_icon()
 	if(ishuman(hood.loc))
 		var/mob/living/carbon/H = hood.loc
-		H.unEquip(hood, 1)
+		H.drop_from_inventory(hood)
 		H.update_inv_wear_suit()
 	hood.forceMove(src)
 
@@ -52,12 +52,14 @@
 			else
 				H.equip_to_slot_if_possible(hood,slot_head,0,0,1)
 				suittoggled = 1
+				hood.icon_state = "[icon_state]_hood"
+//				hood.item_state = "[icon_state]_hood"
 				update_icon()
 				H.update_inv_wear_suit()
 	else
 		RemoveHood()
 
-/obj/item/clothing/suit/storage/hooded/update_icon()
+/obj/item/clothing/suit/storage/hooded/on_update_icon()
 	if(suittoggled)
 		icon_state = "[initial(icon_state)]_t"
 	else
@@ -80,7 +82,8 @@
 /obj/item/clothing/head/winterhood
 	name = "winter hood"
 	desc = "A hood attached to a heavy winter jacket."
-	icon_state = "generic_hood"
+	icon_state = "coatwinter_hood"
+	item_icons = list(slot_head_str = 'icons/mob/infinity/hats.dmi')
 	body_parts_covered = HEAD
 	cold_protection = HEAD
 	flags_inv = HIDEEARS | BLOCKHAIR
@@ -115,6 +118,13 @@
 	name = "atmospherics winter coat"
 	icon_state = "coatatmos"
 
+/obj/item/clothing/suit/storage/hooded/wintercoat/dais
+	name = "\improper DAIS winter coat"
+	icon_state = "coat_dais"
+	siemens_coefficient = 0.5
+	armor = list(melee = 10, bullet = 0, laser = 0, energy = 10, bomb = 0, bio = 0, rad = 0)
+	desc = "A hooded winter coat colored blue and white and bearing the logo of Deimos Advanced Information Systems."
+
 /obj/item/clothing/suit/storage/hooded/wintercoat/hydro
 	name = "hydroponics winter coat"
 	icon_state = "coathydro"
@@ -137,7 +147,11 @@
 	cold_protection = UPPER_TORSO|LOWER_TORSO|ARMS
 	action_button_name = "Toggle Hood"
 	hoodtype = /obj/item/clothing/head/hoodiehood
-	
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/suit.dmi',
+		SPECIES_UNATHI = 'icons/mob/onmob/Unathi/suit.dmi'
+		)
+
 /obj/item/clothing/head/hoodiehood
 	name = "hoodie hood"
 	desc = "A hood attached to a warm sweatshirt."

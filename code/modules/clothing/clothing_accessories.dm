@@ -17,7 +17,8 @@
 
 		var/obj/item/clothing/accessory/A = I
 		if(can_attach_accessory(A))
-			user.drop_item()
+			if(!user.unEquip(A))
+				return
 			attach_accessory(user, A)
 			return
 		else
@@ -64,6 +65,17 @@
 	. = ..(user)
 	for(var/obj/item/clothing/accessory/A in accessories)
 		to_chat(user, "\icon[A] \A [A] is attached to it.")
+	switch(ironed_state)
+		if(WRINKLES_WRINKLY)
+			to_chat(user, "<span class='bad'>It's wrinkly.</span>")
+		if(WRINKLES_NONE)
+			to_chat(user, "<span class='notice'>It's completely wrinkle-free!</span>")
+	switch(smell_state)
+		if(SMELL_CLEAN)
+			to_chat(user, "<span class='notice'>It smells clean!</span>")
+		if(SMELL_STINKY)
+			to_chat(user, "<span class='bad'>It's quite stinky!</span>")
+	
 
 /obj/item/clothing/proc/update_accessory_slowdown()
 	slowdown_accessory = 0
@@ -79,7 +91,8 @@
 /obj/item/clothing/proc/attach_accessory(mob/user, obj/item/clothing/accessory/A)
 	accessories += A
 	A.on_attached(src, user)
-	src.verbs |= /obj/item/clothing/proc/removetie_verb
+	if(A.removable)
+		src.verbs |= /obj/item/clothing/proc/removetie_verb
 	update_accessory_slowdown()
 	update_clothing_icon()
 
@@ -100,13 +113,32 @@
 	if(usr.stat) return
 	if(!accessories.len) return
 	var/obj/item/clothing/accessory/A
+	var/list/removables = list()
+	for(var/obj/item/clothing/accessory/ass in accessories)
+		if(ass.removable)
+			removables |= ass
 	if(accessories.len > 1)
-		A = input("Select an accessory to remove from [src]") as null|anything in accessories
+		A = input("Select an accessory to remove from [src]") as null|anything in removables
 	else
 		A = accessories[1]
 	src.remove_accessory(usr,A)
-	if(!accessories.len)
+	removables -= A
+	if(!removables.len)
 		src.verbs -= /obj/item/clothing/proc/removetie_verb
+
+/obj/item/clothing/AltClick(var/mob/usr)
+	if(!istype(usr, /mob/living)) return
+	if(usr.stat) return
+	if(src.loc == usr)
+		if(accessories.len)
+			var/obj/item/clothing/accessory/B
+			if(accessories.len > 1)
+				B = input("Select an accessory to remove from [src]") as null|anything in accessories
+			else
+				B = accessories[1]
+			remove_accessory(usr, B)
+			if(!accessories.len)
+				verbs -= /obj/item/clothing/proc/removetie_verb
 
 /obj/item/clothing/emp_act(severity)
 	if(accessories.len)

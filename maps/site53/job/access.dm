@@ -277,3 +277,23 @@
 	id = access_s53cmo
 	desc = "CMO"
 	region = ACCESS_REGION_COMMAND
+
+//ENGINEERING
+/var/const/access_seneng = 90
+/datum/access/seneng
+	id = access_seneng
+	desc = "Senior Engineer"
+	region = ACCESS_REGION_ENGINEERING
+
+//Fuck SS13 SCP creator ~Archemagus
+/var/const/access_solgov_crew = 80
+/datum/access/solgov_crew
+	id = access_solgov_crew
+	desc = "SolGov Crew"
+	region = ACCESS_REGION_GENERAL
+
+/var/const/access_nanotrasen = 81
+/datum/access/nanotrasen
+	id = access_nanotrasen
+	desc = "NanoTrasen Personnel"
+	region = ACCESS_REGION_RESEARCH

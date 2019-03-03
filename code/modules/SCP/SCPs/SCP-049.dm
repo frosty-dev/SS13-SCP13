@@ -75,7 +75,7 @@ GLOBAL_LIST_EMPTY(scp049_1s)
 /mob/living/carbon/human/scp049/proc/update_stuff()
 	// stand_icon tends to come back after movement
 	fix_icons()
-	
+
 /mob/living/carbon/human/scp049/proc/fix_icons()
 	icon = null
 	icon_state = null
@@ -91,7 +91,7 @@ GLOBAL_LIST_EMPTY(scp049_1s)
 
 	if (lying || resting)
 		SH.icon = turn(icon('icons/mob/scp049.dmi'), 90)
-	else 
+	else
 		SH.icon = 'icons/mob/scp049.dmi'
 
 	SH.dir = dir
@@ -172,7 +172,7 @@ GLOBAL_LIST_EMPTY(scp049_1s)
 	switch (stat)
 		if (CONSCIOUS, UNCONSCIOUS)
 			visible_message("<span class = 'danger'><big>[H] touches [src], killing them instantly!</big></span>")
-			mutations |= HUSK
+			//mutations |= HUSK
 			regenerate_icons()
 			death()
 		if (DEAD)
@@ -233,8 +233,11 @@ GLOBAL_LIST_EMPTY(scp049_1s)
 						if (!H.client)
 							foundclient = FALSE
 							for (var/mob/observer/ghost/ghost in GLOB.ghost_mob_list)
-								if (ghost.mind.current == H)
-									ghost.reenter_corpse_p()
+								if (ghost.mind.current == H) //Force Reentering Corpse
+									ghost.stop_following()
+									ghost.mind.current.key = key
+									ghost.mind.current.teleop = null
+									ghost.mind.current.reload_fullscreen()
 									foundclient = TRUE
 
 						if (foundclient)

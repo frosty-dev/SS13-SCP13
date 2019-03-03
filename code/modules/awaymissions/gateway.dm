@@ -14,7 +14,7 @@
 		set_density(0)
 	. = ..()
 
-/obj/machinery/gateway/update_icon()
+/obj/machinery/gateway/on_update_icon()
 	if(active)
 		icon_state = "on"
 		return
@@ -40,7 +40,7 @@
 	awaygate = locate(/obj/machinery/gateway/centeraway)
 	. = ..()
 
-/obj/machinery/gateway/centerstation/update_icon()
+/obj/machinery/gateway/centerstation/on_update_icon()
 	if(active)
 		icon_state = "oncenter"
 		return
@@ -119,17 +119,15 @@ obj/machinery/gateway/centerstation/Process()
 	if(!active)		return
 	if(!awaygate)	return
 	if(awaygate.calibrated)
-		M.loc = get_step(awaygate.loc, SOUTH)
+		M.forceMove(get_step(awaygate.loc, SOUTH))
 		M.set_dir(SOUTH)
 		return
 	else
 		var/obj/effect/landmark/dest = pick(GLOB.awaydestinations)
 		if(dest)
-			M.loc = dest.loc
+			M.forceMove(dest.loc)
 			M.set_dir(SOUTH)
 			use_power(5000)
-		return
-
 
 /obj/machinery/gateway/centerstation/attackby(obj/item/device/W as obj, mob/user as mob)
 	if(isMultitool(W))
@@ -154,7 +152,7 @@ obj/machinery/gateway/centerstation/Process()
 	stationgate = locate(/obj/machinery/gateway/centerstation)
 	. = ..()
 
-/obj/machinery/gateway/centeraway/update_icon()
+/obj/machinery/gateway/centeraway/on_update_icon()
 	if(active)
 		icon_state = "oncenter"
 		return
@@ -212,7 +210,6 @@ obj/machinery/gateway/centerstation/Process()
 		return
 	toggleoff()
 
-
 /obj/machinery/gateway/centeraway/Bumped(atom/movable/M as mob|obj)
 	if(!ready)	return
 	if(!active)	return
@@ -221,9 +218,8 @@ obj/machinery/gateway/centerstation/Process()
 			if(E.imp_in == M)//Checking that it's actually implanted vs just in their pocket
 				to_chat(M, "The remote gate has detected your exile implant and is blocking your entry.")
 				return
-	M.loc = get_step(stationgate.loc, SOUTH)
+	M.forceMove(get_step(stationgate.loc, SOUTH))
 	M.set_dir(SOUTH)
-
 
 /obj/machinery/gateway/centeraway/attackby(obj/item/device/W as obj, mob/user as mob)
 	if(isMultitool(W))

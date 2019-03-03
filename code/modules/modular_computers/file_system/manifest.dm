@@ -26,9 +26,9 @@
 	var/list/mil_ranks = list() // HTML to prepend to name
 	var/dat = {"
 	<head><style>
-		.manifest {border-collapse:collapse;}
+		.manifest {border-collapse:collapse;width:100%;}
 		.manifest td, th {border:1px solid [monochrome?"black":"[OOC?"black; background-color:#272727; color:white":"#DEF; background-color:white; color:black"]"]; padding:.25em}
-		.manifest th {height: 2em; [monochrome?"border-top-width: 3px":"background-color: [OOC?"#40628A":"#48C"]; color:white"]}
+		.manifest th {height: 2em; [monochrome?"border-top-width: 3px":"background-color: [OOC?"#40628a":"#48C"]; color:white"]}
 		.manifest tr.head th { [monochrome?"border-top-width: 1px":"background-color: [OOC?"#013D3B;":"#488;"]"] }
 		.manifest td:first-child {text-align:right}
 		.manifest tr.alt td {[monochrome?"border-top-width: 2px":"background-color: [OOC?"#373737; color:white":"#DEF"]"]}
@@ -37,8 +37,8 @@
 	<tr class='head'><th>Name</th><th>Position</th><th>Activity</th></tr>
 	"}
 	// sort mobs
-	for(var/datum/computer_file/crew_record/CR in GLOB.all_crew_records)
-		var/name = CR.get_name()
+	for(var/datum/computer_file/report/crew_record/CR in GLOB.all_crew_records)
+		var/name = CR.get_formal_name()
 		var/rank = CR.get_job()
 		mil_ranks[name] = ""
 
@@ -52,7 +52,8 @@
 		if(OOC)
 			var/active = 0
 			for(var/mob/M in GLOB.player_list)
-				if(M.real_name == name && M.client && M.client.inactivity <= 10 * 60 * 10)
+				var/mob_real_name = M.real_name
+				if(sanitize(mob_real_name) == CR.get_name() && M.client && M.client.inactivity <= 10 MINUTES)
 					active = 1
 					break
 			isactive[name] = active ? "Active" : "Inactive"
@@ -71,10 +72,10 @@
 			misc[name] = rank
 
 	// Synthetics don't have actual records, so we will pull them from here.
-	for(var/mob/living/silicon/ai/ai in GLOB.mob_list)
+	for(var/mob/living/silicon/ai/ai in SSmobs.mob_list)
 		bot[ai.name] = "Artificial Intelligence"
 
-	for(var/mob/living/silicon/robot/robot in GLOB.mob_list)
+	for(var/mob/living/silicon/robot/robot in SSmobs.mob_list)
 		// No combat/syndicate cyborgs, no drones.
 		if(robot.module && robot.module.hide_on_manifest)
 			continue
@@ -96,13 +97,13 @@
 /proc/silicon_nano_crew_manifest(var/list/filter)
 	var/list/filtered_entries = list()
 
-	for(var/mob/living/silicon/ai/ai in GLOB.mob_list)
+	for(var/mob/living/silicon/ai/ai in SSmobs.mob_list)
 		filtered_entries.Add(list(list(
 			"name" = ai.name,
 			"rank" = "Artificial Intelligence",
 			"status" = ""
 		)))
-	for(var/mob/living/silicon/robot/robot in GLOB.mob_list)
+	for(var/mob/living/silicon/robot/robot in SSmobs.mob_list)
 		if(robot.module && robot.module.hide_on_manifest)
 			continue
 		filtered_entries.Add(list(list(
@@ -114,7 +115,7 @@
 
 /proc/filtered_nano_crew_manifest(var/list/filter, var/blacklist = FALSE)
 	var/list/filtered_entries = list()
-	for(var/datum/computer_file/crew_record/CR in department_crew_manifest(filter, blacklist))
+	for(var/datum/computer_file/report/crew_record/CR in department_crew_manifest(filter, blacklist))
 		filtered_entries.Add(list(list(
 			"name" = CR.get_name(),
 			"rank" = CR.get_job(),
@@ -139,3 +140,8 @@
 		"civ" = filtered_nano_crew_manifest(GLOB.civilian_positions),\
 		"misc" = filtered_nano_crew_manifest(GLOB.unsorted_positions)\
 		)
+
+/proc/flat_nano_crew_manifest()
+	. = list()
+	. += filtered_nano_crew_manifest(null, TRUE)
+	. += silicon_nano_crew_manifest(GLOB.nonhuman_positions)

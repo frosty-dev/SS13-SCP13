@@ -3,34 +3,32 @@
 	icon_state = "laser"
 	fire_sound='sound/weapons/Laser.ogg'
 	pass_flags = PASS_FLAG_TABLE | PASS_FLAG_GLASS | PASS_FLAG_GRILLE
-	damage = 40
+	damage = 30
 	damage_type = BURN
 	sharp = 1 //concentrated burns
 	check_armour = "laser"
 	eyeblur = 4
 	hitscan = 1
 	invisibility = 101	//beam projectiles are invisible as they are rendered by the effect engine
+	penetration_modifier = 0.3
+	armor_penetration = 10
 
 	muzzle_type = /obj/effect/projectile/laser/muzzle
 	tracer_type = /obj/effect/projectile/laser/tracer
 	impact_type = /obj/effect/projectile/laser/impact
 
 /obj/item/projectile/beam/practice
-	name = "laser"
-	icon_state = "laser"
 	fire_sound = 'sound/weapons/Taser.ogg'
-	pass_flags = PASS_FLAG_TABLE | PASS_FLAG_GLASS | PASS_FLAG_GRILLE
 	damage = 2
-	damage_type = BURN
-	check_armour = "laser"
 	eyeblur = 2
 
 /obj/item/projectile/beam/smalllaser
 	damage = 25
+	armor_penetration = 0
 
 /obj/item/projectile/beam/midlaser
-	damage = 50
-	armor_penetration = 10
+	damage = 40
+	armor_penetration = 20
 
 /obj/item/projectile/beam/heavylaser
 	name = "heavy laser"
@@ -59,21 +57,24 @@
 	damage = 30
 	armor_penetration = 50
 
-/obj/item/projectile/beam/pulse
+/obj/item/projectile/beam/pulse //pulse pistol
 	name = "pulse"
 	icon_state = "u_laser"
 	fire_sound='sound/weapons/pulse.ogg'
-	damage = 15 //lower damage, but fires in bursts
+	damage = 15
+	armor_penetration = 30
 
 	muzzle_type = /obj/effect/projectile/laser/pulse/muzzle
 	tracer_type = /obj/effect/projectile/laser/pulse/tracer
 	impact_type = /obj/effect/projectile/laser/pulse/impact
 
-/obj/item/projectile/beam/pulse/mid
+/obj/item/projectile/beam/pulse/mid //pulse carabine
 	damage = 20
+	armor_penetration = 40
 
-/obj/item/projectile/beam/pulse/heavy
-	damage = 25
+/obj/item/projectile/beam/pulse/heavy //pulse rifle
+	damage = 30
+	armor_penetration = 50
 
 /obj/item/projectile/beam/pulse/destroy
 	name = "destroyer pulse"
@@ -84,16 +85,6 @@
 	if(isturf(target))
 		target.ex_act(2)
 	..()
-
-/obj/item/projectile/beam/pulse/bogani
-	name = "pulsar"
-	icon_state = "bogb"
-	fire_sound='sound/weapons/blaster.ogg'
-	damage = 30
-
-	muzzle_type = /obj/effect/projectile/laser/bogani/muzzle
-	tracer_type = /obj/effect/projectile/laser/bogani/tracer
-	impact_type = /obj/effect/projectile/laser/bogani/impact
 
 /obj/item/projectile/beam/emitter
 	name = "emitter beam"
@@ -195,13 +186,13 @@
 	name = "shock beam"
 	damage_type = ELECTROCUTE
 	damage = 10
-	agony  = 5
+	agony  = 15
 	fire_sound='sound/weapons/pulse.ogg'
 
 /obj/item/projectile/beam/stun/shock/heavy
 	name = "heavy shock beam"
 	damage = 20
-	agony  = 10
+	agony  = 30
 
 /obj/item/projectile/beam/plasmacutter
 	name = "plasma arc"

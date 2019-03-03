@@ -7,6 +7,11 @@
 		shutdown_computer()
 		return 0
 
+	if(updating)
+		handle_power()
+		process_updates()
+		return 1
+
 	if(active_program && active_program.requires_ntnet && !get_ntnet_status(active_program.requires_ntnet_feature)) // Active program requires NTNet to run but we've just lost connection. Crash.
 		active_program.event_networkfailure(0)
 
@@ -55,18 +60,28 @@
 			prog_file = new prog_file
 			hard_drive.store_file(prog_file)
 
-/obj/item/modular_computer/New()
+/obj/item/modular_computer/Initialize()
 	START_PROCESSING(SSobj, src)
+
+	if(stores_pen && ispath(stored_pen))
+		stored_pen = new stored_pen(src)
+
 	install_default_hardware()
 	if(hard_drive)
 		install_default_programs()
+	if(scanner)
+		scanner.do_after_install(null, src)
 	update_icon()
 	update_verbs()
-	..()
+	update_name()
+	. = ..()
 
 /obj/item/modular_computer/Destroy()
 	kill_program(1)
+	QDEL_NULL_LIST(terminals)
 	STOP_PROCESSING(SSobj, src)
+	if(istype(stored_pen))
+		QDEL_NULL(stored_pen)
 	for(var/obj/item/weapon/computer_hardware/CH in src.get_all_components())
 		uninstall_component(null, CH)
 		qdel(CH)
@@ -81,11 +96,11 @@
 		to_chat(user, "You emag \the [src]. It's screen briefly shows a \"OVERRIDE ACCEPTED: New software downloads available.\" message.")
 		return 1
 
-/obj/item/modular_computer/update_icon()
+/obj/item/modular_computer/on_update_icon()
 	icon_state = icon_state_unpowered
 
 	overlays.Cut()
-	if(bsod)
+	if(bsod || updating)
 		overlays.Add("bsod")
 		return
 	if(!enabled)
@@ -93,7 +108,7 @@
 			overlays.Add(icon_state_screensaver)
 		set_light(0)
 		return
-	set_light(light_strength)
+	set_light(0.2, 0.1, light_strength)
 	if(active_program)
 		overlays.Add(active_program.program_icon_state ? active_program.program_icon_state : icon_state_menu)
 		if(active_program.program_key_state)
@@ -150,9 +165,17 @@
 
 /obj/item/modular_computer/proc/shutdown_computer(var/loud = 1)
 	kill_program(1)
+	QDEL_NULL_LIST(terminals)
 	for(var/datum/computer_file/program/P in idle_threads)
 		P.kill_program(1)
 		idle_threads.Remove(P)
+
+	//Not so fast!
+	if(updates)
+		handle_updates(TRUE)
+		update_icon()
+		return
+
 	if(loud)
 		visible_message("\The [src] shuts down.", range = 1)
 	enabled = 0
@@ -160,12 +183,18 @@
 
 /obj/item/modular_computer/proc/enable_computer(var/mob/user = null)
 	enabled = 1
+
+	//Not so fast!
+	if(updates)
+		handle_updates(FALSE)
+
 	update_icon()
 
 	// Autorun feature
-	var/datum/computer_file/data/autorun = hard_drive ? hard_drive.find_file_by_name("autorun") : null
-	if(istype(autorun))
-		run_program(autorun.stored_data)
+	if(!updates)
+		var/datum/computer_file/data/autorun = hard_drive ? hard_drive.find_file_by_name("autorun") : null
+		if(istype(autorun))
+			run_program(autorun.stored_data)
 
 	if(user)
 		ui_interact(user)
@@ -176,7 +205,7 @@
 
 	idle_threads.Add(active_program)
 	active_program.program_state = PROGRAM_STATE_BACKGROUND // Should close any existing UIs
-	GLOB.nanomanager.close_uis(active_program.NM ? active_program.NM : active_program)
+	SSnano.close_uis(active_program.NM ? active_program.NM : active_program)
 	active_program = null
 	update_icon()
 	if(istype(user))
@@ -194,7 +223,6 @@
 		return
 
 	P.computer = src
-
 	if(!P.is_supported_by_hardware(hardware_flag, 1, user))
 		return
 	if(P in idle_threads)
@@ -222,11 +250,11 @@
 
 /obj/item/modular_computer/proc/update_uis()
 	if(active_program) //Should we update program ui or computer ui?
-		GLOB.nanomanager.update_uis(active_program)
+		SSnano.update_uis(active_program)
 		if(active_program.NM)
-			GLOB.nanomanager.update_uis(active_program.NM)
+			SSnano.update_uis(active_program.NM)
 	else
-		GLOB.nanomanager.update_uis(src)
+		SSnano.update_uis(src)
 
 /obj/item/modular_computer/proc/check_update_ui_need()
 	var/ui_update_needed = 0
@@ -276,8 +304,46 @@
 	if(!istype(autorun))
 		autorun = new/datum/computer_file/data()
 		autorun.filename = "autorun"
+		autorun.stored_data = "[program]"
 		hard_drive.store_file(autorun)
-	if(autorun.stored_data == program)
-		autorun.stored_data = null
-	else
-		autorun.stored_data = program
+
+/obj/item/modular_computer/GetIdCard()
+	if(card_slot && card_slot.can_broadcast && istype(card_slot.stored_card))
+		return card_slot.stored_card
+
+/obj/item/modular_computer/proc/update_name()
+
+/obj/item/modular_computer/get_cell()
+	if(battery_module)
+		return battery_module.get_cell()
+
+/obj/item/modular_computer/proc/has_terminal(mob/user)
+	for(var/datum/terminal/terminal in terminals)
+		if(terminal.get_user() == user)
+			return terminal
+
+/obj/item/modular_computer/proc/open_terminal(mob/user)
+	if(!enabled)
+		return
+	if(has_terminal(user))
+		return
+	LAZYADD(terminals, new /datum/terminal/(user, src))
+
+/obj/item/modular_computer/proc/handle_updates(shutdown_after)
+	updating = TRUE
+	update_progress = 0
+	update_postshutdown = shutdown_after
+
+/obj/item/modular_computer/proc/process_updates()
+	if(update_progress < updates)
+		update_progress += rand(0, 2500)
+		return
+
+	//It's done.
+	updating = FALSE
+	update_icon()
+	updates = 0
+	update_progress = 0
+
+	if(update_postshutdown)
+		shutdown_computer()

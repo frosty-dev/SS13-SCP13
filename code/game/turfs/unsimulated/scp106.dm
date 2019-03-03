@@ -1,5 +1,4 @@
 // floors
-GLOBAL_LIST_EMPTY(scp106_floors)
 
 /turf/unsimulated/floor/scp106
 	name = "strange corrosive void"
@@ -30,7 +29,7 @@ GLOBAL_LIST_EMPTY(scp106_floors)
 					var/mob/living/carbon/C = L
 					for (var/organ in shuffle(C.organs))
 						var/obj/item/organ/I = organ
-						if (I.scp106_vulnerable && !(I.status & ORGAN_DEAD) && prob(10))
+						if (isscp106_vulnerable(I) && !(I.status & ORGAN_DEAD) && prob(10))
 							I.scp106_affected = TRUE
 							break
 				L.adjustFireLoss(3)

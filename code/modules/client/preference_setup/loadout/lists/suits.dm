@@ -6,7 +6,6 @@
 /datum/gear/suit/poncho
 	display_name = "poncho selection"
 	path = /obj/item/clothing/suit/poncho/colored
-	cost = 1
 	flags = GEAR_HAS_TYPE_SELECTION
 
 /datum/gear/suit/security_poncho
@@ -24,6 +23,10 @@
 /datum/gear/suit/science_poncho
 	display_name = "poncho, science"
 	path = /obj/item/clothing/suit/poncho/roles/science
+
+/datum/gear/suit/nanotrasen_poncho
+	display_name = "poncho, NanoTrasen"
+	path = /obj/item/clothing/suit/poncho/roles/science/nanotrasen
 
 /datum/gear/suit/cargo_poncho
 	display_name = "poncho, supply"
@@ -74,6 +77,16 @@
 	path = /obj/item/clothing/suit/storage/toggle/labcoat
 	flags = GEAR_HAS_COLOR_SELECTION
 
+/datum/gear/suit/labcoat_corp
+	display_name = "labcoat, corporate colors"
+	path = /obj/item/clothing/suit/storage/toggle/labcoat/science
+	flags = GEAR_HAS_TYPE_SELECTION
+
+/datum/gear/suit/labcoat_corp_rd
+	display_name = "labcoat, research director, corporate colors"
+	path = /obj/item/clothing/suit/storage/toggle/labcoat/rd
+	flags = GEAR_HAS_TYPE_SELECTION
+
 /datum/gear/suit/coat
 	display_name = "coat, colour select"
 	path = /obj/item/clothing/suit/storage/toggle/labcoat/coat
@@ -86,10 +99,12 @@
 /datum/gear/suit/leather/New()
 	..()
 	var/jackets = list()
+	jackets += /obj/item/clothing/suit/storage/tgbomber
 	jackets += /obj/item/clothing/suit/storage/toggle/bomber
 	jackets += /obj/item/clothing/suit/storage/leather_jacket/nanotrasen
 	jackets += /obj/item/clothing/suit/storage/toggle/brown_jacket/nanotrasen
 	jackets += /obj/item/clothing/suit/storage/leather_jacket
+	jackets += /obj/item/clothing/suit/storage/toggle/longjacket
 	jackets += /obj/item/clothing/suit/storage/toggle/brown_jacket
 	jackets += /obj/item/clothing/suit/storage/mbill
 	gear_tweaks += new/datum/gear_tweak/path/specified_types_list(jackets)
@@ -97,6 +112,10 @@
 /datum/gear/suit/wintercoat
 	display_name = "winter coat"
 	path = /obj/item/clothing/suit/storage/hooded/wintercoat
+
+/datum/gear/suit/wintercoat_dais
+	display_name = "winter coat, DAIS"
+	path = /obj/item/clothing/suit/storage/hooded/wintercoat/dais
 
 /datum/gear/suit/track
 	display_name = "track jacket selection"
@@ -106,12 +125,10 @@
 /datum/gear/suit/blueapron
 	display_name = "apron, blue"
 	path = /obj/item/clothing/suit/apron
-	cost = 1
 
 /datum/gear/suit/overalls
 	display_name = "apron, overalls"
 	path = /obj/item/clothing/suit/apron/overalls
-	cost = 1
 
 /datum/gear/suit/medcoat
 	display_name = "medical suit selection"
@@ -119,17 +136,16 @@
 
 /datum/gear/suit/medcoat/New()
 	..()
-	gear_tweaks += new/datum/gear_tweak/path/specified_types_args(/obj/item/clothing/suit/storage/toggle/fr_jacket, /obj/item/clothing/suit/storage/toggle/labcoat/blue, /obj/item/clothing/suit/surgicalapron)
+	gear_tweaks += new/datum/gear_tweak/path/specified_types_args(/obj/item/clothing/suit/storage/toggle/fr_jacket, /obj/item/clothing/suit/storage/toggle/fr_jacket/ems, /obj/item/clothing/suit/storage/toggle/labcoat/blue, /obj/item/clothing/suit/surgicalapron)
 
 /datum/gear/suit/trenchcoat
 	display_name = "trenchcoat selection"
 	path = /obj/item/clothing/suit
-	cost = 3
 
 /datum/gear/suit/trenchcoat/New()
 	..()
 	var/trenchcoats = list()
-	trenchcoats += /obj/item/clothing/suit/storage/det_trench
-	trenchcoats += /obj/item/clothing/suit/storage/det_trench/grey
+	trenchcoats += /obj/item/clothing/suit/storage/det_trench/ft
+	trenchcoats += /obj/item/clothing/suit/storage/det_trench/ft/grey
 	trenchcoats += /obj/item/clothing/suit/leathercoat
 	gear_tweaks += new/datum/gear_tweak/path/specified_types_list(trenchcoats)

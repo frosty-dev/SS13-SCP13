@@ -7,14 +7,14 @@
 	var/list/code = list()
 	var/list/lastattempt = list()
 	var/attempts = 10
-	var/codelen = 4
+	var/passwordlen = 4
 	locked = 1
 
 /obj/structure/closet/crate/secure/loot/New()
 	..()
 	var/list/digits = list("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
 
-	for(var/i in 1 to codelen)
+	for(var/i in 1 to passwordlen)
 		code += pick(digits)
 		digits -= code[code.len]
 
@@ -35,12 +35,9 @@
 			new/obj/item/clothing/head/helmet/space(src)
 		if(11 to 15)
 			new/obj/item/weapon/reagent_containers/glass/beaker/bluespace(src)
-		if(16 to 20)
+		if(16 to 25)
 			for(var/i = 0, i < 10, i++)
 				new/obj/item/weapon/ore/diamond(src)
-		if(21 to 25)
-			for(var/i = 0, i < 3, i++)
-				new/obj/machinery/portable_atmospherics/hydroponics(src)
 		if(26 to 30)
 			for(var/i = 0, i < 3, i++)
 				new/obj/item/weapon/reagent_containers/glass/beaker/noreact(src)
@@ -72,7 +69,7 @@
 		if(63 to 64)
 			var/t = rand(4,7)
 			for(var/i = 0, i < t, ++i)
-				var/newcoin = pick(/obj/item/weapon/coin/silver, /obj/item/weapon/coin/silver, /obj/item/weapon/coin/silver, /obj/item/weapon/coin/iron, /obj/item/weapon/coin/iron, /obj/item/weapon/coin/iron, /obj/item/weapon/coin/gold, /obj/item/weapon/coin/diamond, /obj/item/weapon/coin/phoron, /obj/item/weapon/coin/uranium, /obj/item/weapon/coin/platinum)
+				var/newcoin = pick(/obj/item/weapon/material/coin/silver, /obj/item/weapon/material/coin/silver, /obj/item/weapon/material/coin/silver, /obj/item/weapon/material/coin/iron, /obj/item/weapon/material/coin/iron, /obj/item/weapon/material/coin/iron, /obj/item/weapon/material/coin/gold, /obj/item/weapon/material/coin/diamond, /obj/item/weapon/material/coin/phoron, /obj/item/weapon/material/coin/uranium, /obj/item/weapon/material/coin/platinum)
 				new newcoin(src)
 		if(65 to 66)
 			new/obj/item/clothing/suit/ianshirt(src)
@@ -104,7 +101,7 @@
 		if(88)
 			new/obj/item/xenos_claw(src)
 		if(89)
-			new/obj/item/organ/internal/xenos/plasmavessel(src)
+			new/obj/item/organ/internal/xeno/plasmavessel(src)
 		if(90)
 			new/obj/item/organ/internal/heart(src)
 		if(91)
@@ -117,16 +114,13 @@
 			new/obj/item/weapon/storage/backpack/clown(src)
 			new/obj/item/clothing/under/rank/clown(src)
 			new/obj/item/clothing/shoes/clown_shoes(src)
-			new/obj/item/device/pda/clown(src)
 			new/obj/item/clothing/mask/gas/clown_hat(src)
 			new/obj/item/weapon/bikehorn(src)
-			//new/obj/item/weapon/stamp/clown(src) I'd add it, but only clowns can use it
 			new/obj/item/weapon/pen/crayon/rainbow(src)
 			new/obj/item/weapon/reagent_containers/spray/waterflower(src)
 		if(95)
 			new/obj/item/clothing/under/mime(src)
 			new/obj/item/clothing/shoes/black(src)
-			new/obj/item/device/pda/mime(src)
 			new/obj/item/clothing/gloves/white(src)
 			new/obj/item/clothing/mask/gas/mime(src)
 			new/obj/item/clothing/head/beret(src)
@@ -150,11 +144,11 @@
 		return
 
 	to_chat(user, "<span class='notice'>The crate is locked with a Deca-code lock.</span>")
-	var/input = input(user, "Enter [codelen] digits.", "Deca-Code Lock", "") as text
+	var/input = input(user, "Enter [passwordlen] digits.", "Deca-Code Lock", "") as text
 	if(!Adjacent(user))
 		return
 
-	if(input == null || length(input) != codelen)
+	if(input == null || length(input) != passwordlen)
 		to_chat(user, "<span class='notice'>You leave the crate alone.</span>")
 	else if(check_input(input) && locked)
 		to_chat(user, "<span class='notice'>The crate unlocks!</span>")
@@ -175,12 +169,12 @@
 		locked = 0
 
 /obj/structure/closet/crate/secure/loot/proc/check_input(var/input)
-	if(length(input) != codelen)
+	if(length(input) != passwordlen)
 		return 0
 
 	. = 1
 	lastattempt.Cut()
-	for(var/i in 1 to codelen)
+	for(var/i in 1 to passwordlen)
 		var/guesschar = copytext(input, i, i+1)
 		lastattempt += guesschar
 		if(guesschar != code[i])
@@ -199,7 +193,7 @@
 				var/cows = 0
 
 				var/list/code_contents = code.Copy()
-				for(var/i in 1 to codelen)
+				for(var/i in 1 to passwordlen)
 					if(lastattempt[i] == code[i])
 						++bulls
 					else if(lastattempt[i] in code_contents)

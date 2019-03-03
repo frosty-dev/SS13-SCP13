@@ -63,7 +63,9 @@
 	set_interface(interface)
 
 	if(title)
-		src.title = sanitize(title)
+		src.title = replacetext(title, "\improper", "")
+		src.title = replacetext(src.title, "\proper", "")
+		src.title = sanitize(src.title)
 	if(width)
 		src.width = width
 	if(height)
@@ -76,6 +78,17 @@
 
 	var/datum/asset/assets = get_asset_datum(/datum/asset/simple/tgui)
 	assets.send(user)
+
+ /**
+  * private
+  *
+  * Removes any remaining references prior to garbage collection. Use close() externally.
+ **/
+
+/datum/tgui/Destroy()
+	user = null
+	src_object = null
+	. = ..()
 
  /**
   * public
@@ -254,8 +267,11 @@
 	// Generate the JSON.
 	var/json = json_encode(json_data)
 	// Strip #255/improper.
+	json = extA2U(json)
 	json = replacetext(json, "\proper", "")
 	json = replacetext(json, "\improper", "")
+
+
 	return json
 
  /**

@@ -84,52 +84,52 @@
 			else
 				var/f2 = text2path(f)
 				if(text_starts_with(f, "/mob"))
-					for(var/m in GLOB.mob_list)
+					for(var/mob/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/turf/space"))
-					for(var/turf/space/m in global.turf_list)
+					for(var/turf/space/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/turf/simulated"))
-					for(var/m in global.simulated_turf_list)
+					for(var/turf/simulated/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/turf/unsimulated"))
-					for(var/m in global.unsimulated_turf_list)
+					for(var/turf/unsimulated/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/turf"))
-					for(var/m in global.turf_list)
+					for(var/turf/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/area"))
-					for(var/m in GLOB.areas)
+					for(var/area/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/obj/item"))
-					for(var/m in global.item_list)
+					for(var/obj/item/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/obj/machinery"))
-					for(var/m in SSmachines.all_machinery)
-						if (istype(m, f2))
+					for(var/obj/machinery/m in world)
+						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/obj"))
-					for(var/m in global.obj_list)
+					for(var/obj/m in world)
 						if(istype(m, f2))
 							from_objs += m
 
 				else if(text_starts_with(f, "/atom"))
-					for(var/m in world)
+					for(var/atom/m in world)
 						if(istype(m, f2))
 							from_objs += m
 /*

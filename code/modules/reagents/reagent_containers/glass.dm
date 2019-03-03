@@ -23,7 +23,7 @@
 		/obj/machinery/reagentgrinder,
 		/obj/structure/table,
 		/obj/structure/closet,
-		/obj/structure/sink,
+		/obj/structure/hygiene/sink,
 		/obj/item/weapon/storage,
 		/obj/machinery/atmospherics/unary/cryo_cell,
 		/obj/item/weapon/grenade/chem_grenade,
@@ -99,6 +99,7 @@
 			return 1
 		if(reagents && reagents.total_volume)
 			to_chat(user, "<span class='notice'>You splash the contents of \the [src] onto [target].</span>") //They are on harm intent, aka wanting to spill it.
+			playsound(src,'sound/effects/Splash_Small_01_mono.ogg',50,1)
 			reagents.splash(target, reagents.total_volume)
 			return 1
 	..()
@@ -110,11 +111,11 @@
 	icon_state = "beaker"
 	item_state = "beaker"
 	center_of_mass = "x=15;y=10"
-	matter = list("glass" = 500)
+	matter = list(MATERIAL_GLASS = 500)
 
 	New()
 		..()
-		desc += " Can hold up to [volume] units."
+		desc += " It can hold up to [volume] units."
 
 	on_reagent_change()
 		update_icon()
@@ -159,28 +160,41 @@
 	desc = "A large beaker."
 	icon_state = "beakerlarge"
 	center_of_mass = "x=16;y=10"
-	matter = list("glass" = 5000)
+	matter = list(MATERIAL_GLASS = 5000)
 	volume = 120
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = "5;10;15;25;30;60;120"
 	atom_flags = ATOM_FLAG_OPEN_CONTAINER
+
+/obj/item/weapon/reagent_containers/glass/beaker/bowl
+	name = "mixing bowl"
+	desc = "A large mixing bowl."
+	icon = 'icons/obj/kitchen.dmi'
+	icon_state = "mixingbowl"
+	center_of_mass = "x=16;y=10"
+	matter = list(MATERIAL_STEEL = 300)
+	volume = 180
+	amount_per_transfer_from_this = 10
+	possible_transfer_amounts = "5;10;15;25;30;60;180"
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
+	unacidable = 0
 
 /obj/item/weapon/reagent_containers/glass/beaker/noreact
 	name = "cryostasis beaker"
 	desc = "A cryostasis beaker that allows for chemical storage without reactions."
 	icon_state = "beakernoreact"
 	center_of_mass = "x=16;y=8"
-	matter = list("glass" = 500)
+	matter = list(MATERIAL_GLASS = 500)
 	volume = 60
 	amount_per_transfer_from_this = 10
-	atom_flags = ATOM_FLAG_OPEN_CONTAINER | ATOM_FLAG_NO_REACT
+	atom_flags = ATOM_FLAG_NO_TEMP_CHANGE | ATOM_FLAG_OPEN_CONTAINER | ATOM_FLAG_NO_REACT
 
 /obj/item/weapon/reagent_containers/glass/beaker/bluespace
 	name = "bluespace beaker"
 	desc = "A bluespace beaker, powered by experimental bluespace technology."
 	icon_state = "beakerbluespace"
 	center_of_mass = "x=16;y=10"
-	matter = list("glass" = 5000)
+	matter = list(MATERIAL_GLASS = 5000)
 	volume = 300
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = "5;10;15;25;30;60;120;150;200;250;300"
@@ -191,17 +205,51 @@
 	desc = "A small glass vial."
 	icon_state = "vial"
 	center_of_mass = "x=15;y=8"
-	matter = list("glass" = 250)
+	matter = list(MATERIAL_GLASS = 250)
 	volume = 30
 	w_class = ITEM_SIZE_TINY //half the volume of a bottle, half the size
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = "5;10;15;30"
 	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 
+/obj/item/weapon/reagent_containers/glass/beaker/insulated
+	name = "insulated beaker"
+	desc = "A glass beaker surrounded with black insulation."
+	icon_state = "insulated"
+	center_of_mass = "x=15;y=8"
+	matter = list(MATERIAL_GLASS = 500, MATERIAL_STEEL = 250)
+	possible_transfer_amounts = "5;10;15;30"
+	atom_flags = null
+	temperature_coefficient = 1
+
+/obj/item/weapon/reagent_containers/glass/beaker/insulated/large
+	name = "large insulated beaker"
+	icon_state = "insulatedlarge"
+	center_of_mass = "x=16;y=10"
+	matter = list(MATERIAL_GLASS = 5000, MATERIAL_STEEL = 2500)
+	volume = 120
+
 /obj/item/weapon/reagent_containers/glass/beaker/cryoxadone
 	New()
 		..()
 		reagents.add_reagent(/datum/reagent/cryoxadone, 30)
+		update_icon()
+
+/obj/item/weapon/reagent_containers/glass/beaker/large/cryolife //extreme powerfull beaker for cryo
+	New()
+		..()
+		reagents.add_reagent(/datum/reagent/inaprovaline, 10)
+		reagents.add_reagent(/datum/reagent/iron, 10)
+		reagents.add_reagent(/datum/reagent/peridaxon, 10)
+		reagents.add_reagent(/datum/reagent/tramadol, 10)
+		reagents.add_reagent(/datum/reagent/tricordrazine, 10)
+		reagents.add_reagent(/datum/reagent/dexalinp, 10)
+		reagents.add_reagent(/datum/reagent/dylovene, 10)
+		reagents.add_reagent(/datum/reagent/hyronalin, 10)
+		reagents.add_reagent(/datum/reagent/cryoxadone, 10)
+		reagents.add_reagent(/datum/reagent/clonexadone, 10)
+		reagents.add_reagent(/datum/reagent/kelotane, 10)
+		reagents.add_reagent(/datum/reagent/bicaridine, 10)
 		update_icon()
 
 /obj/item/weapon/reagent_containers/glass/beaker/sulphuric
@@ -217,7 +265,7 @@
 	icon_state = "bucket"
 	item_state = "bucket"
 	center_of_mass = "x=16;y=9"
-	matter = list(DEFAULT_WALL_MATERIAL = 280)
+	matter = list(MATERIAL_STEEL = 280)
 	w_class = ITEM_SIZE_NORMAL
 	amount_per_transfer_from_this = 20
 	possible_transfer_amounts = "10;20;30;60;120;150;180"
@@ -231,7 +279,6 @@
 		to_chat(user, "You add [D] to [src].")
 		qdel(D)
 		user.put_in_hands(new /obj/item/weapon/bucket_sensor)
-		user.drop_from_inventory(src)
 		qdel(src)
 		return
 	else if(istype(D, /obj/item/weapon/mop))
@@ -245,11 +292,15 @@
 	else
 		return ..()
 
-/obj/item/weapon/reagent_containers/glass/bucket/update_icon()
+/obj/item/weapon/reagent_containers/glass/bucket/on_update_icon()
 	overlays.Cut()
 	if (!is_open_container())
 		var/image/lid = image(icon, src, "lid_[initial(icon_state)]")
 		overlays += lid
+	else if(reagents.total_volume && round((reagents.total_volume / volume) * 100) > 80)
+		var/image/filling = image('icons/obj/reagentfillings.dmi', src, "bucket")
+		filling.color = reagents.get_color()
+		overlays += filling
 
 /*
 /obj/item/weapon/reagent_containers/glass/blender_jug
@@ -282,3 +333,54 @@
 	possible_transfer_amounts = "10;20;30;60"
 	volume = 120
 */
+//Copypasta from beaker code
+/obj/item/weapon/reagent_containers/glass/jug
+	name = "jug"
+	desc = "A glass jug. You probably can hold here a compote!"
+	icon = 'icons/obj/kuvshin.dmi'
+	icon_state = "kuvshin"
+	volume = 100
+	matter = list("glass" = 500)
+	possible_transfer_amounts = "5;10;15;25;30;60;100"
+
+/obj/item/weapon/reagent_containers/glass/jug/New()
+	..()
+	desc += " Can hold up to [volume] units."
+
+/obj/item/weapon/reagent_containers/glass/jug/on_reagent_change()
+		update_icon()
+
+/obj/item/weapon/reagent_containers/glass/jug/pickup(mob/user)
+		..()
+		update_icon()
+
+/obj/item/weapon/reagent_containers/glass/jug/dropped(mob/user)
+		..()
+		update_icon()
+
+/obj/item/weapon/reagent_containers/glass/jug/attack_hand()
+		..()
+		update_icon()
+
+/obj/item/weapon/reagent_containers/glass/jug/on_update_icon()
+	overlays.Cut()
+
+	if(reagents.total_volume)
+		var/image/filling = image(icon, src, "[icon_state]10")
+
+		var/percent = round((reagents.total_volume / volume) * 100)
+		switch(percent)
+			if(0 to 9)		filling.icon_state = "[icon_state]-10"
+			if(10 to 24) 	filling.icon_state = "[icon_state]10"
+			if(25 to 49)	filling.icon_state = "[icon_state]25"
+			if(50 to 74)	filling.icon_state = "[icon_state]50"
+			if(75 to 79)	filling.icon_state = "[icon_state]75"
+			if(80 to 90)	filling.icon_state = "[icon_state]80"
+			if(91 to INFINITY)	filling.icon_state = "[icon_state]100"
+
+		filling.color = reagents.get_color()
+		overlays += filling
+
+		if (!is_open_container())
+			var/image/lid = image(icon, src, "lid_[initial(icon_state)]")
+			overlays += lid

@@ -28,8 +28,8 @@
 
 /obj/structure/bookcase/attackby(obj/O as obj, mob/user as mob)
 	if(istype(O, /obj/item/weapon/book))
-		user.drop_item()
-		O.loc = src
+		if(!user.unEquip(O, src))
+			return
 		update_icon()
 	else if(istype(O, /obj/item/weapon/pen))
 		var/newname = sanitizeSafe(input("What would you like to title this bookshelf?"), MAX_NAME_LEN)
@@ -44,7 +44,7 @@
 			to_chat(user, "<span class='notice'>You dismantle \the [src].</span>")
 			new/obj/item/stack/material/wood(get_turf(src), 5)
 			for(var/obj/item/weapon/book/b in contents)
-				b.loc = (get_turf(src))
+				b.dropInto(loc)
 			qdel(src)
 
 	else
@@ -55,13 +55,13 @@
 	if(contents.len)
 		var/obj/item/weapon/book/choice = input("Which book would you like to remove from the shelf?") as null|obj in contents
 		if(choice)
-			if(!usr.canmove || usr.stat || usr.restrained() || !in_range(loc, usr))
+			if(!CanPhysicallyInteract(user))
 				return
 			if(ishuman(user))
 				if(!user.get_active_hand())
 					user.put_in_hands(choice)
 			else
-				choice.loc = get_turf(src)
+				choice.dropInto(loc)
 			update_icon()
 
 /obj/structure/bookcase/ex_act(severity)
@@ -73,20 +73,20 @@
 			return
 		if(2.0)
 			for(var/obj/item/weapon/book/b in contents)
-				if (prob(50)) b.loc = (get_turf(src))
+				if (prob(50)) b.dropInto(loc)
 				else qdel(b)
 			qdel(src)
 			return
 		if(3.0)
 			if (prob(50))
 				for(var/obj/item/weapon/book/b in contents)
-					b.loc = (get_turf(src))
+					b.dropInto(loc)
 				qdel(src)
 			return
 		else
 	return
 
-/obj/structure/bookcase/update_icon()
+/obj/structure/bookcase/on_update_icon()
 	if(contents.len < 5)
 		icon_state = "book-[contents.len]"
 	else
@@ -102,7 +102,8 @@
 		new /obj/item/weapon/book/manual/medical_diagnostics_manual(src)
 		new /obj/item/weapon/book/manual/medical_diagnostics_manual(src)
 		new /obj/item/weapon/book/manual/medical_diagnostics_manual(src)
-		new /obj/item/weapon/book/manual/scp/medsop(src)
+		new /obj/item/weapon/book/manual/materials_chemistry_analysis(src)
+		new /obj/item/weapon/book/manual/stasis(src)
 		update_icon()
 
 
@@ -118,7 +119,9 @@
 		new /obj/item/weapon/book/manual/atmospipes(src)
 		new /obj/item/weapon/book/manual/engineering_singularity_safety(src)
 		new /obj/item/weapon/book/manual/evaguide(src)
-		new /obj/item/weapon/book/manual/scp/engsop(src)
+		new /obj/item/weapon/book/manual/gravitygenerator(src)
+		new /obj/item/weapon/book/manual/supermatter_engine(src)
+		new /obj/item/weapon/book/manual/rust_engine(src)
 		update_icon()
 
 /obj/structure/bookcase/manuals/research_and_development
@@ -126,10 +129,16 @@
 
 	New()
 		..()
+		new /obj/item/weapon/book/manual/anomaly_spectroscopy(src)
+		new /obj/item/weapon/book/manual/anomaly_testing(src)
+		new /obj/item/weapon/book/manual/hydroponics_pod_people(src)
+		new /obj/item/weapon/book/manual/mass_spectrometry(src)
+		new /obj/item/weapon/book/manual/materials_chemistry_analysis(src)
+		new /obj/item/weapon/book/manual/stasis(src)
 		new /obj/item/weapon/book/manual/research_and_development(src)
-		new /obj/item/weapon/book/manual/scp/scisop(src)
+		new /obj/item/weapon/book/manual/ripley_build_and_repair(src)
+		new /obj/item/weapon/book/manual/robotics_cyborgs(src)
 		update_icon()
-
 
 /*
  * Book
@@ -153,7 +162,7 @@
 	if(carved)
 		if(store)
 			to_chat(user, "<span class='notice'>[store] falls out of [title]!</span>")
-			store.loc = get_turf(src.loc)
+			store.dropInto(loc)
 			store = null
 			return
 		else
@@ -162,7 +171,14 @@
 	if(src.dat)
 		user << browse(dat, "window=book;size=1000x550")
 		user.visible_message("[user] opens a book titled \"[src.title]\" and begins reading intently.")
+		message_admins("[key_name_admin(user)]<A HREF='?_src_=holder;adminmoreinfo=\ref[user]'>?</A> (<A HREF='?_src_=holder;adminplayerobservefollow=\ref[user]'>FLW</A>) прочитал(а) книгу [name]/[title].")
+		log_game("[user.ckey]/[user.real_name] прочитал(а) книгу [name]/[title].")
 		onclose(user, "book")
+		playsound(src.loc, pick('sound/items/BOOK_Turn_Page_1.ogg',\
+			'sound/items/BOOK_Turn_Page_2.ogg',\
+			'sound/items/BOOK_Turn_Page_3.ogg',\
+			'sound/items/BOOK_Turn_Page_4.ogg',\
+ 			), rand(40,80), 1)
 	else
 		to_chat(user, "This book is completely blank!")
 
@@ -170,8 +186,8 @@
 	if(carved == 1)
 		if(!store)
 			if(W.w_class < ITEM_SIZE_NORMAL)
-				user.drop_item()
-				W.loc = src
+				if(!user.unEquip(W, src))
+					return
 				store = W
 				to_chat(user, "<span class='notice'>You put [W] in [title].</span>")
 				return
@@ -234,3 +250,4 @@
 /obj/item/weapon/book/manual
 	icon = 'icons/obj/library.dmi'
 	unique = 1   // 0 - Normal book, 1 - Should not be treated as normal book, unable to be copied, unable to be modified
+	var/url // Full link to wiki-page

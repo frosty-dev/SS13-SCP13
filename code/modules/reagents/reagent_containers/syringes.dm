@@ -10,8 +10,8 @@
 	desc = "A syringe."
 	icon = 'icons/obj/syringe.dmi'
 	item_state = "syringe_0"
-	icon_state = "0"
-	matter = list("glass" = 150)
+	icon_state = "rg"
+	matter = list(MATERIAL_GLASS = 150)
 	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = null
 	volume = 15
@@ -23,6 +23,10 @@
 	var/image/filling //holds a reference to the current filling overlay
 	var/visible_name = "a syringe"
 	var/time = 30
+
+/obj/item/weapon/reagent_containers/syringe/Initialize(var/mapload)
+	. = ..()
+	update_icon()
 
 /obj/item/weapon/reagent_containers/syringe/on_reagent_change()
 	update_icon()
@@ -72,23 +76,33 @@
 		handleBodyBag(target, user)
 		return
 
-	if(!target.reagents)
-		return
+	if(user.a_intent == I_HURT)
+		if(ismob(target))
+			syringestab(target, user)
+			return
+		if(reagents && reagents.total_volume)
+			to_chat(user, "<span class='notice'>You splash the contents of \the [src] onto [target].</span>")
+			playsound(src,'sound/effects/Splash_Small_01_mono.ogg',50,1)
+			reagents.splash(target, reagents.total_volume)
+			mode = SYRINGE_DRAW
+			update_icon()
+			return
 
-	if(user.a_intent == I_HURT && ismob(target))
-		syringestab(target, user)
+	if(!target.reagents)
 		return
 
 	handleTarget(target, user)
 
-/obj/item/weapon/reagent_containers/syringe/update_icon()
+/obj/item/weapon/reagent_containers/syringe/on_update_icon()
 	overlays.Cut()
 
 	if(mode == SYRINGE_BROKEN)
 		icon_state = "broken"
 		return
 
-	var/rounded_vol = round(reagents.total_volume, round(reagents.maximum_volume / 3))
+	var/rounded_vol = Clamp(round((reagents.total_volume / volume * 15),5), 5, 15)
+	if (reagents.total_volume == 0)
+		rounded_vol = 0
 	if(ismob(loc))
 		var/injoverlay
 		switch(mode)
@@ -97,7 +111,7 @@
 			if (SYRINGE_INJECT)
 				injoverlay = "inject"
 		overlays += injoverlay
-	icon_state = "[rounded_vol]"
+	icon_state = "[initial(icon_state)][rounded_vol]"
 	item_state = "syringe_[rounded_vol]"
 
 	if(reagents.total_volume)
@@ -134,10 +148,8 @@
 			var/mob/living/carbon/T = target
 			if(!T.dna)
 				to_chat(user, "<span class='warning'>You are unable to locate any blood.</span>")
-				CRASH("[T] \[[T.type]\] was missing their dna datum!")
-				return
-			if(NOCLONE in T.mutations) //target done been et, no more blood in him
-				to_chat(user, "<span class='warning'>You are unable to locate any blood.</span>")
+				if(istype(target, /mob/living/carbon/human))
+					CRASH("[T] \[[T.type]\] was missing their dna datum!")
 				return
 
 			var/injtime = time //Taking a blood sample through a hardsuit takes longer due to needing to find a port.
@@ -150,6 +162,13 @@
 			else
 				user.visible_message("<span class='warning'>\The [user] is trying to take a blood sample from [target].</span>")
 
+			if(prob(user.skill_fail_chance(SKILL_MEDICAL, 60, SKILL_BASIC)))
+				to_chat(user, "<span class='warning'>You miss the vein!</span>")
+				var/target_zone = check_zone(user.zone_sel.selecting)
+				T.apply_damage(3, BRUTE, target_zone, damage_flags=DAM_SHARP)
+				return
+
+			injtime *= user.skill_delay_mult(SKILL_MEDICAL)
 			user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
 			user.do_attack_animation(target)
 
@@ -179,6 +198,10 @@
 		update_icon()
 
 /obj/item/weapon/reagent_containers/syringe/proc/injectReagents(var/atom/target, var/mob/user)
+	if(ismob(target) && !user.skill_check(SKILL_MEDICAL, SKILL_BASIC))
+		syringestab(target, user)
+		return
+
 	if(!reagents.total_volume)
 		to_chat(user, "<span class='notice'>The syringe is empty.</span>")
 		mode = SYRINGE_DRAW
@@ -208,7 +231,8 @@
 		return
 
 	var/mob/living/L = locate() in bag
-	injectMob(L, user, bag)
+	if(L)
+		injectMob(L, user, bag)
 
 /obj/item/weapon/reagent_containers/syringe/proc/injectMob(var/mob/living/carbon/target, var/mob/living/carbon/user, var/atom/trackTarget)
 	if(!trackTarget)
@@ -228,17 +252,15 @@
 		user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
 		user.do_attack_animation(trackTarget)
 
-		if(!do_after(user, injtime, trackTarget))
+		if(!user.do_skilled(injtime, SKILL_MEDICAL, trackTarget))
 			return
 
 		if(target != trackTarget && target.loc != trackTarget)
 			return
-
+	admin_inject_log(user, target, src, reagents.get_reagents(), amount_per_transfer_from_this)
 	var/trans = reagents.trans_to_mob(target, amount_per_transfer_from_this, CHEM_BLOOD)
 
 	if(target != user)
-		var/contained = reagentlist()
-		admin_inject_log(user, target, src, contained, trans)
 		user.visible_message("<span class='warning'>\the [user] injects \the [target] with [visible_name]!</span>", "<span class='notice'>You inject \the [target] with [trans] units of the solution. \The [src] now contains [src.reagents.total_volume] units.</span>")
 	else
 		to_chat(user, "<span class='notice'>You inject yourself with [trans] units of the solution. \The [src] now contains [src.reagents.total_volume] units.</span>")
@@ -253,7 +275,7 @@
 
 		var/mob/living/carbon/human/H = target
 
-		var/target_zone = ran_zone(check_zone(user.zone_sel.selecting, target))
+		var/target_zone = check_zone(user.zone_sel.selecting)
 		var/obj/item/organ/external/affecting = H.get_organ(target_zone)
 
 		if (!affecting || affecting.is_stump())
@@ -268,18 +290,17 @@
 		if (target != user && H.getarmor(target_zone, "melee") > 5 && prob(50))
 			for(var/mob/O in viewers(world.view, user))
 				O.show_message(text("<span class='danger'>[user] tries to stab [target] in \the [hit_area] with [src.name], but the attack is deflected by armor!</span>"), 1)
-			user.remove_from_mob(src)
 			qdel(src)
 
 			admin_attack_log(user, target, "Attacked using \a [src]", "Was attacked with \a [src]", "used \a [src] to attack")
 			return
 
 		user.visible_message("<span class='danger'>[user] stabs [target] in \the [hit_area] with [src.name]!</span>")
-		affecting.take_damage(3)
+		target.apply_damage(3, BRUTE, target_zone, damage_flags=DAM_SHARP)
 
 	else
 		user.visible_message("<span class='danger'>[user] stabs [target] with [src.name]!</span>")
-		target.take_organ_damage(3)// 7 is the same as crowbar punch
+		target.apply_damage(3, BRUTE)
 
 	var/syringestab_amount_transferred = rand(0, (reagents.total_volume - 5)) //nerfed by popular demand
 	var/contained_reagents = reagents.get_reagents()
@@ -379,42 +400,19 @@
 	reagents.add_reagent(/datum/reagent/hyperzine, 10)
 
 
-/obj/item/weapon/reagent_containers/syringe/amnestics/classa
-	name = "Syringe (Amnestics-A)"
-	desc = "Makes the subject forget memories since before their last experiment today."
+// TG ports
 
-/obj/item/weapon/reagent_containers/syringe/amnestics/classa/New()
-	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classa, 1)
-	mode = SYRINGE_INJECT
-	update_icon()
-	
-/obj/item/weapon/reagent_containers/syringe/amnestics/classb
-	name = "Syringe (Amnestics-B)"
-	desc = "Makes the subject forget memories since before they woke up today."
+/obj/item/weapon/reagent_containers/syringe/bluespace
+	name = "bluespace syringe"
+	desc = "An advanced syringe that can hold 60 units of chemicals."
+	amount_per_transfer_from_this = 20
+	volume = 60
+	icon_state = "bs"
 
-/obj/item/weapon/reagent_containers/syringe/amnestics/classb/New()
-	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classb, 1)
-	mode = SYRINGE_INJECT
-	update_icon()
-	
-/obj/item/weapon/reagent_containers/syringe/amnestics/classc
-	name = "Syringe (Amnestics-C)"
-	desc = "Makes the subject forget memories since before they arrived at the foundation."
+/obj/item/weapon/reagent_containers/syringe/noreact
+	name = "cryostasis syringe"
+	desc = "An advanced syringe that stops reagents inside from reacting. It can hold up to 20 units."
+	volume = 20
+	atom_flags = ATOM_FLAG_NO_TEMP_CHANGE | ATOM_FLAG_NO_REACT
+	icon_state = "cs"
 
-/obj/item/weapon/reagent_containers/syringe/amnestics/classc/New()
-	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classc, 1)
-	mode = SYRINGE_INJECT
-	update_icon()
-	
-/obj/item/weapon/reagent_containers/syringe/amnestics/classe
-	name = "Syringe (Amnestics-E)"
-	desc = "Makes the subject a blank slate to be molded however you wish."
-
-/obj/item/weapon/reagent_containers/syringe/amnestics/classe/New()
-	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classe, 1)
-	mode = SYRINGE_INJECT
-	update_icon()

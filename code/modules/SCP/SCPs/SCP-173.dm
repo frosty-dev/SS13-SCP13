@@ -47,7 +47,7 @@ GLOBAL_LIST_EMPTY(scp173s)
 /mob/living/scp_173/say(var/message)
 	return // lol you can't talk
 
-/mob/living/scp_173/proc/IsBeingWatched()
+/mob/living/scp_173/proc/IsBeingWatched() //FUCK THIIIS!!!
 	// Am I being watched by eye pals?
 	for (var/mob/living/M in view(src, 7))
 		if ((istype(M, /mob/living/simple_animal/scp_131)) && (InCone(M, M.dir)))
@@ -163,7 +163,7 @@ GLOBAL_LIST_EMPTY(scp173s)
 		var/feces = pick(/obj/effect/decal/cleanable/blood, /obj/effect/decal/cleanable/blood/gibs, /obj/effect/decal/cleanable/mucus)
 		new feces(loc)
 
-// humans 
+// humans
 /mob/living/carbon/human/set_stat(_new)
 	..(_new)
 	if (stat != DEAD)

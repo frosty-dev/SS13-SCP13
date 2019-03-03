@@ -7,12 +7,12 @@
 	icon_state = "forensic0-old" //GET A BETTER SPRITE.
 	item_state = "electronic"
 	origin_tech = list(TECH_MAGNET = 1, TECH_ENGINEERING = 1)
-	matter = list(DEFAULT_WALL_MATERIAL = 150)
+	matter = list(MATERIAL_STEEL = 150)
 	var/survey_data = 0
 
 /obj/item/weapon/mining_scanner/examine(mob/user)
 	..()
-	to_chat(user,"Tiny indicator shows it holds [survey_data] Good Explorer Points worth of data.")
+	to_chat(user,"A tiny indicator on the [src] shows it holds [survey_data] good explorer points.")
 
 /obj/item/weapon/mining_scanner/attack_self(mob/user as mob)
 	to_chat(user, "You begin sweeping \the [src] about, scanning for metal deposits.")
@@ -37,15 +37,15 @@
 			var/data_value = 1
 
 			switch(metal)
-				if("silicates", "carbonaceous rock", "iron")	
+				if(MATERIAL_SAND, MATERIAL_GRAPHENE, MATERIAL_IRON)
 					ore_type = "surface minerals"
-				if("gold", "silver", "diamond")					
+				if(MATERIAL_GOLD, MATERIAL_SILVER, MATERIAL_DIAMOND)
 					ore_type = "precious metals"
 					data_value = 2
-				if("uranium")									
+				if(MATERIAL_URANIUM)
 					ore_type = "nuclear fuel"
 					data_value = 3
-				if("phoron", "osmium", "hydrogen")				
+				if(MATERIAL_PHORON, MATERIAL_OSMIUM, MATERIAL_HYDROGEN)
 					ore_type = "exotic matter"
 					data_value = 4
 
@@ -78,16 +78,16 @@
 	set category = "Object"
 	set name = "Get Survey Data"
 	set src in usr
-	
+
 	var/mob/M = usr
 	if(!istype(M))
 		return
 	if(M.incapacitated())
 		return
 	if(!survey_data)
-		to_chat(M,"<span class='warning'>There is no survey data stored on [src].</span>")
+		to_chat(M,"<span class='warning'>There is no survey data stored on the [src].</span>")
 		return
-	visible_message("<span class='notice'>[src] records [survey_data] GEP worth of the data on the disk and spits it out.</span>")
+	visible_message("<span class='notice'>The [src] spits out a disk containing [survey_data] GEP.</span>")
 	var/obj/item/weapon/disk/survey/D = new(get_turf(src))
 	D.data = survey_data
 	survey_data = 0
@@ -101,7 +101,7 @@
 
 /obj/item/weapon/disk/survey/examine(mob/user)
 	..()
-	to_chat(user,"Tiny indicator shows it holds [data] Good Explorer Points of data.")
+	to_chat(user,"A tiny indicator on the [src] shows it holds [data] good explorer points.")
 
 /obj/item/weapon/disk/survey/Value()
 	if(data < 10000)

@@ -9,15 +9,16 @@
 	var/active_groups = SSair.active_zones
 	var/inactive_groups = SSair.zones.len - active_groups
 
-	var/hotspots = SSair.active_hotspots.len
+	var/hotspots = 0
+	for(var/obj/fire/hotspot in world)
+		hotspots++
 
 	var/active_on_main_station = 0
 	var/inactive_on_main_station = 0
-	for(var/zone in SSair.zones)
-		var/zone/Z = zone
-		var/turf/simulated/turf = locate() in Z.contents
+	for(var/zone/zone in SSair.zones)
+		var/turf/simulated/turf = locate() in zone.contents
 		if(turf && turf.z in GLOB.using_map.station_levels)
-			if(Z.needs_update)
+			if(zone.needs_update)
 				active_on_main_station++
 			else
 				inactive_on_main_station++
@@ -47,8 +48,7 @@
 	var/largest_click_time = 0
 	var/mob/largest_move_mob = null
 	var/mob/largest_click_mob = null
-	for(var/mob in GLOB.mob_list)
-		var/mob/M = mob
+	for(var/mob/M in world)
 		if(!M.client)
 			continue
 		if(M.next_move >= largest_move_time)
@@ -108,16 +108,6 @@
 	load_admins()
 	feedback_add_details("admin_verb","RLDA") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
-/client/proc/reload_donators()
-	set name = "Reload Donators"
-	set category = "Debug"
-
-	if(!check_rights(R_SERVER))	return
-
-	message_admins("[usr] manually reloaded donators")
-	load_donators()
-	feedback_add_details("admin_verb","RLDN") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
 /client/proc/reload_mentors()
 	set name = "Reload Mentors"
 	set category = "Debug"
@@ -141,11 +131,11 @@
 	set desc = "This searches all the active jobban entries for the current round and outputs the results to standard output."
 	set category = "Debug"
 
-	var/filter = input("Contains what?","Filter") as text|null
-	if(!filter)
+	var/job_filter = input("Contains what?","Filter") as text|null
+	if(!job_filter)
 		return
 
 	to_chat(usr, "<b>Jobbans active in this round.</b>")
 	for(var/t in jobban_keylist)
-		if(findtext(t, filter))
+		if(findtext(t, job_filter))
 			to_chat(usr, "[t]")

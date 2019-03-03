@@ -20,14 +20,14 @@
 /datum/event/meteor_wave/announce()
 	switch(severity)
 		if(EVENT_LEVEL_MAJOR)
-			command_announcement.Announce(replacetext(GLOB.using_map.meteor_detected_message, "%STATION_NAME%", location_name()), "[location_name()] Sensor Array", new_sound = GLOB.using_map.meteor_detected_sound, zlevels = affecting_z)
+			priority_announcement.Announce(replacetext(GLOB.using_map.meteor_detected_message, "%STATION_NAME%", location_name()), "Сенсоры [location_name()]", new_sound = GLOB.using_map.meteor_detected_sound, zlevels = affecting_z)
 		else
-			command_announcement.Announce("Warning! The underground cave system is now under collapse, [location_name()] facility may be hit by falling debris.", "[location_name()] Alert Sensors", zlevels = affecting_z)
+			priority_announcement.Announce("Объект [location_name()] проходит через метеоритный дождь.", "Сенсоры [location_name()]", zlevels = affecting_z)
 
 /datum/event/meteor_wave/tick()
 	// Begin sending the alarm signals to shield diffusers so the field is already regenerated (if it exists) by the time actual meteors start flying around.
 	if(alarmWhen < activeFor)
-		for(var/obj/machinery/shield_diffuser/SD in SSmachines.all_machinery)
+		for(var/obj/machinery/shield_diffuser/SD in SSmachines.machinery)
 			if(isStationLevel(SD.z))
 				SD.meteor_alarm(10)
 
@@ -50,9 +50,9 @@
 /datum/event/meteor_wave/end()
 	switch(severity)
 		if(EVENT_LEVEL_MAJOR)
-			command_announcement.Announce("The underground cave system has recuperated its structural integrity.", "[location_name()] Alert Sensors", zlevels = affecting_z)
+			priority_announcement.Announce("Объект [location_name()] покинул зону метеоритного шторма.", "Сенсоры [location_name()]", zlevels = affecting_z)
 		else
-			command_announcement.Announce("The underground cave system has recuperated its structural integrity.", "[location_name()] Alert Sensors", zlevels = affecting_z)
+			priority_announcement.Announce("Объект [location_name()] покинул зону метеоритного дождя.", "Сенсоры [location_name()]", zlevels = affecting_z)
 
 /datum/event/meteor_wave/proc/get_meteors()
 	switch(severity)
@@ -102,9 +102,9 @@
 	next_meteor = 0
 	var/obj/effect/overmap/ship/victim
 
-/datum/event/meteor_wave/overmap/Destroy()
-	victim = null
+/datum/event/meteor_wave/overmap/kill()
 	. = ..()
+	victim = null
 
 /datum/event/meteor_wave/overmap/tick()
 	if(victim && !victim.is_still()) //Meteors mostly fly in your face
@@ -117,6 +117,8 @@
 	. = ..()
 	if(!victim)
 		return
+	if(victim.get_helm_skill() == SKILL_PROF)
+		. = round(. * 0.5)
 	if(victim.is_still()) //Standing still means less shit flies your way
 		. = round(. * 0.25)
 	if(victim.get_speed() < 0.3) //Slow and steady

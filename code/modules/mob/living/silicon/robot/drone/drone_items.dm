@@ -23,7 +23,10 @@
 		/obj/item/weapon/circuitboard,
 		/obj/item/weapon/smes_coil,
 		/obj/item/weapon/computer_hardware,
-		/obj/item/weapon/fuel_assembly
+		/obj/item/weapon/fuel_assembly,
+		/obj/item/stack/material/deuterium,
+		/obj/item/stack/material/tritium,
+		/obj/item/stack/tile
 		)
 
 	var/obj/item/wrapped = null // Item currently being held.
@@ -32,6 +35,7 @@
 /obj/item/weapon/gripper/miner
 	name = "drill maintenance gripper"
 	desc = "A simple grasping tool for the maintenance of heavy drilling machines."
+
 	icon_state = "gripper-mining"
 
 	can_hold = list(
@@ -40,8 +44,8 @@
 	/obj/item/weapon/circuitboard/miningdrill
 	)
 
-/obj/item/weapon/gripper/paperwork
-	name = "paperwork gripper"
+/obj/item/weapon/gripper/clerical
+	name = "clerical gripper"
 	desc = "A simple grasping tool for clerical work."
 
 	can_hold = list(
@@ -50,7 +54,8 @@
 		/obj/item/weapon/paper_bundle,
 		/obj/item/weapon/card/id,
 		/obj/item/weapon/book,
-		/obj/item/weapon/newspaper
+		/obj/item/weapon/newspaper,
+		/obj/item/smallDelivery
 		)
 
 /obj/item/weapon/gripper/chemistry
@@ -113,7 +118,8 @@
 
 	can_hold = list(
 	/obj/item/organ,
-	/obj/item/robot_parts
+	/obj/item/robot_parts,
+	/obj/item/weapon/reagent_containers/ivbag
 	)
 
 /obj/item/weapon/gripper/no_use //Used when you want to hold and put items in other things, but not able to 'use' the item
@@ -149,7 +155,7 @@
 	if(!wrapped)
 		//There's some weirdness with items being lost inside the arm. Trying to fix all cases. ~Z
 		for(var/obj/item/thing in src.contents)
-			thing.loc = get_turf(src)
+			thing.dropInto(loc)
 		return
 
 	if(wrapped.loc != src)
@@ -157,9 +163,9 @@
 		return
 
 	to_chat(src.loc, "<span class='warning'>You drop \the [wrapped].</span>")
-	wrapped.loc = get_turf(src)
+	wrapped.dropInto(loc)
 	wrapped = null
-	//update_icon()
+	//on_update_icon()
 
 /obj/item/weapon/gripper/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
 	// Don't fall through and smack people with gripper, instead just no-op
@@ -175,7 +181,7 @@
 
 	if(wrapped) //Already have an item.
 		//Temporary put wrapped into user so target's attackby() checks pass.
-		wrapped.loc = user //should we use forceMove() here? It is a virtual move after all, that is intended to be reset
+		wrapped.forceMove(user)
 
 		//The force of the wrapped obj gets set to zero during the attack() and afterattack().
 		var/force_holder = wrapped.force
@@ -183,25 +189,11 @@
 
 		//Pass the attack on to the target. This might delete/relocate wrapped.
 		var/resolved = wrapped.resolve_attackby(target,user,params)
-		if(!resolved && wrapped && target)
-			wrapped.afterattack(target,user,1,params)
 
-		if(wrapped)
-			wrapped.force = force_holder
-
-		//If wrapped was neither deleted nor put into target, put it back into the gripper.
-		if(wrapped && user && (wrapped.loc == user))
-			wrapped.loc = src
-		else
-			wrapped = null
-			return
+		//If resolve_attackby forces waiting before taking wrapped, we need to let it finish before doing the rest.
+		addtimer(CALLBACK(src, .proc/finish_using, target, user, params, force_holder, resolved), 0)
 
 	else if(istype(target,/obj/item)) //Check that we're not pocketing a mob.
-
-		//...and that the item is not in a container.
-		if(!isturf(target.loc))
-			return
-
 		var/obj/item/I = target
 
 		//Check if the item is blacklisted.
@@ -213,8 +205,16 @@
 
 		//We can grab the item, finally.
 		if(grab)
+			if(I == user.s_active)
+				var/obj/item/weapon/storage/storage = I
+				storage.close(user) //Closes the ui.
+			if(istype(I.loc, /obj/item/weapon/storage))
+				var/obj/item/weapon/storage/storage = I.loc
+				if(!storage.remove_from_storage(I, src))
+					return
+			else
+				I.forceMove(src)
 			to_chat(user, "<span class='notice'>You collect \the [I].</span>")
-			I.loc = src
 			wrapped = I
 			return
 		else
@@ -229,7 +229,7 @@
 
 				A.cell.add_fingerprint(user)
 				A.cell.update_icon()
-				A.cell.loc = src
+				A.cell.forceMove(src)
 				A.cell = null
 
 				A.charging = 0
@@ -241,16 +241,33 @@
 		var/mob/living/silicon/robot/A = target
 		if(A.opened)
 			if(A.cell)
-
 				wrapped = A.cell
-
 				A.cell.add_fingerprint(user)
 				A.cell.update_icon()
 				A.update_icon()
-				A.cell.loc = src
+				A.cell.forceMove(src)
 				A.cell = null
-
 				user.visible_message("<span class='danger'>[user] removes the power cell from [A]!</span>", "You remove the power cell.")
+				A.power_down()
+
+/obj/item/weapon/gripper/proc/finish_using(var/atom/target, var/mob/living/user, params, force_holder, resolved)
+
+	if(QDELETED(wrapped))
+		wrapped.forceMove(null)
+		wrapped = null
+		return
+
+	if(!resolved && wrapped && target)
+		wrapped.afterattack(target, user, 1, params)
+
+	if(wrapped)
+		wrapped.force = force_holder
+
+	//If wrapped was neither deleted nor put into target, put it back into the gripper.
+	if(wrapped && user && !QDELETED(wrapped) && wrapped.loc == user)
+		wrapped.forceMove(src)
+	else
+		wrapped = null
 
 //TODO: Matter decompiler.
 /obj/item/weapon/matter_decompiler
@@ -325,7 +342,7 @@
 
 	for(var/obj/W in T)
 		//Different classes of items give different commodities.
-		if(istype(W,/obj/item/weapon/cigbutt))
+		if(istype(W,/obj/item/trash/cigbutt))
 			if(plastic)
 				plastic.add_charge(500)
 		else if(istype(W,/obj/effect/spider/spiderling))

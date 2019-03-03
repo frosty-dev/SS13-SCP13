@@ -1,17 +1,19 @@
 /obj/item/projectile/bullet
 	name = "bullet"
 	icon_state = "bullet"
-	fire_sound = 'sound/weapons/gunshot/gunshot_strong.ogg'
+	fire_sound = "gunshot"
 	damage = 50
 	damage_type = BRUTE
 	nodamage = 0
 	check_armour = "bullet"
 	embed = 1
 	sharp = 1
+	step_delay = 0.4
 	penetration_modifier = 1.0
 	var/mob_passthrough_check = 0
 
 	muzzle_type = /obj/effect/projectile/bullet/muzzle
+	miss_sounds = list('sound/weapons/guns/miss1.ogg','sound/weapons/guns/miss2.ogg','sound/weapons/guns/miss3.ogg','sound/weapons/guns/miss4.ogg')
 
 /obj/item/projectile/bullet/on_hit(var/atom/target, var/blocked = 0)
 	if (..(target, blocked))
@@ -35,7 +37,7 @@
 	return ..()
 
 /obj/item/projectile/bullet/check_penetrate(var/atom/A)
-	if(!A || !A.density) return 1 //if whatever it was got destroyed when we hit it, then I guess we can just keep going
+	if(QDELETED(A) || !A.density) return 1 //if whatever it was got destroyed when we hit it, then I guess we can just keep going
 
 	if(istype(A, /obj/mecha))
 		return 1 //mecha have their own penetration handling
@@ -46,15 +48,9 @@
 		return 1
 
 	var/chance = damage
-	if(istype(A, /turf/simulated/wall))
-		var/turf/simulated/wall/W = A
-		chance = round(damage/W.material.integrity*180)
-	else if(istype(A, /obj/machinery/door))
-		var/obj/machinery/door/D = A
-		chance = round(damage/D.maxhealth*180)
-		if(D.glass) chance *= 2
-	else if(istype(A, /obj/structure/girder))
-		chance = 100
+	if(has_extension(A, /datum/extension/penetration))
+		var/datum/extension/penetration/P = get_extension(A, /datum/extension/penetration)
+		chance = P.PenetrationProbability(chance, damage, damage_type)
 
 	if(prob(chance))
 		if(A.opacity)
@@ -129,67 +125,28 @@
 /obj/item/projectile/bullet/pistol
 	fire_sound = 'sound/weapons/gunshot/gunshot_pistol.ogg'
 	damage = 25 //9mm, .38, etc
-	armor_penetration = 13.5
-	agony = 20
 
 /obj/item/projectile/bullet/pistol/medium
-	damage = 26.5 //.45
+	damage = 26.5 //.45, 7.63x25
 	armor_penetration = 14.5
-	agony = 22
 
 /obj/item/projectile/bullet/pistol/medium/smg
 	fire_sound = 'sound/weapons/gunshot/gunshot_smg.ogg'
-	damage = 40 //10mm
-	armor_penetration = 20
-	agony = 31
-
-/obj/item/projectile/bullet/pistol/medium/smg/rubber
-	fire_sound = 'sound/weapons/gunshot/gunshot_smg.ogg'
-	damage = 1.5 //10mm rubber
-	armor_penetration = 12
-	agony = 35
-	embed = 0
-	sharp = 0
-
-/obj/item/projectile/bullet/pistol/medium/smg/hollowpoint
-	fire_sound = 'sound/weapons/gunshot/gunshot_smg.ogg'
-	damage = 24 //10mm hollowpoint
-	armor_penetration = 8
-	agony = 25
-
-/obj/item/projectile/bullet/pistol/medium/smg/ap
-	fire_sound = 'sound/weapons/gunshot/gunshot_smg.ogg'
-	damage = 26 //10mm AP
-	armor_penetration = 25
-	agony = 21
-
-/obj/item/projectile/bullet/pistol/medium/smg/silver
-	fire_sound = 'sound/weapons/gunshot/gunshot_smg.ogg'
-	damage = 30 //10mm but i have no idea what bimmer wanted for classifaction, so i made it just better normal ammo
-	armor_penetration = 18
-	agony = 23
+	damage = 28 //10mm
+	penetration_modifier = 0.8
 
 /obj/item/projectile/bullet/pistol/medium/revolver
 	fire_sound = 'sound/weapons/gunshot/gunshot_strong.ogg'
 	damage = 30 //.44 magnum or something
-	agony = 23
 
 /obj/item/projectile/bullet/pistol/strong //matebas
 	fire_sound = 'sound/weapons/gunshot/gunshot_strong.ogg'
 	damage = 60 //.50AE
 	armor_penetration = 30
-	agony = 40
-
-/obj/item/projectile/bullet/pistol/vstrong //tacrevolver
-	fire_sound = 'sound/weapons/gunshot/gunshot_strong.ogg'
-	damage = 70 //.500 S&W Magnum
-	armor_penetration = 35
-	agony = 45
 
 /obj/item/projectile/bullet/pistol/strong/revolver //revolvers
 	damage = 50 //Revolvers get snowflake bullets, to keep them relevant
 	armor_penetration = 20
-	agony = 36
 
 /obj/item/projectile/bullet/pistol/rubber //"rubber" bullets
 	name = "rubber bullet"
@@ -198,8 +155,6 @@
 	agony = 30
 	embed = 0
 	sharp = 0
-	armor_penetration = 2.5
-
 
 /* shotgun projectiles */
 
@@ -208,7 +163,6 @@
 	fire_sound = 'sound/weapons/gunshot/shotgun.ogg'
 	damage = 55
 	armor_penetration = 20
-	agony = 34
 
 /obj/item/projectile/bullet/shotgun/beanbag		//because beanbags are not bullets
 	name = "beanbag"
@@ -217,6 +171,7 @@
 	agony = 60
 	embed = 0
 	sharp = 0
+	armor_penetration = 0
 
 //Should do about 80 damage at 1 tile distance (adjacent), and 50 damage at 3 tiles distance.
 //Overall less damage than slugs in exchange for more damage at very close range and more embedding
@@ -227,42 +182,37 @@
 	pellets = 6
 	range_step = 1
 	spread_step = 10
-	agony = 10
 
 /* "Rifle" rounds */
 
 /obj/item/projectile/bullet/rifle
 	armor_penetration = 25
 	penetrating = 1
-	agony = 20
 
 /obj/item/projectile/bullet/rifle/a556
 	fire_sound = 'sound/weapons/gunshot/gunshot3.ogg'
 	damage = 30
-	agony = 23
 
 /obj/item/projectile/bullet/rifle/a762
 	fire_sound = 'sound/weapons/gunshot/gunshot2.ogg'
 	damage = 35
 	armor_penetration = 30
-	agony = 24
 
 /obj/item/projectile/bullet/rifle/a145
 	fire_sound = 'sound/weapons/gunshot/sniper.ogg'
-	damage = 80
+	damage = 80 //14,7x114
 	stun = 3
 	weaken = 3
-	penetrating = 5
+	penetrating = 4
 	armor_penetration = 80
 	hitscan = 1 //so the PTR isn't useless as a sniper weapon
 	penetration_modifier = 1.25
 
 /obj/item/projectile/bullet/rifle/a145/apds
 	damage = 75
-	penetrating = 6
+	penetrating = 5
 	armor_penetration = 95
 	penetration_modifier = 1.5
-	agony = 25
 
 /* Miscellaneous */
 
@@ -270,20 +220,17 @@
 	name = "co bullet"
 	damage = 25
 	damage_type = OXY
-	agony = 20
 
 /obj/item/projectile/bullet/cyanideround
 	name = "poison bullet"
 	damage = 45
 	damage_type = TOX
-	agony = 20
 
 /obj/item/projectile/bullet/burstbullet
 	name = "exploding bullet"
 	damage = 25
 	embed = 0
 	edge = 1
-	agony = 20
 
 /obj/item/projectile/bullet/gyro
 	fire_sound = 'sound/effects/Explosion1.ogg'
@@ -321,8 +268,8 @@
 	sharp = 0
 
 /obj/item/projectile/bullet/pistol/cap/Process()
-	loc = null
 	qdel(src)
+	return PROCESS_KILL
 
 /obj/item/projectile/bullet/rock //spess dust
 	name = "micrometeor"

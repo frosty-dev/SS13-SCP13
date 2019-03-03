@@ -69,11 +69,14 @@ proc/create_test_mob_with_mind(var/turf/mobloc = null, var/mobtype = /mob/living
 
 	if(isnull(mobloc))
 		if(!default_mobloc)
-			for(var/turf/simulated/floor/tiled/T in global.simulated_turf_list)
+			for(var/obj/effect/landmark/test/safe_turf/safe in world)
+				default_mobloc = safe
+				break
+/*			for(var/turf/simulated/floor/tiled/T in world)
 				var/pressure = T.zone.air.return_pressure()
 				if(90 < pressure && pressure < 120) // Find a turf between 90 and 120
 					default_mobloc = T
-					break
+					break*/
 		mobloc = default_mobloc
 	if(!mobloc)
 		test_result["msg"] = "Unable to find a location to create test mob"
@@ -326,6 +329,40 @@ datum/unit_test/mob_damage/tajaran/halloss
 	damagetype = PAIN
 
 // =================================================================
+// Resomi
+// =================================================================
+
+datum/unit_test/mob_damage/resomi
+	name = "MOB: Resomi damage check template"
+	mob_type = /mob/living/carbon/human/resomi
+
+datum/unit_test/mob_damage/resomi/brute
+	name = "MOB: Resomi Brute Damage Check"
+	damagetype = BRUTE
+	expected_vulnerability = EXTRA_VULNERABLE
+
+datum/unit_test/mob_damage/resomi/fire
+	name = "MOB: Resomi Fire Damage Check"
+	damagetype = BURN
+	expected_vulnerability = EXTRA_VULNERABLE
+
+datum/unit_test/mob_damage/resomi/tox
+	name = "MOB: Resomi Toxins Damage Check"
+	damagetype = TOX
+
+datum/unit_test/mob_damage/resomi/oxy
+	name = "MOB: Resomi Oxygen Damage Check"
+	damagetype = OXY
+
+datum/unit_test/mob_damage/resomi/clone
+	name = "MOB: Resomi Clone Damage Check"
+	damagetype = CLONE
+
+datum/unit_test/mob_damage/resomi/halloss
+	name = "MOB: Resomi Halloss Damage Check"
+	damagetype = PAIN
+
+// =================================================================
 // Skrell
 // =================================================================
 
@@ -340,6 +377,7 @@ datum/unit_test/mob_damage/skrell/brute
 datum/unit_test/mob_damage/skrell/fire
 	name = "MOB: Skrell Fire Damage Check"
 	damagetype = BURN
+	expected_vulnerability = ARMORED
 
 datum/unit_test/mob_damage/skrell/tox
 	name = "MOB: Skrell Toxins Damage Check"
@@ -348,6 +386,7 @@ datum/unit_test/mob_damage/skrell/tox
 datum/unit_test/mob_damage/skrell/oxy
 	name = "MOB: Skrell Oxygen Damage Check"
 	damagetype = OXY
+	expected_vulnerability = EXTRA_VULNERABLE
 
 datum/unit_test/mob_damage/skrell/clone
 	name = "MOB: Skrell Clone Damage Check"
@@ -529,7 +568,6 @@ datum/unit_test/robot_module_icons/start_test()
 
 	return 1
 
-#undef VULNERABLE
 #undef IMMUNE
 #undef SUCCESS
 #undef FAILURE
@@ -556,7 +594,7 @@ datum/unit_test/species_base_skin/start_test()
 				var/list/paths = S.has_limbs[tag]
 				var/obj/item/organ/external/E = paths["path"]
 				var/list/gender_test = list("")
-				if(initial(E.gendered_icon))
+				if(initial(E.limb_flags) & ORGAN_FLAG_GENDERED_ICON)
 					gender_test = list("_m", "_f")
 				var/icon_name = initial(E.icon_name)
 
@@ -582,3 +620,27 @@ datum/unit_test/species_base_skin/start_test()
 
 	return 1	// return 1 to show we're done and don't want to recheck the result.
 
+
+/datum/unit_test/mob_nullspace
+	name = "MOB: Mob in nullspace shall not cause runtimes"
+	var/list/test_subjects = list()
+	async = 1
+
+/datum/unit_test/mob_nullspace/start_test()
+	// Simply create one of each species type in nullspace
+	for(var/species_name in all_species)
+		var/test_subject = new/mob/living/carbon/human(null, species_name)
+		test_subjects += test_subject
+	return TRUE
+
+/datum/unit_test/mob_nullspace/check_result()
+	for(var/ts in test_subjects)
+		var/mob/living/carbon/human/H = ts
+		if(H.life_tick < 10)
+			return FALSE
+
+	QDEL_NULL_LIST(test_subjects)
+
+	// No failure state, we just rely on the general runtime check to fail the entire build for us
+	pass("Mob nullspace test concluded.")
+	return TRUE

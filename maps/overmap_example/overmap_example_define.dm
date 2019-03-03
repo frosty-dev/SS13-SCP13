@@ -15,7 +15,7 @@
 
 	default_law_type = /datum/ai_laws/corporate
 
-	evac_controller_type = /datum/evacuation_controller/site
+	evac_controller_type = /datum/evacuation_controller/lifepods
 	lobby_icon = 'maps/overmap_example/overmap_example_lobby.dmi'
 	lobby_screens = list("spess","aesthetic")
 
@@ -41,6 +41,6 @@
 
 /datum/map/overmap_example/setup_map()
 	..()
-	GLOB.traders += new /datum/trader/xeno_shop
-	GLOB.traders += new /datum/trader/medical
-	GLOB.traders += new /datum/trader/mining
+	SStrade.traders += new /datum/trader/xeno_shop
+	SStrade.traders += new /datum/trader/medical
+	SStrade.traders += new /datum/trader/mining

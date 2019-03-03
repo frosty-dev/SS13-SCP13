@@ -1,21 +1,12 @@
 /obj/item/grab/normal
-
 	type_name = GRAB_NORMAL
 	start_grab_name = NORM_PASSIVE
 
 /obj/item/grab/normal/init()
-	..()
-
-	if(affecting.w_uniform)
-		affecting.w_uniform.add_fingerprint(assailant)
-
-	assailant.put_in_active_hand(src)
-	assailant.do_attack_animation(affecting)
-	playsound(affecting.loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
+	if(!(. = ..()))
+		return
 	var/obj/O = get_targeted_organ()
 	visible_message("<span class='warning'>[assailant] has grabbed [affecting]'s [O.name]!</span>")
-	affecting.grabbed_by += src
-
 	if(!(affecting.a_intent == I_HELP))
 		upgrade(TRUE)
 
@@ -65,6 +56,9 @@
 	var/mob/living/carbon/human/assailant = G.assailant
 	var/mob/living/carbon/human/affecting = G.affecting
 
+	if(!assailant.skill_check(SKILL_COMBAT, SKILL_ADEPT))
+		return
+
 	if(!O)
 		to_chat(assailant, "<span class='warning'>[affecting] is missing that body part!</span>")
 		return 0
@@ -92,6 +86,9 @@
 	var/obj/item/organ/external/O = G.get_targeted_organ()
 	var/mob/living/carbon/human/assailant = G.assailant
 	var/mob/living/carbon/human/affecting = G.affecting
+
+	if(!assailant.skill_check(SKILL_COMBAT, SKILL_ADEPT))
+		return
 
 	if(!O)
 		to_chat(assailant, "<span class='warning'>[affecting] is missing that body part!</span>")
@@ -162,6 +159,9 @@
 	var/mob/living/carbon/human/attacker = G.assailant
 	var/mob/living/carbon/human/target = G.affecting
 
+	if(!attacker.skill_check(SKILL_COMBAT, SKILL_BASIC))
+		return
+
 	if(target.lying)
 		return
 
@@ -193,7 +193,7 @@
 // Handles special targeting like eyes and mouth being covered.
 /datum/grab/normal/special_target_effect(var/obj/item/grab/G)
 	if(G.special_target_functional)
-		switch(G.last_target)
+		switch(G.target_zone)
 			if(BP_MOUTH)
 				if(G.affecting.silent < 3)
 					G.affecting.silent = 3
@@ -202,10 +202,10 @@
 					G.affecting.eye_blind = 3
 
 // Handles when they change targeted areas and something is supposed to happen.
-/datum/grab/normal/special_target_change(var/obj/item/grab/G, var/diff_zone)
-	if(G.target_zone != BP_HEAD && G.target_zone != BP_CHEST)
+/datum/grab/normal/special_target_change(var/obj/item/grab/G, old_zone, new_zone)
+	if(old_zone != BP_HEAD && old_zone != BP_CHEST)
 		return
-	switch(diff_zone)
+	switch(new_zone)
 		if(BP_MOUTH)
 			G.assailant.visible_message("<span class='warning'>\The [G.assailant] covers [G.affecting]'s mouth!</span>")
 		if(BP_EYES)
@@ -213,7 +213,7 @@
 
 
 /datum/grab/normal/check_special_target(var/obj/item/grab/G)
-	switch(G.last_target)
+	switch(G.target_zone)
 		if(BP_MOUTH)
 			if(!G.affecting.check_has_mouth())
 				to_chat(G.assailant, "<span class='danger'>You cannot locate a mouth on [G.affecting]!</span>")
@@ -244,7 +244,7 @@
 	user.visible_message("<span class='danger'>\The [user] begins to slit [affecting]'s throat with \the [W]!</span>")
 
 	user.next_move = world.time + 20 //also should prevent user from triggering this repeatedly
-	if(!do_after(user, 20, progress = 0))
+	if(!do_after(user, 20*user.skill_delay_mult(SKILL_COMBAT) , progress = 0))
 		return 0
 	if(!(G && G.affecting == affecting)) //check that we still have a grab
 		return 0
@@ -278,6 +278,9 @@
 /datum/grab/normal/proc/attack_tendons(var/obj/item/grab/G, var/obj/item/W, var/mob/living/carbon/human/user, var/target_zone)
 	var/mob/living/carbon/human/affecting = G.affecting
 
+	if(!user.skill_check(SKILL_COMBAT, SKILL_ADEPT))
+		return
+
 	if(user.a_intent != I_HURT)
 		return 0 // Not trying to hurt them.
 
@@ -285,7 +288,7 @@
 		return 0 //unsuitable weapon
 
 	var/obj/item/organ/external/O = G.get_targeted_organ()
-	if(!O || O.is_stump() || !O.has_tendon || (O.status & ORGAN_TENDON_CUT))
+	if(!O || O.is_stump() || !(O.limb_flags & ORGAN_FLAG_HAS_TENDON) || (O.status & ORGAN_TENDON_CUT))
 		return FALSE
 
 	user.visible_message("<span class='danger'>\The [user] begins to cut \the [affecting]'s [O.tendon_name] with \the [W]!</span>")

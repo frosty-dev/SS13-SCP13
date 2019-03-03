@@ -1,6 +1,11 @@
 datum/admins/proc/DB_staffwarn_record(var/ckey, var/reason)
 	if(!check_rights((R_ADMIN|R_MOD), 0)) return
 	if(!istext(reason)) return
+	_DB_staffwarn_record(ckey, reason)
+
+/proc/_DB_staffwarn_record(var/ckey, var/reason)
+	if(usr && !check_rights((R_ADMIN|R_MOD), 0))
+		return
 	var/dbreason = sql_sanitize_text(reason)
 	var/dbckey = sql_sanitize_text(ckey)
 
@@ -9,15 +14,15 @@ datum/admins/proc/DB_staffwarn_record(var/ckey, var/reason)
 		to_chat(usr,"<span class='error'>Failed adding StaffWarn: db error</span>")
 		return
 
-	var/DBQuery/query = dbcon.NewQuery("SELECT id FROM erro_player WHERE ckey = '[dbckey]'")
+	var/DBQuery/query = dbcon.NewQuery("SELECT ckey FROM erro_player WHERE ckey = '[dbckey]'")
 	query.Execute()
-	var/playerid = -1
+	var/playerckey
 	if(query.NextRow())
-		playerid = query.item[1]
-	if(playerid == -1)
+		playerckey = query.item[1]
+	if(!playerckey)
 		to_chat(usr,"<font color='red'>You've attempted to set staffwarn on [ckey], but they haven't been seen yet. Staffwarn can only be set on existing players.</font>")
 		return
-	query = dbcon.NewQuery("UPDATE erro_player SET staffwarn='[dbreason]' WHERE id=[playerid]")
+	query = dbcon.NewQuery("UPDATE erro_player SET staffwarn='[dbreason]' WHERE ckey = '[playerckey]'")
 	query.Execute()
 	to_chat(usr,"<span class='notice'>StaffWarn saved to DB</span>")
 
@@ -53,7 +58,6 @@ datum/admins/proc/DB_ban_record(var/bantype, var/mob/banned_mob, var/duration = 
 	if(!dbcon.IsConnected())
 		return 0
 
-	var/serverip = "[world.internet_address]:[world.port]"
 	var/bantype_pass = 0
 	var/bantype_str
 	switch(bantype)
@@ -70,6 +74,12 @@ datum/admins/proc/DB_ban_record(var/bantype, var/mob/banned_mob, var/duration = 
 			bantype_pass = 1
 		if(BANTYPE_JOB_TEMP)
 			bantype_str = "JOB_TEMPBAN"
+			bantype_pass = 1
+		if(BANTYPE_SOFTPERMA)
+			bantype_str = "SOFT_PERMABAN"
+			bantype_pass = 1
+		if(BANTYPE_SOFTBAN)
+			bantype_str = "SOFT_TEMPBAN"
 			bantype_pass = 1
 	if( !bantype_pass ) return 0
 	if( !istext(reason) ) return 0
@@ -103,16 +113,32 @@ datum/admins/proc/DB_ban_record(var/bantype, var/mob/banned_mob, var/duration = 
 		else
 			adminwho += ", [C]"
 
+	var/reason_public = reason
 	reason = sql_sanitize_text(reason)
+	reason = sanitize_a0(reason)
 
-	var/sql = "INSERT INTO erro_ban (`id`,`bantime`,`serverip`,`bantype`,`reason`,`job`,`duration`,`rounds`,`expiration_time`,`ckey`,`computerid`,`ip`,`a_ckey`,`a_computerid`,`a_ip`,`who`,`adminwho`,`edits`,`unbanned`,`unbanned_datetime`,`unbanned_ckey`,`unbanned_computerid`,`unbanned_ip`) VALUES (null, Now(), '[serverip]', '[bantype_str]', '[reason]', '[job]', [(duration)?"[duration]":"0"], [(rounds)?"[rounds]":"0"], Now() + INTERVAL [(duration>0) ? duration : 0] MINUTE, '[ckey]', '[computerid]', '[ip]', '[a_ckey]', '[a_computerid]', '[a_ip]', '[who]', '[adminwho]', '', null, null, null, null, null)"
+	if(!computerid)
+		computerid = "0"
+	if(!ip)
+		ip = "0.0.0.0"
+
+	var/sql = "INSERT INTO erro_ban (`bantime`,`server_ip`,`server_port`,`round_id`,`bantype`,`reason`,`job`,`duration`,`expiration_time`,`ckey`,`computerid`,`ip`,`a_ckey`,`a_computerid`,`a_ip`,`who`,`adminwho`) VALUES (Now(), INET_ATON('[world.internet_address]'), '[world.port]', [world.port],'[bantype_str]', '[reason]', '[job]', [(duration)?"[duration]":"0"], Now() + INTERVAL [(duration>0) ? duration : 0] MINUTE, '[ckey]', '[computerid]', INET_ATON('[ip]'), '[a_ckey]', '[a_computerid]', INET_ATON('[a_ip]'), '[who]', '[adminwho]')"
 	var/DBQuery/query_insert = dbcon.NewQuery(sql)
 	query_insert.Execute()
 	var/setter = a_ckey
 	if(usr)
 		to_chat(usr, "<span class='notice'>Ban saved to database.</span>")
-		setter = key_name_admin(usr)
+		setter = key_name_admin(usr, 0)
 	message_admins("[setter] has added a [bantype_str] for [ckey] [(job)?"([job])":""] [(duration > 0)?"([duration] minutes)":""] with the reason: \"[reason]\" to the ban database.",1)
+	switch(bantype_str)
+		if("PERMABAN")
+			to_chat(world, "<span class='notice'><b>BAN: Администратор [setter] ЖЕСТКО и НАВСЕГДА заблокировал(а) игрока [ckey]. Причина: [reason_public]</b></span>")
+		if("TEMPBAN")
+			to_chat(world, "<span class='notice'><b>BAN: Администратор [setter] ЖЕСТКО заблокировал(а) игрока [ckey]. Причина: [reason_public]; Срок - [duration] минут.</b></span>")
+		if("SOFT_PERMBAN")
+			to_chat(world, "<span class='notice'><b>BAN: Администратор [setter] перманентно отправил(а) игрока [ckey] в бан-тюрьму. Причина: [reason_public]</b></span>")
+		if("SOFT_TEMPBAN")
+			to_chat(world, "<span class='notice'><b>BAN: Администратор [setter] временно отправил(а) игрока [ckey] в бан-тюрьму. Причина: [reason_public]; Срок - [duration] минут.</b></span>")
 	return 1
 
 
@@ -139,6 +165,12 @@ datum/admins/proc/DB_ban_unban(var/ckey, var/bantype, var/job = "")
 				bantype_pass = 1
 			if(BANTYPE_ANY_FULLBAN)
 				bantype_str = "ANY"
+				bantype_pass = 1
+			if(BANTYPE_SOFTPERMA)
+				bantype_str = "SOFT_PERMABAN"
+				bantype_pass = 1
+			if(BANTYPE_SOFTBAN)
+				bantype_str = "SOFT_TEMPBAN"
 				bantype_pass = 1
 		if( !bantype_pass ) return
 
@@ -212,6 +244,7 @@ datum/admins/proc/DB_ban_edit(var/banid = null, var/param = null)
 		if("reason")
 			if(!value)
 				value = sanitize(input("Insert the new reason for [pckey]'s ban", "New Reason", "[reason]", null) as null|text)
+				value = sanitize_a0(value)
 				value = sql_sanitize_text(value)
 				if(!value)
 					to_chat(usr, "Cancelled")
@@ -275,7 +308,7 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 	var/unban_computerid = src.owner:computer_id
 	var/unban_ip = src.owner:address
 
-	var/sql_update = "UPDATE erro_ban SET unbanned = 1, unbanned_datetime = Now(), unbanned_ckey = '[unban_ckey]', unbanned_computerid = '[unban_computerid]', unbanned_ip = '[unban_ip]' WHERE id = [id]"
+	var/sql_update = "UPDATE erro_ban SET unbanned = 1, unbanned_datetime = Now(), unbanned_ckey = '[unban_ckey]', unbanned_computerid = '[unban_computerid]', unbanned_ip = INET_ATON('[unban_ip]') WHERE id = [id]"
 	message_admins("[key_name_admin(usr)] has lifted [pckey]'s ban.",1)
 
 	var/DBQuery/query_update = dbcon.NewQuery(sql_update)
@@ -321,6 +354,8 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 	output += "<option value='[BANTYPE_TEMP]'>TEMPBAN</option>"
 	output += "<option value='[BANTYPE_JOB_PERMA]'>JOB PERMABAN</option>"
 	output += "<option value='[BANTYPE_JOB_TEMP]'>JOB TEMPBAN</option>"
+	output += "<option value='[BANTYPE_SOFTPERMA]'>SOFT PERMABAN</option>"
+	output += "<option value='[BANTYPE_SOFTBAN]'>SOFT TEMPBAN</option>"
 	output += "</select></td>"
 	output += "<td width='50%' align='right'><b>Ckey:</b> <input type='text' name='dbbanaddckey'></td></tr>"
 	output += "<tr><td width='50%' align='right'><b>IP:</b> <input type='text' name='dbbanaddip'></td>"
@@ -333,7 +368,7 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 	for(var/j in GLOB.nonhuman_positions)
 		output += "<option value='[j]'>[j]</option>"
 	var/list/bantypes = list("traitor","changeling","operative","revolutionary","cultist","wizard") //For legacy bans.
-	var/list/all_antag_types = all_antag_types()
+	var/list/all_antag_types = GLOB.all_antag_types_
 	for(var/antag_type in all_antag_types) // Grab other bans.
 		var/datum/antagonist/antag = all_antag_types[antag_type]
 		bantypes |= antag.id
@@ -360,6 +395,8 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 	output += "<option value='[BANTYPE_TEMP]'>TEMPBAN</option>"
 	output += "<option value='[BANTYPE_JOB_PERMA]'>JOB PERMABAN</option>"
 	output += "<option value='[BANTYPE_JOB_TEMP]'>JOB TEMPBAN</option>"
+	output += "<option value='[BANTYPE_SOFTPERMA]'>SOFT PERMABAN</option>"
+	output += "<option value='[BANTYPE_SOFTBAN]'>SOFT TEMPBAN</option>"
 	output += "</select></td></tr></table>"
 	output += "<br><input type='submit' value='search'><br>"
 	output += "<input type='checkbox' value='[match]' name='dbmatch' [match? "checked=\"1\"" : null]> Match(min. 3 characters to search by key or ip, and 7 to search by cid)<br>"
@@ -404,7 +441,7 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 				if(playerckey)
 					playersearch = "AND ckey = '[playerckey]' "
 				if(playerip)
-					ipsearch  = "AND ip = '[playerip]' "
+					ipsearch  = "AND ip = INET_ATON('[playerip]') "
 				if(playercid)
 					cidsearch  = "AND computerid = '[playercid]' "
 			else
@@ -413,7 +450,7 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 				if(playerckey && lentext(playerckey) >= 3)
 					playersearch = "AND ckey LIKE '[playerckey]%' "
 				if(playerip && lentext(playerip) >= 3)
-					ipsearch  = "AND ip LIKE '[playerip]%' "
+					ipsearch  = "AND INET_NTOA(ip) LIKE '[playerip]%' "
 				if(playercid && lentext(playercid) >= 7)
 					cidsearch  = "AND computerid LIKE '[playercid]%' "
 
@@ -427,10 +464,14 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 						bantypesearch += "'JOB_PERMABAN' "
 					if(BANTYPE_JOB_TEMP)
 						bantypesearch += "'JOB_TEMPBAN' "
+					if(BANTYPE_SOFTPERMA)
+						bantypesearch += "'SOFT_PERMABAN'"
+					if(BANTYPE_SOFTBAN)
+						bantypesearch += "'SOFT_TEMPBAN'"
 					else
 						bantypesearch += "'PERMABAN' "
 
-			var/DBQuery/select_query = dbcon.NewQuery("SELECT id, bantime, bantype, reason, job, duration, expiration_time, ckey, a_ckey, unbanned, unbanned_ckey, unbanned_datetime, edits, ip, computerid FROM erro_ban WHERE 1 [playersearch] [adminsearch] [ipsearch] [cidsearch] [bantypesearch] ORDER BY bantime DESC LIMIT 100")
+			var/DBQuery/select_query = dbcon.NewQuery("SELECT id, bantime, bantype, reason, job, duration, expiration_time, ckey, a_ckey, unbanned, unbanned_ckey, unbanned_datetime, edits, INET_NTOA(ip), computerid FROM erro_ban WHERE 1 [playersearch] [adminsearch] [ipsearch] [cidsearch] [bantypesearch] ORDER BY bantime DESC LIMIT 100")
 			select_query.Execute()
 
 			var/now = time2text(world.realtime, "YYYY-MM-DD hh:mm:ss") // MUST BE the same format as SQL gives us the dates in, and MUST be least to most specific (i.e. year, month, day not day, month, year)
@@ -474,6 +515,10 @@ datum/admins/proc/DB_ban_unban_by_id(var/id)
 						typedesc = "<b>JOBBAN</b><br><font size='2'>([job])</font>"
 					if("JOB_TEMPBAN")
 						typedesc = "<b>TEMP JOBBAN</b><br><font size='2'>([job])<br>([duration] minutes<br>Expires [expiration]</font>"
+					if("SOFT_PERMABAN")
+						typedesc = "<font color='red'><b>SOFT PERMABAN</b></font>"
+					if("SOFT_TEMPBAN")
+						typedesc = "<b>SOFT TEMPBAN</b><br><font size='2'>([duration] minutes) [(unbanned || auto) ? "" : "(<a href=\"byond://?src=\ref[src];dbbanedit=duration;dbbanid=[banid]\">Edit</a>)"]<br>Expires [expiration]</font>"
 
 				output += "<tr bgcolor='[dcolor]'>"
 				output += "<td align='center'>[typedesc]</td>"

@@ -36,26 +36,29 @@
 
 	var/mob/living/carbon/human/H = M
 	if(istype(H))
+		user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
 		var/obj/item/organ/external/affected = H.get_organ(user.zone_sel.selecting)
 		if(!affected)
 			to_chat(user, "<span class='danger'>\The [H] is missing that limb!</span>")
 			return
-		else if(affected.robotic >= ORGAN_ROBOT)
+		else if(BP_IS_ROBOTIC(affected))
 			to_chat(user, "<span class='danger'>You cannot inject a robotic limb.</span>")
 			return
+		else if(M.can_inject(user, check_zone(user.zone_sel.selecting)) == INJECTION_PORT)
+			user.visible_message("<span class='warning'>\The [user] begins hunting for an injection port on [M]'s suit!</span>")
+			if((M != user) && (!do_mob(user, M, 22)))
+				return
+		user.do_attack_animation(M)
+		to_chat(user, "<span class='notice'>You inject [M] with [src].</span>")
+		to_chat(M, "<span class='notice'>You feel a tiny prick!</span>")
+		playsound(src, 'sound/effects/hypospray.ogg',25)
+		user.visible_message("<span class='warning'>[user] injects [M] with [src].</span>")
 
-	user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
-	user.do_attack_animation(M)
-	to_chat(user, "<span class='notice'>You inject [M] with [src].</span>")
-	to_chat(M, "<span class='notice'>You feel a tiny prick!</span>")
-	user.visible_message("<span class='warning'>[user] injects [M] with [src].</span>")
-
-	if(M.reagents)
-		var/contained = reagentlist()
-		var/trans = reagents.trans_to_mob(M, amount_per_transfer_from_this, CHEM_BLOOD)
-		admin_inject_log(user, M, src, contained, trans)
-		to_chat(user, "<span class='notice'>[trans] units injected. [reagents.total_volume] units remaining in \the [src].</span>")
-
+		if(M.reagents)
+			var/contained = reagentlist()
+			var/trans = reagents.trans_to_mob(M, amount_per_transfer_from_this, CHEM_BLOOD)
+			admin_inject_log(user, M, src, contained, trans)
+			to_chat(user, "<span class='notice'>[trans] units injected. [reagents.total_volume] units remaining in \the [src].</span>")
 	return
 
 /obj/item/weapon/reagent_containers/hypospray/vial
@@ -90,13 +93,13 @@
 /obj/item/weapon/reagent_containers/hypospray/vial/attackby(obj/item/weapon/W, mob/user as mob)
 	if(istype(W, /obj/item/weapon/reagent_containers/glass/beaker/vial))
 		if(!loaded_vial)
-			if(!do_after(user,10) || loaded_vial || !(W in user))
+			if(!do_after(user,4) || loaded_vial || !(W in user))
 				return 0
+			if(!user.unEquip(W, src))
+				return
 			if(W.is_open_container())
 				W.atom_flags ^= ATOM_FLAG_OPEN_CONTAINER
 				W.update_icon()
-			user.drop_item()
-			W.forceMove(src)
 			loaded_vial = W
 			reagents.maximum_volume = loaded_vial.reagents.maximum_volume
 			loaded_vial.reagents.trans_to_holder(reagents,volume)
@@ -111,12 +114,16 @@
 /obj/item/weapon/reagent_containers/hypospray/autoinjector
 	name = "autoinjector"
 	desc = "A rapid and safe way to administer small amounts of drugs by untrained or trained personnel."
-	icon_state = "blue"
+	icon = 'icons/obj/syringe_inf.dmi'
+	icon_state = "blue1"
 	item_state = "autoinjector"
 	amount_per_transfer_from_this = 5
 	volume = 5
 	origin_tech = list(TECH_MATERIAL = 2, TECH_BIO = 2)
+	slot_flags = SLOT_BELT | SLOT_EARS
+	w_class = ITEM_SIZE_TINY
 	var/list/starts_with = list(/datum/reagent/inaprovaline = 5)
+	var/band_color = COLOR_CYAN
 
 /obj/item/weapon/reagent_containers/hypospray/autoinjector/New()
 	..()
@@ -132,11 +139,13 @@
 	update_icon()
 	return
 
-/obj/item/weapon/reagent_containers/hypospray/autoinjector/update_icon()
+/obj/item/weapon/reagent_containers/hypospray/autoinjector/on_update_icon()
+	overlays.Cut()
 	if(reagents.total_volume > 0)
-		icon_state = "[initial(icon_state)]1"
+		icon_state = "[initial(icon_state)]"
 	else
 		icon_state = "[initial(icon_state)]0"
+	overlays+= overlay_image(icon,"injector_band",band_color,RESET_COLOR)
 
 /obj/item/weapon/reagent_containers/hypospray/autoinjector/examine(mob/user)
 	. = ..(user)
@@ -146,21 +155,48 @@
 		to_chat(user, "<span class='notice'>It is spent.</span>")
 
 /obj/item/weapon/reagent_containers/hypospray/autoinjector/detox
-	name = "autoinjector (antitox)"
-	icon_state = "green"
+	name = "autoinjector (anti-toxin)"
+	band_color = COLOR_GREEN
 	starts_with = list(/datum/reagent/dylovene = 5)
 
 /obj/item/weapon/reagent_containers/hypospray/autoinjector/pain
 	name = "autoinjector (painkiller)"
-	icon_state = "purple"
+	icon_state = "purple1"
+	band_color = COLOR_PURPLE
 	starts_with = list(/datum/reagent/tramadol = 5)
 
+/obj/item/weapon/reagent_containers/hypospray/autoinjector/brute
+	name = "autoinjector (anti-injury)"
+	icon_state = "red1"
+	starts_with = list(/datum/reagent/bicaridine = 5)
+
+/obj/item/weapon/reagent_containers/hypospray/autoinjector/burn
+	name = "autoinjector (anti-burn)"
+	icon_state = "orange1"
+	starts_with = list(/datum/reagent/kelotane = 5)
+
+/obj/item/weapon/reagent_containers/hypospray/autoinjector/rad
+	name = "autoinjector (anti-rad)"
+	icon_state = "green1"
+	starts_with = list(/datum/reagent/hyronalin = 5)
+
+/obj/item/weapon/reagent_containers/hypospray/autoinjector/inaprovaline
+	name = "autoinjector (inaprovaline)"
+	icon_state = "blue1"
+	starts_with = list(/datum/reagent/inaprovaline = 5)
+
 /obj/item/weapon/reagent_containers/hypospray/autoinjector/combatpain
-	name = "autoinjector (oxycodone)"
-	icon_state = "black"
+	name = "autoinjector (combat paikiller)"
+	band_color = COLOR_DARK_GRAY
 	starts_with = list(/datum/reagent/tramadol/oxycodone = 5)
+
+/obj/item/weapon/reagent_containers/hypospray/autoinjector/antirad
+	name = "autoinjector (anti-rad)"
+	icon_state = "yellow1"
+	band_color = COLOR_AMBER
+	starts_with = list(/datum/reagent/hyronalin = 5)
 
 /obj/item/weapon/reagent_containers/hypospray/autoinjector/mindbreaker
 	name = "autoinjector"
-	icon_state = "black"
+	band_color = COLOR_DARK_GRAY
 	starts_with = list(/datum/reagent/mindbreaker = 5)

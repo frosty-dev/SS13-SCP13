@@ -1,3 +1,5 @@
+#define SOUND_ID "pipe_leakage"
+
 /obj/machinery/atmospherics/pipe
 
 	var/datum/gas_mixture/air_temporary // used when reconstructing a pipeline that broke
@@ -6,13 +8,16 @@
 	var/leaking = 0		// Do not set directly, use set_leaking(TRUE/FALSE)
 	use_power = 0
 
-	var/alert_pressure = 170*ONE_ATMOSPHERE
+	var/maximum_pressure = 210 * ONE_ATMOSPHERE
+	var/fatigue_pressure = 170 * ONE_ATMOSPHERE
+	var/alert_pressure = 170 * ONE_ATMOSPHERE
 	var/in_stasis = 0
 		//minimum pressure before check_pressure(...) should be called
 
 	can_buckle = 1
 	buckle_require_restraints = 1
 	buckle_lying = -1
+	var/datum/sound_token/sound_token
 
 /obj/machinery/atmospherics/pipe/drain_power()
 	return -1
@@ -34,6 +39,7 @@
 			if(parent.network)
 				parent.network.leaks |= src
 	else if (!new_leaking && leaking)
+		update_sound(0)
 		STOP_PROCESSING(SSmachines, src)
 		leaking = FALSE
 		if(parent)
@@ -41,6 +47,11 @@
 			if(parent.network)
 				parent.network.leaks -= src
 
+/obj/machinery/atmospherics/pipe/proc/update_sound(var/playing)
+	if(playing && !sound_token)
+		sound_token = GLOB.sound_player.PlayLoopingSound(src, SOUND_ID, "sound/machines/pipeleak.ogg", volume = 8, range = 3, falloff = 1, prefer_mute = TRUE)
+	else if(!playing && sound_token)
+		QDEL_NULL(sound_token)
 
 /obj/machinery/atmospherics/pipe/proc/pipeline_expansion()
 	return null
@@ -81,6 +92,7 @@
 
 /obj/machinery/atmospherics/pipe/Destroy()
 	QDEL_NULL(parent)
+	QDEL_NULL(sound_token)
 	if(air_temporary)
 		loc.assume_air(air_temporary)
 
@@ -173,10 +185,6 @@
 	var/minimum_temperature_difference = 300
 	var/thermal_conductivity = 0 //WALL_HEAT_TRANSFER_COEFFICIENT No
 
-	var/maximum_pressure = 210*ONE_ATMOSPHERE
-	var/fatigue_pressure = 170*ONE_ATMOSPHERE
-	alert_pressure = 170*ONE_ATMOSPHERE
-
 	level = 1
 
 /obj/machinery/atmospherics/pipe/simple/New()
@@ -211,6 +219,10 @@
 		..()
 	else if(leaking)
 		parent.mingle_with_turf(loc, volume)
+		if(!sound_token && parent.air.return_pressure())
+			update_sound(1)
+		else if(sound_token && !parent.air.return_pressure())
+			update_sound(0)
 	else
 		. = PROCESS_KILL
 
@@ -255,8 +267,7 @@
 		node1 = null
 	if(node2)
 		node2.disconnect(src)
-		node1 = null
-
+		node2 = null
 	. = ..()
 
 /obj/machinery/atmospherics/pipe/simple/pipeline_expansion()
@@ -270,7 +281,7 @@
 	if(node2)
 		node2.update_underlays()
 
-/obj/machinery/atmospherics/pipe/simple/update_icon(var/safety = 0)
+/obj/machinery/atmospherics/pipe/simple/on_update_icon(var/safety = 0)
 	if(!atmos_initalized)
 		return
 	if(!check_icon_cache())
@@ -523,7 +534,7 @@
 	if(node3)
 		node3.update_underlays()
 
-/obj/machinery/atmospherics/pipe/manifold/update_icon(var/safety = 0)
+/obj/machinery/atmospherics/pipe/manifold/on_update_icon(var/safety = 0)
 	if(!atmos_initalized)
 		return
 	if(!check_icon_cache())
@@ -782,7 +793,7 @@
 	if(node4)
 		node4.update_underlays()
 
-/obj/machinery/atmospherics/pipe/manifold4w/update_icon(var/safety = 0)
+/obj/machinery/atmospherics/pipe/manifold4w/on_update_icon(var/safety = 0)
 	if(!atmos_initalized)
 		return
 	if(!check_icon_cache())
@@ -1018,7 +1029,7 @@
 	if(node)
 		node.update_underlays()
 
-/obj/machinery/atmospherics/pipe/cap/update_icon(var/safety = 0)
+/obj/machinery/atmospherics/pipe/cap/on_update_icon(var/safety = 0)
 	if(!check_icon_cache())
 		return
 
@@ -1311,7 +1322,7 @@
 /obj/machinery/atmospherics/pipe/vent/pipeline_expansion()
 	return list(node1)
 
-/obj/machinery/atmospherics/pipe/vent/update_icon()
+/obj/machinery/atmospherics/pipe/vent/on_update_icon()
 	if(node1)
 		icon_state = "intact"
 
@@ -1356,7 +1367,7 @@
 	connect_types = CONNECT_TYPE_REGULAR|CONNECT_TYPE_SUPPLY|CONNECT_TYPE_SCRUBBER
 	icon_state = "map_universal"
 
-/obj/machinery/atmospherics/pipe/simple/visible/universal/update_icon(var/safety = 0)
+/obj/machinery/atmospherics/pipe/simple/visible/universal/on_update_icon(var/safety = 0)
 	if(!check_icon_cache())
 		return
 
@@ -1391,7 +1402,7 @@
 	connect_types = CONNECT_TYPE_REGULAR|CONNECT_TYPE_SUPPLY|CONNECT_TYPE_SCRUBBER
 	icon_state = "map_universal"
 
-/obj/machinery/atmospherics/pipe/simple/hidden/universal/update_icon(var/safety = 0)
+/obj/machinery/atmospherics/pipe/simple/hidden/universal/on_update_icon(var/safety = 0)
 	if(!check_icon_cache())
 		return
 
@@ -1449,3 +1460,5 @@
 			underlays += icon_manager.get_atmos_icon("underlay", direction, color_cache_name(node), "intact" + icon_connect_type)
 	else
 		underlays += icon_manager.get_atmos_icon("underlay", direction, color_cache_name(node), "retracted" + icon_connect_type)
+
+#undef SOUND_ID

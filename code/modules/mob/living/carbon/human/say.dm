@@ -1,9 +1,4 @@
 /mob/living/carbon/human/say(var/message, var/datum/language/speaking = null, whispering)
-
-	if (isscp049_1(src))
-		src << "<span class = 'warning'>You cannot speak. Use your \"Communicate\" verb instead.</span>"
-		return
-
 	var/alt_name = ""
 	if(name != GetVoice())
 		if(get_id_name("Unknown") != GetVoice())
@@ -21,7 +16,7 @@
 
 	message = sanitize(message)
 	var/obj/item/organ/internal/voicebox/vox = locate() in internal_organs
-	var/snowflake_speak = (speaking && (speaking.flags & NONVERBAL|SIGNLANG)) || (vox && vox.is_usable() && (speaking in vox.assists_languages))
+	var/snowflake_speak = (speaking && (speaking.flags & (NONVERBAL|SIGNLANG))) || (vox && vox.is_usable() && vox.assists_languages[speaking])
 	if(!isSynthetic() && need_breathe() && failed_last_breath && !snowflake_speak)
 		var/obj/item/organ/internal/lungs/L = internal_organs_by_name[species.breathing_organ]
 		if(L.breath_fail_ratio > 0.9)
@@ -33,9 +28,11 @@
 			to_chat(src, "<span class='warning'>You don't have enough air in [L] to make a sound!</span>")
 			return
 		else if(L.breath_fail_ratio > 0.7)
-			whisper_say(length(message) > 5 ? stars(message) : message, speaking, alt_name)
+			return ..(length(message) > 5 ? stars(message) : message, alt_name = alt_name, speaking = speaking, whispering = 1)
 		else if(L.breath_fail_ratio > 0.4 && length(message) > 10)
-			whisper_say(message, speaking, alt_name)
+			return ..(message, alt_name = alt_name, speaking = speaking, whispering = 1)
+		else if(L.breath_fail_ratio > 0)
+			return ..(message, alt_name = alt_name, speaking = speaking, whispering = whispering)
 	else
 		return ..(message, alt_name = alt_name, speaking = speaking, whispering = whispering)
 
@@ -121,22 +118,7 @@
 		return voice_sub
 	if(mind && mind.changeling && mind.changeling.mimicing)
 		return mind.changeling.mimicing
-	if(GetSpecialVoice())
-		return GetSpecialVoice()
 	return real_name
-
-/mob/living/carbon/human/proc/SetSpecialVoice(var/new_voice)
-	if(new_voice)
-		special_voice = new_voice
-	return
-
-/mob/living/carbon/human/proc/UnsetSpecialVoice()
-	special_voice = ""
-	return
-
-/mob/living/carbon/human/proc/GetSpecialVoice()
-	return special_voice
-
 
 /mob/living/carbon/human/say_quote(var/message, var/datum/language/speaking = null)
 	var/verb = "says"
@@ -208,8 +190,8 @@
 			if(has_radio)
 				R.talk_into(src,message,null,verb,speaking)
 				used_radios += R
-		if("whisper")
-			whisper_say(message, speaking, alt_name)
+		if("whisper") //It's going to get sanitized again immediately, so decode.
+			whisper_say(html_decode(message), speaking, alt_name)
 			return 1
 		else
 			if(message_mode)
@@ -221,29 +203,22 @@
 					used_radios += r_ear
 
 /mob/living/carbon/human/handle_speech_sound()
+	if(species.name == SPECIES_HUMAN)
+		species.speech_sounds = gender == MALE ? 'sound/voice/clearing-throat-m.ogg' : 'sound/voice/clearing-throat-f.ogg'
 	if(species.speech_sounds && prob(species.speech_chance))
 		var/list/returns[2]
-		returns[1] = sound(pick(species.speech_sounds))
+		returns[1] = sound(pick(species.speech_sounds), volume = 35)
 		returns[2] = 50
 		return returns
 	return ..()
 
 /mob/living/carbon/human/can_speak(datum/language/speaking)
-	var/needs_assist = 0
-	var/can_speak_assist = 0
-
-	if(species && speaking.name in species.assisted_langs)
-		needs_assist = 1
-		for(var/obj/item/organ/internal/I in src.internal_organs)
-			if((speaking in I.assists_languages) && (I.is_usable()))
-				can_speak_assist = 1
-
-	if(needs_assist && !can_speak_assist)
-		return 0
-	else if(needs_assist && can_speak_assist)
-		return 1
-
-	return ..()
+	if(species && (speaking.name in species.assisted_langs))
+		for(var/obj/item/organ/internal/voicebox/I in src.internal_organs)
+			if(I.is_usable() && I.assists_languages[speaking])
+				return TRUE
+		return FALSE
+	. = ..()
 
 /mob/living/carbon/human/parse_language(var/message)
 	var/prefix = copytext(message,1,2)

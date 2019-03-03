@@ -25,7 +25,10 @@
 	stop_automated_movement = 1
 	status_flags = 0
 	faction = "cult"
+	supernatural = 1
 	status_flags = CANPUSH
+
+	bleed_colour = "#181933"
 
 /mob/living/simple_animal/shade/cultify()
 	return

@@ -70,16 +70,16 @@ var/global/list/pipe_colors = list("grey" = PIPE_COLOR_GREY, "red" = PIPE_COLOR_
 	//		return pipe_underlays_intact[state + dir + color]
 
 /datum/pipe_icon_manager/proc/check_icons()
-	if(!pipe_icons || !pipe_icons.len)
+	if(!pipe_icons)
 		gen_pipe_icons()
-	if(!manifold_icons || !manifold_icons.len)
+	if(!manifold_icons)
 		gen_manifold_icons()
-	if(!device_icons || !device_icons.len)
+	if(!device_icons)
 		gen_device_icons()
-	if(!omni_icons || !omni_icons.len)
+	if(!omni_icons)
 		gen_omni_icons()
 	//if(!underlays_intact || !underlays_down || !underlays_exposed || !pipe_underlays_exposed || !pipe_underlays_intact)
-	if(!underlays || !underlays.len)
+	if(!underlays)
 		gen_underlay_icons()
 
 /datum/pipe_icon_manager/proc/gen_pipe_icons()

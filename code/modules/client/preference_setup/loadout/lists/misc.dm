@@ -2,6 +2,16 @@
 	display_name = "cane"
 	path = /obj/item/weapon/cane
 
+/datum/gear/union_card
+	display_name = "union membership"
+	path = /obj/item/weapon/card/union
+
+/datum/gear/union_card/spawn_on_mob(var/mob/living/carbon/human/H, var/metadata)
+	. = ..()
+	if(.)
+		var/obj/item/weapon/card/union/card = .
+		card.signed_by = H.real_name
+
 /datum/gear/dice
 	display_name = "dice pack"
 	path = /obj/item/weapon/storage/pill_bottle/dice
@@ -77,6 +87,12 @@
 	path = /obj/item/weapon/towel
 	flags = GEAR_HAS_COLOR_SELECTION
 
+/datum/gear/rolled_towel
+	display_name = "big towel"
+	description = "Collapsed big towel - looks like you can't use it as a normal one... Use it on the beach or gym."
+	path = /obj/item/rolled_towel
+	flags = GEAR_HAS_TYPE_SELECTION
+
 /datum/gear/plush_toy
 	display_name = "plush toy"
 	description = "A plush toy."
@@ -93,12 +109,7 @@
 	plushes["farwa plush"] = /obj/item/toy/plushie/farwa
 	gear_tweaks += new /datum/gear_tweak/path(plushes)
 
-/datum/gear/workvisa
-	display_name = "work visa"
-	description = "A work visa issued by the Sol Central Government for the purpose of work."
-	path = /obj/item/weapon/paper/workvisa
-
-/datum/gear/mirror/
+/datum/gear/mirror
 	display_name = "handheld mirror"
 	sort_category = "Cosmetics"
 	path = /obj/item/weapon/mirror
@@ -106,17 +117,28 @@
 /datum/gear/lipstick
 	display_name = "lipstick selection"
 	path = /obj/item/weapon/lipstick
+	sort_category = "Cosmetics"
 	flags = GEAR_HAS_TYPE_SELECTION
 
 /datum/gear/comb
 	display_name = "plastic comb"
 	path = /obj/item/weapon/haircomb
+	sort_category = "Cosmetics"
 	flags = GEAR_HAS_COLOR_SELECTION
+
+/datum/gear/brush
+	display_name = "hairbrush"
+	path = /obj/item/weapon/haircomb/brush
+	sort_category = "Cosmetics"
+
+/datum/gear/deodorant
+	display_name = "deodorant"
+	path = /obj/item/weapon/reagent_containers/spray/cleaner/deodorant
+	sort_category = "Cosmetics"
 
 /datum/gear/mask
 	display_name = "sterile mask"
 	path = /obj/item/clothing/mask/surgical
-	cost = 2
 
 /datum/gear/smokingpipe
 	display_name = "pipe, smoking"
@@ -134,9 +156,31 @@
 	display_name = "cheap lighter"
 	path = /obj/item/weapon/flame/lighter
 
+/datum/gear/lighter/New()
+	..()
+	var/colours = list()
+	colours["random"] = /obj/item/weapon/flame/lighter/random
+	colours["red"] = /obj/item/weapon/flame/lighter/red
+	colours["yellow"] = /obj/item/weapon/flame/lighter/yellow
+	colours["cyan"] = /obj/item/weapon/flame/lighter/cyan
+	colours["green"] = /obj/item/weapon/flame/lighter/green
+	colours["pink"] = /obj/item/weapon/flame/lighter/pink
+	gear_tweaks += new/datum/gear_tweak/path(colours)
+
 /datum/gear/zippo
-	display_name = "zippo"
+	display_name = "zippo (collored)"
 	path = /obj/item/weapon/flame/lighter/zippo
+
+/datum/gear/zippo/New()
+	..()
+	var/colours = list()
+	colours["random"] = /obj/item/weapon/flame/lighter/zippo/random
+	colours["silver"] = /obj/item/weapon/flame/lighter/zippo
+	colours["blackened"] = /obj/item/weapon/flame/lighter/zippo/black
+	colours["gunmetal"] = /obj/item/weapon/flame/lighter/zippo/gunmetal
+	colours["bronze"] = /obj/item/weapon/flame/lighter/zippo/bronze
+	colours["pink"] = /obj/item/weapon/flame/lighter/zippo/pink
+	gear_tweaks += new/datum/gear_tweak/path(colours)
 
 /datum/gear/ashtray
 	display_name = "ashtray, plastic"
@@ -145,7 +189,6 @@
 /datum/gear/cigars
 	display_name = "fancy cigar case"
 	path = /obj/item/weapon/storage/fancy/cigar
-	cost = 2
 
 /datum/gear/cigar
 	display_name = "fancy cigar"
@@ -165,4 +208,11 @@
 /datum/gear/ecig/deluxe
 	display_name = "electronic cigarette, deluxe"
 	path = /obj/item/clothing/mask/smokable/ecig/deluxe
-	cost = 2
+
+/datum/gear/bible
+	display_name = "bible"
+	path = /obj/item/weapon/storage/bible
+
+/datum/gear/mind_healer
+	display_name = "Methylphenidate, pill bottle"
+	path = /obj/item/weapon/storage/pill_bottle/methylphenidate

@@ -1,21 +1,23 @@
 #if !defined(using_map_DATUM)
 
+	#include "site53_macros.dm"
 	#include "site53_announcements.dm"
-	#include "site53areas.dm"
+	#include "site53_areas.dm"
 	#include "../torch/torch_areas.dm"
 //	#include "torch_elevator.dm"
-	#include "site53elevators.dm"
+	#include "site53_elevators.dm"
 //	#include "torch_holodecks.dm"
 //	#include "torch_overmap.dm"
 	#include "site53_presets.dm"
 //	#include "torch_ranks.dm"
-	#include "site_53_ranks.dm"
-	#include "site53shuttles.dm"
+	#include "site53_ranks.dm"
+	#include "site53_shuttles.dm"
 //	#include "torch_unit_testing.dm"
 //	#include "torch_antagonism.dm"
 //	#include "torch_npcs.dm"
 	#include "site53_securitystate.dm"
 
+	#include "icons/medical_decals.dm"
 //	#include "datums/uniforms.dm"
 //	#include "datums/uniforms_expedition.dm"
 //	#include "datums/uniforms_fleet.dm"
@@ -39,12 +41,15 @@
 	#include "items/clothing/solgov-head.dm"
 	#include "items/clothing/solgov-suit.dm"
 	#include "items/clothing/solgov-under.dm"
+	#include "items/clothing/scp-under.dm"
+	#include "items/clothing/scp-accessory.dm"
 
 	#include "job/access.dm"
 	#include "job/jobs.dm"
 	#include "job/outfits.dm"
 
 //	#include "structures/closets.dm"
+	#include "structures/turfs.dm"
 	#include "structures/signs.dm"
 	#include "structures/closets/command.dm"
 //	#include "structures/closets/engineering.dm"
@@ -97,14 +102,14 @@
 	#include "../away/icarus/icarus.dm"
 	#include "../away/errant_pisces/errant_pisces.dm"
 	#include "../away/lar_maria/lar_maria.dm"*/
-
+/*
 	#include "../../code/modules/lobby_music/Perdition.dm"
 	#include "../../code/modules/lobby_music/hie.dm"
 	#include "../../code/modules/lobby_music/std.dm"
 	#include "../../code/modules/lobby_music/foundation.dm"
 	#include "../../code/modules/lobby_music/humanity.dm"
 	#include "../../code/modules/lobby_music/days.dm"
-
+*/
 
 	#define using_map_DATUM /datum/map/site53
 

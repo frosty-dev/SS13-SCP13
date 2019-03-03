@@ -40,6 +40,12 @@
 	user.update_action_buttons()
 	user.update_floating()
 
+/obj/item/clothing/shoes/magboots/negates_gravity()
+	if(magpulse)
+		return 1
+	else
+		return 0
+
 /obj/item/clothing/shoes/magboots/mob_can_equip(mob/user)
 	var/mob/living/carbon/human/H = user
 
@@ -49,8 +55,9 @@
 			to_chat(user, "You are unable to wear \the [src] as \the [H.shoes] are in the way.")
 			shoes = null
 			return 0
-		H.drop_from_inventory(shoes)	//Remove the old shoes so you can put on the magboots.
-		shoes.forceMove(src)
+		if(!H.unEquip(shoes, src))//Remove the old shoes so you can put on the magboots.
+			shoes = null
+			return 0
 
 	if(!..())
 		if(shoes) 	//Put the old shoes back on if the check fails.
@@ -78,7 +85,7 @@
 	var/mob/living/carbon/human/H = wearer
 	if(shoes && istype(H))
 		if(!H.equip_to_slot_if_possible(shoes, slot_shoes))
-			shoes.forceMove(get_turf(src))
+			shoes.dropInto(loc)
 		src.shoes = null
 	wearer.update_floating()
 	wearer = null

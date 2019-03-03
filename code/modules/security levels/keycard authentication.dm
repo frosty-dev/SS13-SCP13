@@ -30,7 +30,7 @@
 		return
 	if(istype(W,/obj/item/weapon/card/id))
 		var/obj/item/weapon/card/id/ID = W
-		if(access_keyauth in ID.access)
+		if(access_keycard_auth in ID.access)
 			if(active == 1)
 				//This is not the device that made the initial request. It is the device confirming the request.
 				if(event_source && event_source.event_triggered_by != usr)
@@ -43,7 +43,7 @@
 				broadcast_request() //This is the device making the initial event request. It needs to broadcast to other devices
 
 //icon_state gets set everwhere besides here, that needs to be fixed sometime
-/obj/machinery/keycard_auth/update_icon()
+/obj/machinery/keycard_auth/on_update_icon()
 	if(stat &NOPOWER)
 		icon_state = "auth_off"
 
@@ -68,7 +68,14 @@
 		dat += "Select an event to trigger:<ul>"
 
 		var/decl/security_state/security_state = decls_repository.get_decl(GLOB.using_map.security_state)
-		dat += "<li><A href='?src=\ref[src];triggerevent=Red alert'>Engage [security_state.high_security_level.name]</A></li>"
+		if(security_state.current_security_level == security_state.severe_security_level)
+			dat += "<li>Cannot modify the alert level at this time: [security_state.severe_security_level.name] engaged.</li>"
+		else
+			if(security_state.current_security_level == security_state.high_security_level)
+				dat += "<li><A href='?src=\ref[src];triggerevent=Revert alert'>Disengage [security_state.high_security_level.name]</A></li>"
+			else
+				dat += "<li><A href='?src=\ref[src];triggerevent=Red alert'>Engage [security_state.high_security_level.name]</A></li>"
+
 		if(!config.ert_admin_call_only)
 			dat += "<li><A href='?src=\ref[src];triggerevent=Emergency Response Team'>Emergency Response Team</A></li>"
 
@@ -116,7 +123,7 @@
 
 /obj/machinery/keycard_auth/proc/broadcast_request()
 	icon_state = "auth_on"
-	for(var/obj/machinery/keycard_auth/KA in SSmachines.all_machinery)
+	for(var/obj/machinery/keycard_auth/KA in world)
 		if(KA == src) continue
 		KA.reset()
 		spawn()
@@ -149,13 +156,18 @@
 	switch(event)
 		if("Red alert")
 			var/decl/security_state/security_state = decls_repository.get_decl(GLOB.using_map.security_state)
+			security_state.stored_security_level = security_state.current_security_level
 			security_state.set_security_level(security_state.high_security_level)
 			feedback_inc("alert_keycard_auth_red",1)
+		if("Revert alert")
+			var/decl/security_state/security_state = decls_repository.get_decl(GLOB.using_map.security_state)
+			security_state.set_security_level(security_state.stored_security_level)
+			feedback_inc("alert_keycard_revert_red",1)
 		if("Grant Emergency Maintenance Access")
-			make_maint_all_access()
+			GLOB.using_map.make_maint_all_access()
 			feedback_inc("alert_keycard_auth_maintGrant",1)
 		if("Revoke Emergency Maintenance Access")
-			revoke_maint_all_access()
+			GLOB.using_map.revoke_maint_all_access()
 			feedback_inc("alert_keycard_auth_maintRevoke",1)
 		if("Emergency Response Team")
 			if(is_ert_blocked())
@@ -174,19 +186,9 @@
 
 /obj/machinery/keycard_auth/proc/is_ert_blocked()
 	if(config.ert_admin_call_only) return 1
-	return ticker.mode && ticker.mode.ert_disabled
+	return SSticker.mode && SSticker.mode.ert_disabled
 
 var/global/maint_all_access = 0
-
-/proc/make_maint_all_access()
-	maint_all_access = 1
-	to_world("<font size=4 color='red'>Attention!</font>")
-	to_world("<font color='red'>The maintenance access requirement has been revoked on all airlocks.</font>")
-
-/proc/revoke_maint_all_access()
-	maint_all_access = 0
-	to_world("<font size=4 color='red'>Attention!</font>")
-	to_world("<font color='red'>The maintenance access requirement has been readded on all maintenance airlocks.</font>")
 
 /obj/machinery/door/airlock/allowed(mob/M)
 	if(maint_all_access && src.check_access_list(list(access_maint_tunnels)))

@@ -126,23 +126,38 @@ var/const/MED_I_FREQ = 1485
 var/const/SEC_I_FREQ = 1475
 
 var/list/radiochannels = list(
-	"Public"		= PUB_FREQ,
+	"Common"		= PUB_FREQ,
 	"Science"		= SCI_FREQ,
 	"Command"		= COMM_FREQ,
 	"Medical"		= MED_FREQ,
 	"Engineering"	= ENG_FREQ,
 	"Security" 		= SEC_FREQ,
-	"Epsilon-11" 	= ERT_FREQ,
-	"Nu-7" 			= DTH_FREQ,
-	"Insurgency" 	= SYND_FREQ,
+	"Response Team" = ERT_FREQ,
+	"Special Ops" 	= DTH_FREQ,
+	"Mercenary" 	= SYND_FREQ,
 	"Raider"		= RAID_FREQ,
 	"Exploration"	= EXP_FREQ,
 	"Supply" 		= SUP_FREQ,
-	"Civilian" 		= SRV_FREQ,
-	"Encrypted"		= AI_FREQ,
+	"Service" 		= SRV_FREQ,
+	"AI Private"	= AI_FREQ,
 	"Entertainment" = ENT_FREQ,
 	"Medical(I)"	= MED_I_FREQ,
 	"Security(I)"	= SEC_I_FREQ
+)
+
+var/list/channel_color_presets = list(
+	"Global Green" = COMMS_COLOR_COMMON,
+	"Phenomenal Purple" = COMMS_COLOR_SCIENCE,
+	"Bitchin' Blue" = COMMS_COLOR_COMMAND,
+	"Menacing Maroon" = COMMS_COLOR_SYNDICATE,
+	"Pretty Periwinkle" = COMMS_COLOR_CENTCOMM,
+	"Painful Pink" = COMMS_COLOR_AI,
+	"Raging Red" = COMMS_COLOR_SECURITY,
+	"Operational Orange" = COMMS_COLOR_ENGINEER,
+	"Tantalizing Turquoise" = COMMS_COLOR_MEDICAL,
+	"Bemoaning Brown" = COMMS_COLOR_SUPPLY,
+	"Gastric Green" = COMMS_COLOR_SERVICE,
+	"Bold Brass" = COMMS_COLOR_EXPLORER
 )
 
 // central command channels, i.e deathsquid & response teams
@@ -224,7 +239,7 @@ var/global/datum/controller/radio/radio_controller
 /datum/controller/radio
 	var/list/datum/radio_frequency/frequencies = list()
 
-/datum/controller/radio/proc/add_object(obj/device as obj, var/new_frequency as num, var/filter = null as text|null)
+/datum/controller/radio/proc/add_object(obj/device as obj, var/new_frequency as num, var/object_filter = null as text|null)
 	var/f_text = num2text(new_frequency)
 	var/datum/radio_frequency/frequency = frequencies[f_text]
 
@@ -233,7 +248,7 @@ var/global/datum/controller/radio/radio_controller
 		frequency.frequency = new_frequency
 		frequencies[f_text] = frequency
 
-	frequency.add_listener(device, filter)
+	frequency.add_listener(device, object_filter)
 	return frequency
 
 /datum/controller/radio/proc/remove_object(obj/device, old_frequency)
@@ -264,15 +279,15 @@ var/global/datum/controller/radio/radio_controller
 	var/frequency as num
 	var/list/list/obj/devices = list()
 
-/datum/radio_frequency/proc/post_signal(obj/source as obj|null, datum/signal/signal, var/filter = null as text|null, var/range = null as num|null)
+/datum/radio_frequency/proc/post_signal(obj/source as obj|null, datum/signal/signal, var/radio_filter = null as text|null, var/range = null as num|null)
 	var/turf/start_point
 	if(range)
 		start_point = get_turf(source)
 		if(!start_point)
 			qdel(signal)
 			return 0
-	if (filter)
-		send_to_filter(source, signal, filter, start_point, range)
+	if (radio_filter)
+		send_to_filter(source, signal, radio_filter, start_point, range)
 		send_to_filter(source, signal, RADIO_DEFAULT, start_point, range)
 	else
 		//Broadcast the signal to everyone!
@@ -280,11 +295,11 @@ var/global/datum/controller/radio/radio_controller
 			send_to_filter(source, signal, next_filter, start_point, range)
 
 //Sends a signal to all machines belonging to a given filter. Should be called by post_signal()
-/datum/radio_frequency/proc/send_to_filter(obj/source, datum/signal/signal, var/filter, var/turf/start_point = null, var/range = null)
+/datum/radio_frequency/proc/send_to_filter(obj/source, datum/signal/signal, var/radio_filter, var/turf/start_point = null, var/range = null)
 	if (range && !start_point)
 		return
 
-	for(var/obj/device in devices[filter])
+	for(var/obj/device in devices[radio_filter])
 		if(device == source)
 			continue
 		if(range)
@@ -296,14 +311,14 @@ var/global/datum/controller/radio/radio_controller
 
 		device.receive_signal(signal, TRANSMISSION_RADIO, frequency)
 
-/datum/radio_frequency/proc/add_listener(obj/device as obj, var/filter as text|null)
-	if (!filter)
-		filter = RADIO_DEFAULT
+/datum/radio_frequency/proc/add_listener(obj/device as obj, var/radio_filter as text|null)
+	if (!radio_filter)
+		radio_filter = RADIO_DEFAULT
 	//log_admin("add_listener(device=[device],filter=[filter]) frequency=[frequency]")
-	var/list/obj/devices_line = devices[filter]
+	var/list/obj/devices_line = devices[radio_filter]
 	if (!devices_line)
 		devices_line = new
-		devices[filter] = devices_line
+		devices[radio_filter] = devices_line
 	devices_line+=device
 //			var/list/obj/devices_line___ = devices[filter_str]
 //			var/l = devices_line___.len

@@ -1,5 +1,5 @@
 /obj/item/weapon/gun/projectile/shotgun/pump
-	name = "shotgun"
+	name = "Remmington 29x pump shotgun"
 	desc = "The mass-produced W-T Remmington 29x shotgun is a favourite of police and security forces on many worlds. Useful for sweeping alleys."
 	icon_state = "shotgun"
 	item_state = "shotgun"
@@ -16,6 +16,7 @@
 	one_hand_penalty = 2
 	var/recentpump = 0 // to prevent spammage
 	wielded_item_state = "gun_wielded"
+	load_sound = 'sound/weapons/guns/interaction/shotgun_instert.ogg'
 
 /obj/item/weapon/gun/projectile/shotgun/pump/consume_next_projectile()
 	if(chambered)
@@ -31,7 +32,9 @@
 	playsound(M, 'sound/weapons/shotgunpump.ogg', 60, 1)
 
 	if(chambered)//We have a shell in the chamber
-		chambered.loc = get_turf(src)//Eject casing
+		chambered.dropInto(loc)//Eject casing
+		if(LAZYLEN(chambered.fall_sounds))
+			playsound(loc, pick(chambered.fall_sounds), 50, 1)
 		chambered = null
 
 	if(loaded.len)
@@ -42,7 +45,7 @@
 	update_icon()
 
 /obj/item/weapon/gun/projectile/shotgun/pump/combat
-	name = "combat shotgun"
+	name = "KS-40 combat shotgun"
 	desc = "Built for close quarters combat, the Hephaestus Industries KS-40 is widely regarded as a weapon of choice for repelling boarders."
 	icon_state = "cshotgun"
 	item_state = "cshotgun"
@@ -51,24 +54,16 @@
 	ammo_type = /obj/item/ammo_casing/shotgun
 	one_hand_penalty = 3 //a little heavier than the regular shotgun
 
-/obj/item/weapon/gun/projectile/shotgun/tactical
-	name = "combat shotgun"
-	desc = "A fully automatic shotgun, This one has a orange stripe."
-	icon_state = "tac_shotgun"
-	item_state = "cshotgun"
-	load_method = SINGLE_CASING|SPEEDLOADER
-	max_shells = 7
-	w_class = ITEM_SIZE_HUGE
-	force = 10
-	obj_flags =  OBJ_FLAG_CONDUCTIBLE
-	slot_flags = SLOT_BACK
-	caliber = "shotgun"
-	origin_tech = list(TECH_COMBAT = 3, TECH_MATERIAL = 1)
-	ammo_type = /obj/item/ammo_casing/shotgun
-	one_hand_penalty = 2
-	wielded_item_state = "gun_wielded"
+/obj/item/weapon/gun/projectile/shotgun/pump/combat/lethal
+	ammo_type = /obj/item/ammo_casing/shotgun/pellet
 
-	burst_delay = 0
+/obj/item/weapon/gun/projectile/shotgun/pump/combat/short
+	name = "KS-40S combat shotgun"
+	desc = " Shot version of KS-40"
+	icon = 'icons/obj/infinity_guns.dmi'
+	w_class = ITEM_SIZE_NORMAL
+	slot_flags = null
+	one_hand_penalty = 5
 
 /obj/item/weapon/gun/projectile/shotgun/doublebarrel
 	name = "double-barreled shotgun"
@@ -98,6 +93,9 @@
 
 /obj/item/weapon/gun/projectile/shotgun/doublebarrel/pellet
 	ammo_type = /obj/item/ammo_casing/shotgun/pellet
+
+/obj/item/weapon/gun/projectile/shotgun/doublebarrel/empty
+	ammo_type = null
 
 /obj/item/weapon/gun/projectile/shotgun/doublebarrel/flare
 	name = "signal shotgun"

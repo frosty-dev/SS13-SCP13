@@ -38,13 +38,12 @@
 	damage_type = BURN
 	nodamage = 1
 	check_armour = "energy"
-	var/temperature = 300
-
+	var/firing_temperature = 300
 
 	on_hit(var/atom/target, var/blocked = 0)//These two could likely check temp protection on the mob
 		if(istype(target, /mob/living))
 			var/mob/M = target
-			M.bodytemperature = temperature
+			M.bodytemperature = firing_temperature
 		return 1
 
 /obj/item/projectile/meteor
@@ -58,7 +57,7 @@
 
 	Bump(atom/A as mob|obj|turf|area)
 		if(A == firer)
-			loc = A.loc
+			forceMove(A.loc)
 			return
 
 		sleep(-1) //Might not be important enough for a sleep(-1) but the sleep/spawn itself is necessary thanks to explosions and metoerhits

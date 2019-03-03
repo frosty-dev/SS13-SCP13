@@ -1,11 +1,12 @@
 #if !defined(using_map_DATUM)
 
+	#include "site19_macros.dm"
 	#include "site19_announcements.dm"
 	#include "site19_areas.dm"
 	#include "../torch/torch_areas.dm"
 	#include "site19_elevators.dm"
 	#include "site19_presets.dm"
-	#include "site_19_ranks.dm"
+	#include "site19_ranks.dm"
 	#include "site19_shuttles.dm"
 //	#include "torch_unit_testing.dm"
 //	#include "torch_antagonism.dm"
@@ -35,6 +36,8 @@
 	#include "items/clothing/solgov-head.dm"
 	#include "items/clothing/solgov-suit.dm"
 	#include "items/clothing/solgov-under.dm"
+	#include "items/clothing/scp-under.dm"
+	#include "items/clothing/scp-accessory.dm"
 
 	#include "job/access.dm"
 	#include "job/jobs.dm"
@@ -69,14 +72,14 @@
 	#include "site19-4.dmm"
 	#include "site19-5.dmm"
 	#include "site19-7.dmm"
-
+/*
 	#include "../../code/modules/lobby_music/Perdition.dm"
 	#include "../../code/modules/lobby_music/hie.dm"
 	#include "../../code/modules/lobby_music/std.dm"
 	#include "../../code/modules/lobby_music/foundation.dm"
 	#include "../../code/modules/lobby_music/humanity.dm"
 	#include "../../code/modules/lobby_music/days.dm"
-
+*/
 
 	#define using_map_DATUM /datum/map/site19
 

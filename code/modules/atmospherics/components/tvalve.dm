@@ -22,7 +22,7 @@
 	icon_state = "map_tvalve1"
 	state = 1
 
-/obj/machinery/atmospherics/tvalve/update_icon(animation)
+/obj/machinery/atmospherics/tvalve/on_update_icon(animation)
 	if(animation)
 		flick("tvalve[src.state][!src.state]",src)
 	else
@@ -100,8 +100,6 @@
 	return null
 
 /obj/machinery/atmospherics/tvalve/Destroy()
-	loc = null
-
 	if(node1)
 		node1.disconnect(src)
 		qdel(network_node1)
@@ -116,7 +114,7 @@
 	node2 = null
 	node3 = null
 
-	..()
+	return ..()
 
 /obj/machinery/atmospherics/tvalve/proc/go_to_side()
 
@@ -216,7 +214,7 @@
 	update_underlays()
 
 /obj/machinery/atmospherics/tvalve/build_network()
-	if(!network_node1 && node1)
+	if(!network_node1 && node1)				
 		network_node1 = new /datum/pipe_network()
 		network_node1.normal_members += src
 		network_node1.build_network(node1, src)
@@ -289,7 +287,7 @@
 	icon_state = "map_tvalve1"
 	state = 1
 
-/obj/machinery/atmospherics/tvalve/digital/update_icon()
+/obj/machinery/atmospherics/tvalve/digital/on_update_icon()
 	..()
 	if(!powered())
 		icon_state = "tvalvenopower"
@@ -405,7 +403,7 @@
 	update_icon()
 	update_underlays()
 
-/obj/machinery/atmospherics/tvalve/mirrored/update_icon(animation)
+/obj/machinery/atmospherics/tvalve/mirrored/on_update_icon(animation)
 	if(animation)
 		flick("tvalvem[src.state][!src.state]",src)
 	else
@@ -424,7 +422,7 @@
 	icon_state = "map_tvalvem1"
 	state = 1
 
-/obj/machinery/atmospherics/tvalve/mirrored/digital/update_icon()
+/obj/machinery/atmospherics/tvalve/mirrored/digital/on_update_icon()
 	..()
 	if(!powered())
 		icon_state = "tvalvemnopower"

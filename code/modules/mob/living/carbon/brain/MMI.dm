@@ -55,7 +55,8 @@
 		else if(!B.brainmob || !B.can_use_mmi)
 			to_chat(user, "<span class='notice'>This brain is completely useless to you.</span>")
 			return
-
+		if(!user.unEquip(O, src))
+			return
 		user.visible_message("<span class='notice'>\The [user] sticks \a [O] into \the [src].</span>")
 
 		brainmob = B.brainmob
@@ -65,9 +66,7 @@
 		brainmob.set_stat(CONSCIOUS)
 		brainmob.switch_from_dead_to_living_mob_list() //Update dem lists
 
-		user.drop_item()
 		brainobj = O
-		brainobj.forceMove(src)
 
 		SetName("[initial(name)]: ([brainmob.real_name])")
 		icon_state = "mmi_full"
@@ -78,7 +77,7 @@
 
 		return
 
-	if((istype(O,/obj/item/weapon/card/id)||istype(O,/obj/item/device/pda)) && brainmob)
+	if((istype(O,/obj/item/weapon/card/id)||istype(O,/obj/item/modular_computer)) && brainmob)
 		if(allowed(user))
 			locked = !locked
 			to_chat(user, "<span class='notice'>You [locked ? "lock" : "unlock"] the brain holder.</span>")
@@ -106,7 +105,7 @@
 		else	//Or make a new one if empty.
 			brain = new(user.loc)
 		brainmob.container = null//Reset brainmob mmi var.
-		brainmob.loc = brain//Throw mob into brain.
+		brainmob.forceMove(brain)//Throw mob into brain.
 		brainmob.remove_from_living_mob_list() //Get outta here
 		brain.brainmob = brainmob//Set the brain to use the brainmob
 		brainmob = null//Set mmi brainmob var to null

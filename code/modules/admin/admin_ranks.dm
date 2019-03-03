@@ -22,8 +22,6 @@ var/list/admin_ranks = list()								//list of all ranks with associated rights
 			if(null,"")		continue
 			if("Removed")	continue				//Reserved
 
-
-
 		var/rights = 0
 		for(var/i=2, i<=List.len, i++)
 			switch(ckey(List[i]))
@@ -35,11 +33,11 @@ var/list/admin_ranks = list()								//list of all ranks with associated rights
 				if("server")					rights |= R_SERVER
 				if("debug")						rights |= R_DEBUG
 				if("permissions","rights")		rights |= R_PERMISSIONS
-				if("possess")					rights |= R_POSSESS
+				if("judge")						rights |= R_JUDGE
 				if("stealth")					rights |= R_STEALTH
 				if("rejuv","rejuvinate")		rights |= R_REJUVINATE
 				if("varedit")					rights |= R_VAREDIT
-				if("everything","host","all")	rights |= (R_HOST | R_BUILDMODE | R_ADMIN | R_BAN | R_FUN | R_SERVER | R_DEBUG | R_PERMISSIONS | R_POSSESS | R_STEALTH | R_REJUVINATE | R_VAREDIT | R_SOUNDS | R_SPAWN | R_MOD| R_MENTOR)
+				if("everything","host","all")	rights |= (R_HOST | R_BUILDMODE | R_ADMIN | R_BAN | R_FUN | R_SERVER | R_DEBUG | R_PERMISSIONS | R_JUDGE | R_STEALTH | R_REJUVINATE | R_VAREDIT | R_SOUNDS | R_SPAWN | R_MOD| R_MENTOR)
 				if("sound","sounds")			rights |= R_SOUNDS
 				if("spawn","create")			rights |= R_SPAWN
 				if("mod")						rights |= R_MOD
@@ -47,35 +45,6 @@ var/list/admin_ranks = list()								//list of all ranks with associated rights
 
 		admin_ranks[rank] = rights
 		previous_rights = rights
-
-/* NEW SYSTEM
-		var/rights = 0
-		for(var/i=2, i<=List.len, i++)
-			switch(ckey(List[i]))
-				if("@","prev")					rights |= previous_rights
-				if("mentor")					rights |= R_MENTOR
-				if("trialmod")					rights |= R_TRIALMOD
-				if("mod")						rights |= R_MOD
-				if("admin")						rights |= R_ADMIN
-				if("ban")						rights |= R_BAN
-				if("fun")						rights |= R_FUN
-				if("server")					rights |= R_SERVER
-				if("debug")						rights |= R_DEBUG
-				if("permissions","rights")		rights |= R_PERMISSIONS
-				if("possess")					rights |= R_POSSESS
-				if("stealth")					rights |= R_STEALTH
-				if("rejuv","rejuvinate")		rights |= R_REJUVINATE
-				if("varedit")					rights |= R_VAREDIT
-				if("everything","host","all")	rights |= (R_HOST | R_BUILDMODE | R_ADMIN | R_BAN | R_FUN | R_SERVER | R_DEBUG | R_PERMISSIONS | R_POSSESS | R_STEALTH | R_REJUVINATE | R_VAREDIT | R_SOUNDS | R_SPAWN | R_MOD| R_MENTOR)
-				if("sound","sounds")			rights |= R_SOUNDS
-				if("assdev")					rights |= R_ASSDEV
-				if("dev")						rights |= R_DEV
-				if("sendev")					rights |= R_SENDEV
-
-
-		admin_ranks[rank] = rights
-		previous_rights = rights
-*/
 
 	#ifdef TESTING
 	var/msg = "Permission Sets Built:\n"
@@ -94,11 +63,10 @@ var/list/admin_ranks = list()								//list of all ranks with associated rights
 	for(var/client/C in GLOB.admins)
 		C.remove_admin_verbs()
 		C.holder = null
+	load_admin_ranks()
 	GLOB.admins.Cut()
 
 	if(config.admin_legacy_system)
-		load_admin_ranks()
-
 		//load text from file
 		var/list/Lines = file2list("config/admins.txt")
 
@@ -108,7 +76,7 @@ var/list/admin_ranks = list()								//list of all ranks with associated rights
 			if(copytext(line,1,2) == "#")	continue
 
 			//Split the line at every "-"
-			var/list/List = splittext(line, " - ")  //fuck you, sincereley Time-Green
+			var/list/List = splittext(line, "-")
 			if(!List.len)					continue
 
 			//ckey is before the first "-"

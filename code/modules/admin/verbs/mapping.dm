@@ -54,7 +54,7 @@ var/intercom_range_display_status = 0
 
 
 
-	for(var/obj/effect/debugging/camera_range/C in global.effect_list)
+	for(var/obj/effect/debugging/camera_range/C in world)
 		qdel(C)
 
 	if(camera_range_display_status)
@@ -109,11 +109,11 @@ var/intercom_range_display_status = 0
 	else
 		intercom_range_display_status = 1
 
-	for(var/obj/effect/debugging/marker/M in global.effect_list)
+	for(var/obj/effect/debugging/marker/M in world)
 		qdel(M)
 
 	if(intercom_range_display_status)
-		for(var/obj/item/device/radio/intercom/I in global.device_list)
+		for(var/obj/item/device/radio/intercom/I in world)
 			for(var/turf/T in orange(7,I))
 				var/obj/effect/debugging/marker/F = new/obj/effect/debugging/marker(T)
 				if (!(F in view(7,I.loc)))
@@ -149,6 +149,7 @@ var/list/debug_verbs = list (
 		,/datum/admins/proc/setup_supermatter
 		,/client/proc/atmos_toggle_debug
 		,/client/proc/spawn_tanktransferbomb
+		,/client/proc/find_leaky_pipes
 	)
 
 
@@ -275,7 +276,7 @@ var/list/debug_verbs = list (
 
 	var/list/atom/atom_list = list()
 
-	for(var/A in world)
+	for(var/atom/A in world)
 		if(istype(A,type_path))
 			var/atom/B = A
 			while(!(isturf(B.loc)))
@@ -311,7 +312,7 @@ var/list/debug_verbs = list (
 
 	var/count = 0
 
-	for(var/A in world)
+	for(var/atom/A in world)
 		if(istype(A,type_path))
 			count++
 	/*
@@ -329,3 +330,15 @@ var/list/debug_verbs = list (
 
 /proc/get_zas_image(var/turf/T, var/icon_state)
 	return image_repository.atom_image(T, 'icons/misc/debug_group.dmi', icon_state, plane = ABOVE_TURF_PLANE, layer = ABOVE_TILE_LAYER)
+
+//Special for Cakey
+/client/proc/find_leaky_pipes()
+	set category = "Mapping"
+	set name = "Find Leaky Pipes"
+
+	var/list/baddies = list("LEAKY PIPES")
+	for(var/obj/machinery/atmospherics/pipe/P in SSmachines.machinery)
+		if(P.leaking)
+			baddies += "[P] ([P.x],[P.y],[P.z] - <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[P.x];Y=[P.y];Z=[P.z]'>JMP</a>)"
+
+	to_chat(usr,jointext(baddies, "<br>"))

@@ -7,7 +7,7 @@
 	program_menu_icon = "battery-3"
 	extended_desc = "This program connects to sensors to provide information about electrical systems"
 	ui_header = "power_norm.gif"
-	required_access = access_mtflvl2
+	required_access = access_engine
 	requires_ntnet = 1
 	network_destination = "power monitoring system"
 	size = 9
@@ -73,7 +73,7 @@
 	if(focus)
 		data["focus"] = focus.return_reading_data()
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "power_monitor.tmpl", "Power Monitoring Console", 800, 500, state = state)
 		if(host.update_layout()) // This is necessary to ensure the status bar remains updated along with rest of the UI.
@@ -89,7 +89,7 @@
 	if(!T) // Safety check
 		return
 	var/connected_z_levels = GetConnectedZlevels(T.z)
-	for(var/obj/machinery/power/sensor/S in SSmachines.all_machinery)
+	for(var/obj/machinery/power/sensor/S in SSmachines.machinery)
 		if((S.long_range) || (S.loc.z in connected_z_levels)) // Consoles have range on their Z-Level. Sensors with long_range var will work between Z levels.
 			if(S.name_tag == "#UNKN#") // Default name. Shouldn't happen!
 				warning("Powernet sensor with unset ID Tag! [S.x]X [S.y]Y [S.z]Z")
@@ -101,7 +101,7 @@
 	if(active_sensor == removed_sensor)
 		active_sensor = null
 		if(update_ui)
-			GLOB.nanomanager.update_uis(src)
+			SSnano.update_uis(src)
 	grid_sensors -= removed_sensor
 	GLOB.destroyed_event.unregister(removed_sensor, src, /datum/nano_module/power_monitor/proc/remove_sensor)
 

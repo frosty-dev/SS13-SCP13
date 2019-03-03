@@ -33,7 +33,7 @@
 		/obj/item/weapon/gun/projectile/pistol,
 		/obj/item/ammo_magazine/mc9mm,
 		/obj/item/ammo_magazine/mc9mm,
-		/obj/item/clothing/accessory/holster/thigh,
+		/obj/item/clothing/accessory/storage/holster/thigh,
 		/obj/item/clothing/under/rank/medical/scrubs/navyblue
 	)
 

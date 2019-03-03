@@ -494,9 +494,23 @@ GLOBAL_LIST_EMPTY(scp106_spawnpoints)
 	name = "Femur Breaker Button"
 	icon = 'icons/obj/objects.dmi'
 	_wifi_id = "femurbreaker"
-	sleep_time = 90 SECONDS
+	sleep_time = 90
 
 /obj/machinery/button/femur_breaker/Initialize()
 	if(_wifi_id)
 		wifi_sender = new/datum/wifi/sender/femur_breaker(_wifi_id, src)
 	. = ..()
+
+//-------------------------------
+// Femur Breaker button
+//	Sender: Activates the Receiver
+//	Receiver: Triggers the parent Femur Breaker to activate
+//-------------------------------
+/datum/wifi/sender/femur_breaker/activate()
+	for(var/datum/wifi/receiver/button/femur_breaker/F in connected_devices)
+		F.activate()
+
+/datum/wifi/receiver/button/femur_breaker/activate()
+	var/obj/structure/femur_breaker/FB = parent
+	if(istype(FB))
+		FB.activate()

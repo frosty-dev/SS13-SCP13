@@ -1,15 +1,14 @@
 //conveyor2 is pretty much like the original, except it supports corners, but not diverters.
 //note that corner pieces transfer stuff clockwise when running forward, and anti-clockwise backwards.
 
-GLOBAL_LIST_EMPTY(conveyors)
-
 /obj/machinery/conveyor
 	icon = 'icons/obj/recycling.dmi'
 	icon_state = "conveyor0"
 	name = "conveyor belt"
 	desc = "A conveyor belt."
-	layer = BELOW_OBJ_LAYER	// so they appear under stuff
+	layer = BELOW_DOOR_LAYER	// so they appear under stuff
 	anchored = 1
+
 	var/operating = 0	// 1 if running forward, -1 if backwards, 0 if off
 	var/operable = 1	// true if can operate (no broken segments in this belt run)
 	var/forwards		// this is the default (forward) direction, set by the map dir
@@ -39,8 +38,6 @@ GLOBAL_LIST_EMPTY(conveyors)
 		operating = 1
 		setmove()
 
-	GLOB.conveyors += src
-
 
 
 /obj/machinery/conveyor/proc/setmove()
@@ -51,7 +48,7 @@ GLOBAL_LIST_EMPTY(conveyors)
 	else operating = 0
 	update_icon()
 
-/obj/machinery/conveyor/update_icon()
+/obj/machinery/conveyor/on_update_icon()
 	if(stat & BROKEN)
 		icon_state = "conveyor-broken"
 		operating = 0
@@ -92,15 +89,11 @@ GLOBAL_LIST_EMPTY(conveyors)
 		to_chat(user, "<span class='notice'>You remove the conveyor belt.</span>")
 		qdel(src)
 		return
-	if(isrobot(user))	return //Carn: fix for borgs dropping their modules on conveyor belts
-	if(I.loc != user)	return // This should stop mounted modules ending up outside the module.
-
-	user.drop_item(get_turf(src))
-	return
+	user.unequip_item(get_turf(src))
 
 // attack with hand, move pulled object onto conveyor
 /obj/machinery/conveyor/attack_hand(mob/user as mob)
-	if ((!( user.canmove ) || user.restrained() || !( user.pulling )))
+	if ((user.incapacitated() || !( user.pulling )))
 		return
 	if (user.pulling.anchored)
 		return
@@ -180,13 +173,13 @@ GLOBAL_LIST_EMPTY(conveyors)
 
 	spawn(5)		// allow map load
 		conveyors = list()
-		for(var/obj/machinery/conveyor/C in GLOB.conveyors)
+		for(var/obj/machinery/conveyor/C in world)
 			if(C.id == id)
 				conveyors += C
 
 // update the icon depending on the position
 
-/obj/machinery/conveyor_switch/update_icon()
+/obj/machinery/conveyor_switch/on_update_icon()
 	if(position<0)
 		icon_state = "switch-rev"
 	else if(position>0)
@@ -213,6 +206,7 @@ GLOBAL_LIST_EMPTY(conveyors)
 		to_chat(user, "<span class='warning'>Access denied.</span>")
 		return
 
+	playsound(src, 'sound/machines/Conveyor_switch.ogg', 100, 1)
 	if(position == 0)
 		if(last_pos < 0)
 			position = 1
@@ -228,7 +222,7 @@ GLOBAL_LIST_EMPTY(conveyors)
 	update_icon()
 
 	// find any switches with same id as this one, and set their positions to match us
-	for(var/obj/machinery/conveyor_switch/S in SSmachines.all_machinery)
+	for(var/obj/machinery/conveyor_switch/S in world)
 		if(S.id == src.id)
 			S.position = position
 			S.update_icon()
@@ -248,6 +242,7 @@ GLOBAL_LIST_EMPTY(conveyors)
 
 // attack with hand, switch position
 /obj/machinery/conveyor_switch/oneway/attack_hand(mob/user)
+	playsound(src, 'sound/machines/Conveyor_switch.ogg', 100, 1)
 	if(position == 0)
 		position = convdir
 	else
@@ -257,7 +252,7 @@ GLOBAL_LIST_EMPTY(conveyors)
 	update_icon()
 
 	// find any switches with same id as this one, and set their positions to match us
-	for(var/obj/machinery/conveyor_switch/S in SSmachines.all_machinery)
+	for(var/obj/machinery/conveyor_switch/S in world)
 		if(S.id == src.id)
 			S.position = position
 			S.update_icon()

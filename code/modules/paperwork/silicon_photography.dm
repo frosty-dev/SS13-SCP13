@@ -16,7 +16,7 @@
 	name = "Drone photo camera"
 
 /obj/item/device/camera/siliconcam/proc/injectaialbum(obj/item/weapon/photo/p, var/sufix = "") //stores image information to a list similar to that of the datacore
-	p.loc = src
+	p.forceMove(src)
 	photos_taken++
 	p.SetName("Image [photos_taken][sufix]")
 	aipictures += p
@@ -90,9 +90,10 @@
 /obj/item/device/camera/siliconcam/robot_camera/printpicture(mob/user, obj/item/weapon/photo/p)
 	injectmasteralbum(p)
 
+/*
 /obj/item/device/camera/siliconcam/ai_camera/verb/take_image()
 	set category = "Silicon Commands"
-	set name = "Take Image"
+	set name = "PHOTO: Make"
 	set desc = "Takes an image"
 	set src in usr
 
@@ -100,16 +101,17 @@
 
 /obj/item/device/camera/siliconcam/ai_camera/verb/view_images()
 	set category = "Silicon Commands"
-	set name = "View Images"
+	set name = "PHOTO: View"
 	set desc = "View images"
 	set src in usr
 
 	viewpictures()
+*/
 
 /obj/item/device/camera/siliconcam/ai_camera/verb/delete_images()
 	set category = "Silicon Commands"
-	set name = "Delete Image"
-	set desc = "Delete image"
+	set name = "PHOTO: Delete"
+	set desc = "Delete Image"
 	set src in usr
 
 	deletepicture()
@@ -117,7 +119,7 @@
 /obj/item/device/camera/siliconcam/robot_camera/verb/take_image()
 	set category ="Silicon Commands"
 	set name = "Take Image"
-	set desc = "Takes an image"
+	set desc = "PHOTO: Make"
 	set src in usr
 
 	toggle_camera_mode()
@@ -125,14 +127,14 @@
 /obj/item/device/camera/siliconcam/robot_camera/verb/view_images()
 	set category ="Silicon Commands"
 	set name = "View Images"
-	set desc = "View images"
+	set desc = "PHOTO: View"
 	set src in usr
 
 	viewpictures()
 
 /obj/item/device/camera/siliconcam/robot_camera/verb/delete_images()
 	set category = "Silicon Commands"
-	set name = "Delete Image"
+	set name = "PHOTO: Delete"
 	set desc = "Delete a local image"
 	set src in usr
 

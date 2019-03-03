@@ -47,10 +47,6 @@
 	return prob(chance_table[idx])
 
 /obj/item/weapon/reagent_containers/food/drinks/bottle/proc/smash(var/newloc, atom/against = null)
-	if(ismob(loc))
-		var/mob/M = loc
-		M.drop_from_inventory(src)
-
 	//Creates a shattering noise and replaces the bottle with a broken_bottle
 	var/obj/item/weapon/broken_bottle/B = new /obj/item/weapon/broken_bottle(newloc)
 	if(prob(33))
@@ -61,13 +57,14 @@
 	I.Blend(B.broken_outline, ICON_OVERLAY, rand(5), 1)
 	I.SwapColor(rgb(255, 0, 220, 255), rgb(0, 0, 0, 0))
 	B.icon = I
+	B.w_class = w_class
 
 	if(rag && rag.on_fire && isliving(against))
 		rag.forceMove(loc)
 		var/mob/living/L = against
 		L.IgniteMob()
 
-	playsound(src, "shatter", 70, 1)
+	playsound(src,'sound/effects/GLASS_Rattle_Many_Fragments_01_stereo.ogg',100,1)
 	src.transfer_fingerprints_to(B)
 
 	qdel(src)
@@ -95,25 +92,29 @@
 		rag = R
 		rag.forceMove(src)
 		atom_flags &= ~ATOM_FLAG_OPEN_CONTAINER
+		verbs -= /obj/item/weapon/reagent_containers/food/drinks/proc/gulp_whole
 		update_icon()
 
 /obj/item/weapon/reagent_containers/food/drinks/bottle/proc/remove_rag(mob/user)
 	if(!rag) return
 	user.put_in_hands(rag)
 	rag = null
-	atom_flags |= ATOM_FLAG_OPEN_CONTAINER
+	var/is_open_container = initial(atom_flags) & ATOM_FLAG_OPEN_CONTAINER
+	if(is_open_container)
+		atom_flags |= ATOM_FLAG_OPEN_CONTAINER
+		verbs += /obj/item/weapon/reagent_containers/food/drinks/proc/gulp_whole
 	update_icon()
 
 /obj/item/weapon/reagent_containers/food/drinks/bottle/open(mob/user)
 	if(rag) return
 	..()
 
-/obj/item/weapon/reagent_containers/food/drinks/bottle/update_icon()
+/obj/item/weapon/reagent_containers/food/drinks/bottle/on_update_icon()
 	underlays.Cut()
 	if(rag)
 		var/underlay_image = image(icon='icons/obj/drinks.dmi', icon_state=rag.on_fire? "[rag_underlay]_lit" : rag_underlay)
 		underlays += underlay_image
-		set_light(rag.light_range, rag.light_power, rag.light_color)
+		set_light(rag.light_max_bright, 0.1, rag.light_outer_range, 2, rag.light_color)
 	else
 		set_light(0)
 
@@ -149,6 +150,23 @@
 	user.put_in_active_hand(B)
 
 	return blocked
+
+/obj/item/weapon/reagent_containers/food/drinks/bottle/bullet_act(var/obj/item/projectile/P, var/chance)
+	if(prob(chance))
+		smash(loc, P)
+	return PROJECTILE_CONTINUE
+
+/obj/item/weapon/reagent_containers/food/drinks/bottle/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
+	if(istype(mover, /obj/item/projectile))
+		var/obj/item/projectile/proj = mover
+		if(proj.damage <= 2) //no pistons
+			return ..()
+		var/chance = 40
+		if(target == src)
+			chance = 90
+		bullet_act(proj, chance)
+	return ..()
+
 
 //Keeping this here for now, I'll ask if I should keep it here.
 /obj/item/weapon/broken_bottle
@@ -478,3 +496,15 @@
 /obj/item/weapon/reagent_containers/food/drinks/bottle/small/ale/New()
 	. = ..()
 	reagents.add_reagent(/datum/reagent/ethanol/ale, 30)
+
+//Probably not the right place for it, but no idea where else to put it without making a brand new DM and slogging through making vars from scratch.
+
+/obj/item/weapon/reagent_containers/food/drinks/bottle/oiljug
+	name = "oil jug"
+	desc = "A plastic jug of engine oil. Not for human consumption."
+	icon_state = "oil"
+	isGlass = 0
+
+/obj/item/weapon/reagent_containers/food/drinks/bottle/oiljug/New()
+	. = ..()
+	reagents.add_reagent(/datum/reagent/lube/oil, 100)

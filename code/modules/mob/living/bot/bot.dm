@@ -2,7 +2,7 @@
 	name = "Bot"
 	health = 20
 	maxHealth = 20
-	icon = 'icons/obj/aibots.dmi'
+	icon = 'icons/mob/bot/placeholder.dmi'
 	universal_speak = 1
 	density = 0
 	var/obj/item/weapon/card/id/botcard = null
@@ -37,6 +37,9 @@
 	var/frustration = 0
 	var/max_frustration = 0
 
+	plane = HIDING_MOB_PLANE
+	layer = HIDING_MOB_LAYER
+
 /mob/living/bot/New()
 	..()
 	update_icons()
@@ -60,6 +63,9 @@
 	if(health <= 0)
 		death()
 		return
+
+	updatehealth()
+
 	weakened = 0
 	stunned = 0
 	paralysis = 0
@@ -68,16 +74,8 @@
 		spawn(0)
 			handleAI()
 
-/mob/living/bot/updatehealth()
-	if(status_flags & GODMODE)
-		health = maxHealth
-		set_stat(CONSCIOUS)
-	else
-		health = maxHealth - getFireLoss() - getBruteLoss()
-	setOxyLoss(0)
-	setToxLoss(0)
-
 /mob/living/bot/death()
+	..(null, "blows apart!")
 	explode()
 
 /mob/living/bot/attackby(var/obj/item/O, var/mob/user)
@@ -347,7 +345,7 @@
 	if(stat)
 		return 0
 	on = 1
-	set_light(light_strength)
+	set_light(0.5, 0.1, light_strength)
 	update_icons()
 	resetTarget()
 	patrol_path = list()
@@ -360,7 +358,12 @@
 	update_icons()
 
 /mob/living/bot/proc/explode()
+	new /obj/effect/decal/cleanable/blood/gibs/robot(src.loc)
+	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+	s.set_up(3, 1, src)
+	s.start()
 	qdel(src)
+	return
 
 /******************************************************************/
 // Navigation procs

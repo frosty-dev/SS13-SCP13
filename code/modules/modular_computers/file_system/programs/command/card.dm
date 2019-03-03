@@ -5,8 +5,7 @@
 	program_icon_state = "id"
 	program_key_state = "id_key"
 	program_menu_icon = "key"
-	extended_desc = "Program for programming personnel ID cards."
-	req_one_access = list(access_adminlvl4, access_mtflvl2)
+	extended_desc = "Program for programming crew ID cards."
 	requires_ntnet = 0
 	size = 8
 
@@ -27,7 +26,7 @@
 		data["have_id_slot"] = !!program.computer.card_slot
 		data["have_printer"] = !!program.computer.nano_printer
 		data["authenticated"] = program.can_run(user)
-		if(!program.computer.card_slot)
+		if(!program.computer.card_slot || !program.computer.card_slot.can_write)
 			mod_mode = 0 //We can't modify IDs when there is no card reader
 	else
 		data["have_id_slot"] = 0
@@ -40,6 +39,8 @@
 		var/obj/item/weapon/card/id/id_card = program.computer.card_slot.stored_card
 		data["has_id"] = !!id_card
 		data["id_account_number"] = id_card ? id_card.associated_account_number : null
+		data["id_email_login"] = id_card ? id_card.associated_email_login["login"] : null
+		data["id_email_password"] = id_card ? stars(id_card.associated_email_login["password"], 0) : null
 		data["id_rank"] = id_card && id_card.assignment ? id_card.assignment : "Unassigned"
 		data["id_owner"] = id_card && id_card.registered_name ? id_card.registered_name : "-----"
 		data["id_name"] = id_card ? id_card.name : "-----"
@@ -71,7 +72,7 @@
 			data["all_centcom_access"] = all_centcom_access
 		else
 			var/list/regions = list()
-			for(var/i = 1; i <= 7; i++)
+			for(var/i = 1; i <= 8; i++)
 				var/list/accesses = list()
 				for(var/access in get_region_accesses(i))
 					if (get_access_desc(access))
@@ -85,7 +86,7 @@
 					"accesses" = accesses)))
 			data["regions"] = regions
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "identification_computer.tmpl", name, 600, 700, state = state)
 		ui.auto_update_layout = 1
@@ -106,6 +107,46 @@
 /datum/nano_module/program/card_mod/proc/get_accesses(var/is_centcom = 0)
 	return null
 
+/proc/upd_card_info(var/rename, var/obj/item/weapon/card/id/me)
+	var/datum/computer_file/report/crew_record/active_record = RecordByName(rename)
+	if(!active_record)
+		me.age = "\[UNSET\]"
+		me.blood_type = "\[UNSET\]"
+		me.dna_hash = "\[UNSET\]"
+		me.fingerprint_hash = "\[UNSET\]"
+		me.sex = "\[UNSET\]"
+		me.military_branch = null
+		me.military_rank = null
+		me.front = null
+		me.side = null
+		return
+	else
+		me.front = active_record.photo_front
+		me.side = active_record.photo_side
+		var/list/datum/report_field/t = active_record.field_from_name("Age")
+		me.age = t.get_value()
+		t = active_record.field_from_name("Blood Type")
+		me.blood_type = t.get_value()
+		t = active_record.field_from_name("DNA")
+		me.dna_hash = t.get_value()
+		t = active_record.field_from_name("Fingerprint")
+		me.fingerprint_hash = t.get_value()
+		t = active_record.field_from_name("Sex")
+		me.sex = t.get_value()
+		if(GLOB.using_map.flags & MAP_HAS_BRANCH)
+			t = active_record.field_from_name("Branch")
+			for(var/B in mil_branches.branches)
+				var/datum/mil_branch/BR = mil_branches.branches[B]
+				if(t.get_value() == BR.name)
+					me.military_branch = BR
+		if((GLOB.using_map.flags & MAP_HAS_RANK)&&(me.military_branch))
+			var/datum/mil_branch/B = me.military_branch
+			t = active_record.field_from_name("Rank")
+			for(var/R in B.ranks)
+				var/datum/mil_rank/RA = B.ranks[R]
+				if(t.get_value() == RA.name)
+					me.military_rank = RA
+		return
 
 /datum/computer_file/program/card_mod/Topic(href, href_list)
 	if(..())
@@ -116,7 +157,8 @@
 	var/obj/item/weapon/card/id/id_card
 	if (computer.card_slot)
 		id_card = computer.card_slot.stored_card
-
+		if (id_card)
+			upd_card_info(id_card.registered_name, id_card)
 	var/datum/nano_module/program/card_mod/module = NM
 	switch(href_list["action"])
 		if("switchm")
@@ -130,6 +172,9 @@
 			else
 				module.show_assignments = 1
 		if("print")
+			if(!authorized(user_id_card))
+				to_chat(usr, "<span class='warning'>Access denied.</span>")
+				return
 			if(computer && computer.nano_printer) //This option should never be called if there is no printer
 				if(module.mod_mode)
 					if(can_run(user, 1))
@@ -139,6 +184,8 @@
 									<hr>
 									<u>Assignment:</u> [id_card.assignment]<br>
 									<u>Account Number:</u> #[id_card.associated_account_number]<br>
+									<u>Email account:</u> [id_card.associated_email_login["login"]]
+									<u>Email password:</u> [stars(id_card.associated_email_login["password"], 0)]
 									<u>Blood Type:</u> [id_card.blood_type]<br><br>
 									<u>Access:</u><br>
 								"}
@@ -170,22 +217,39 @@
 				else
 					computer.attackby(user.get_active_hand(), user)
 		if("terminate")
+			if(!authorized(user_id_card))
+				to_chat(usr, "<span class='warning'>Access denied.</span>")
+				return
 			if(computer && can_run(user, 1))
 				id_card.assignment = "Terminated"
 				remove_nt_access(id_card)
 				callHook("terminate_employee", list(id_card))
 		if("edit")
+			if(!authorized(user_id_card))
+				to_chat(usr, "<span class='warning'>Access denied.</span>")
+				return
 			if(computer && can_run(user, 1))
 				if(href_list["name"])
 					var/temp_name = sanitizeName(input("Enter name.", "Name", id_card.registered_name),allow_numbers=TRUE)
 					if(temp_name)
 						id_card.registered_name = temp_name
+						id_card.formal_name_suffix = initial(id_card.formal_name_suffix)
+						id_card.formal_name_prefix = initial(id_card.formal_name_prefix)
 					else
 						computer.visible_message("<span class='notice'>[computer] buzzes rudely.</span>")
 				else if(href_list["account"])
 					var/account_num = text2num(input("Enter account number.", "Account", id_card.associated_account_number))
 					id_card.associated_account_number = account_num
+				else if(href_list["elogin"])
+					var/email_login = input("Enter email login.", "Email login", id_card.associated_email_login["login"])
+					id_card.associated_email_login["login"] = email_login
+				else if(href_list["epswd"])
+					var/email_password = input("Enter email password.", "Email password")
+					id_card.associated_email_login["password"] = email_password
 		if("assign")
+			if(!authorized(user_id_card))
+				to_chat(usr, "<span class='warning'>Access denied.</span>")
+				return
 			if(computer && can_run(user, 1) && id_card)
 				var/t1 = href_list["assign_target"]
 				if(t1 == "Custom")
@@ -221,13 +285,17 @@
 				var/access_type = text2num(href_list["access_target"])
 				var/access_allowed = text2num(href_list["allowed"])
 				if(access_type in get_access_ids(ACCESS_TYPE_STATION|ACCESS_TYPE_CENTCOM))
-					id_card.access -= access_type
-					if(!access_allowed)
-						id_card.access += access_type
+					for(var/access in user_id_card.access)
+						var/region_type = get_access_region_by_id(access_type)
+						if(access in GLOB.using_map.access_modify_region[region_type])
+							id_card.access -= access_type
+							if(!access_allowed)
+								id_card.access += access_type
+							break
 	if(id_card)
 		id_card.SetName(text("[id_card.registered_name]'s ID Card ([id_card.assignment])"))
 
-	GLOB.nanomanager.update_uis(NM)
+	SSnano.update_uis(NM)
 	return 1
 
 /datum/computer_file/program/card_mod/proc/remove_nt_access(var/obj/item/weapon/card/id/id_card)
@@ -235,3 +303,6 @@
 
 /datum/computer_file/program/card_mod/proc/apply_access(var/obj/item/weapon/card/id/id_card, var/list/accesses)
 	id_card.access |= accesses
+
+/datum/computer_file/program/card_mod/proc/authorized(var/obj/item/weapon/card/id/id_card)
+	return (access_change_ids in id_card.access)

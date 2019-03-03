@@ -8,6 +8,9 @@
 	reagent_state = LIQUID
 	color = "#cf3600"
 	metabolism = REM * 0.25 // 0.05 by default. They last a while and slowly kill you.
+	heating_products = list(/datum/reagent/toxin/denatured)
+	heating_point = 100 CELCIUS
+	heating_message = "goes clear."
 
 	var/target_organ
 	var/strength = 4 // How much damage it deals per unit
@@ -23,13 +26,26 @@
 				var/can_damage = I.max_damage - I.damage
 				if(can_damage > 0)
 					if(dam > can_damage)
-						I.take_damage(can_damage, silent=TRUE)
+						I.take_internal_damage(can_damage, silent=TRUE)
 						dam -= can_damage
 					else
-						I.take_damage(dam, silent=TRUE)
+						I.take_internal_damage(dam, silent=TRUE)
 						dam = 0
 		if(dam)
 			M.adjustToxLoss(target_organ ? (dam * 0.75) : dam)
+
+/datum/reagent/toxin/denatured
+	name = "denatured toxin"
+	description = "Once toxic, now harmless."
+	taste_description = null
+	taste_mult = null
+	color = "#808080"
+	metabolism = REM
+	heating_products = null
+	heating_point = null
+
+	target_organ = null
+	strength = 0
 
 /datum/reagent/toxin/plasticide
 	name = "Plasticide"
@@ -38,6 +54,8 @@
 	reagent_state = LIQUID
 	color = "#cf3600"
 	strength = 5
+	heating_point = null
+	heating_products = null
 
 /datum/reagent/toxin/amatoxin
 	name = "Amatoxin"
@@ -56,6 +74,40 @@
 	target_organ = BP_BRAIN
 	strength = 10
 
+/datum/reagent/toxin/venom
+	name = "Spider Venom"
+	description = "A deadly necrotic toxin produced by giant spiders to disable their prey."
+	taste_description = "absolutely vile"
+	color = "#91d895"
+	target_organ = BP_LIVER
+	strength = 10
+
+/datum/reagent/toxin/chlorine
+	name = "Chlorine"
+	description = "A highly poisonous liquid. Smells strongly of bleach."
+	reagent_state = LIQUID
+	taste_description = "bleach"
+	color = "#707c13"
+	strength = 15
+	metabolism = REM
+	heating_point = null
+	heating_products = null
+
+/datum/reagent/toxin/batrachotoxin //uses in changelings' deathstings
+	name = "Batrachotoxin"
+	description = "An extremly poisonous liquid. Smells strongly of bleach."
+	reagent_state = LIQUID
+	taste_description = "bleach"
+	color = "#707c13"
+	target_organ = BP_HEART
+	strength = 4
+	metabolism = REM
+
+/datum/reagent/toxin/batrachotoxin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
+	if(alien == IS_RESOMI)
+		return
+	..()
+
 /datum/reagent/toxin/phoron
 	name = "Phoron"
 	description = "Phoron in its liquid form."
@@ -65,15 +117,8 @@
 	strength = 30
 	touch_met = 5
 	var/fire_mult = 5
-
-/datum/reagent/toxin/chlorine
-	name = "Chlorine"
-	description = "A highly poisonous liquid. Smells strongly of bleach."
-	reagent_state = LIQUID
-	taste_description = "bleach"
-	color = "#707C13"
-	strength = 15
-	metabolism = REM
+	heating_point = null
+	heating_products = null
 
 /datum/reagent/toxin/phoron/touch_mob(var/mob/living/L, var/amount)
 	if(istype(L))
@@ -118,6 +163,8 @@
 	strength = 20
 	metabolism = REM * 2
 	target_organ = BP_HEART
+	heating_point = null
+	heating_products = null
 
 /datum/reagent/toxin/cyanide/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	..()
@@ -131,6 +178,8 @@
 	color = "#ffffff"
 	strength = 0
 	overdose = REAGENTS_OVERDOSE
+	heating_point = null
+	heating_products = null
 
 /datum/reagent/toxin/potassium_chloride/overdose(var/mob/living/carbon/M, var/alien)
 	..()
@@ -152,6 +201,8 @@
 	color = "#ffffff"
 	strength = 10
 	overdose = 20
+	heating_point = null
+	heating_products = null
 
 /datum/reagent/toxin/potassium_chlorophoride/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	..()
@@ -173,6 +224,8 @@
 	metabolism = REM
 	strength = 3
 	target_organ = BP_BRAIN
+	heating_message = "melts into a liquid slurry."
+	heating_products = list(/datum/reagent/toxin/carpotoxin, /datum/reagent/soporific, /datum/reagent/copper)
 
 /datum/reagent/toxin/zombiepowder/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	..()
@@ -193,13 +246,15 @@
 	. = ..()
 
 /datum/reagent/toxin/fertilizer //Reagents used for plant fertilizers.
-	name = /datum/reagent/toxin/fertilizer
+	name = "Fertilizer"
 	description = "A chemical mix good for growing plants with."
 	taste_description = "plant food"
 	taste_mult = 0.5
 	reagent_state = LIQUID
 	strength = 0.5 // It's not THAT poisonous.
 	color = "#664330"
+	heating_point = null
+	heating_products = null
 
 /datum/reagent/toxin/fertilizer/eznutrient
 	name = "EZ Nutrient"
@@ -217,6 +272,7 @@
 	reagent_state = LIQUID
 	color = "#49002e"
 	strength = 4
+	heating_products = list(/datum/reagent/toxin, /datum/reagent/water)
 
 /datum/reagent/toxin/plantbgone/touch_turf(var/turf/T)
 	if(istype(T, /turf/simulated/wall))
@@ -412,8 +468,8 @@
 		drug_strength = drug_strength * 0.8
 
 	M.druggy = max(M.druggy, drug_strength)
-	if(prob(10) && isturf(M.loc) && !istype(M.loc, /turf/space) && M.canmove && !M.restrained())
-		step(M, pick(GLOB.cardinal))
+	if(prob(10))
+		M.SelfMove(pick(GLOB.cardinal))
 	if(prob(7))
 		M.emote(pick("twitch", "drool", "moan", "giggle"))
 	M.add_chemical_effect(CE_PULSE, -1)
@@ -442,6 +498,9 @@
 	color = "#000055"
 	metabolism = REM * 0.5
 	overdose = REAGENTS_OVERDOSE
+	heating_point = 61 CELCIUS
+	heating_products = list(/datum/reagent/potassium, /datum/reagent/acetone, /datum/reagent/sugar)
+
 
 /datum/reagent/cryptobiolin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
@@ -465,7 +524,7 @@
 		return
 	M.jitteriness = max(M.jitteriness - 5, 0)
 	if(prob(80))
-		M.adjustBrainLoss(0.1 * removed)
+		M.adjustBrainLoss(5.25 * removed)
 	if(prob(50))
 		M.drowsyness = max(M.drowsyness, 3)
 	if(prob(10))
@@ -550,7 +609,7 @@
 	var/list/meatchunks = list()
 	for(var/limb_tag in list(BP_R_ARM, BP_L_ARM, BP_R_LEG,BP_L_LEG))
 		var/obj/item/organ/external/E = H.get_organ(limb_tag)
-		if(!E.is_stump() && E.robotic < ORGAN_ROBOT && E.species.name != SPECIES_PROMETHEAN)
+		if(E && !E.is_stump() && !BP_IS_ROBOTIC(E) && E.species.name != SPECIES_PROMETHEAN)
 			meatchunks += E
 	if(!meatchunks.len)
 		if(prob(10))
@@ -571,14 +630,13 @@
 		E.s_col_blend = ICON_ADD
 		E.status &= ~ORGAN_BROKEN
 		E.status |= ORGAN_MUTATED
-		E.cannot_break = 1
+		E.limb_flags &= ~ORGAN_FLAG_CAN_BREAK
 		E.dislocated = -1
-		E.nonsolid = 1
 		E.max_damage = 5
 		E.update_icon(1)
 	O.max_damage = 15
 	if(prob(10))
-		to_chat(H, "<span class='danger'>Your slimy [O.name]'s plops off!</span>")
+		to_chat(H, "<span class='danger'>Your slimy [O.name] plops off!</span>")
 		O.droplimb()
 	H.update_body()
 
@@ -590,11 +648,10 @@
 	color = "#13bc5e"
 
 /datum/reagent/aslimetoxin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed) // TODO: check if there's similar code anywhere else
-	if(M.transforming)
+	if(HAS_TRANSFORMATION_MOVEMENT_HANDLER(M))
 		return
 	to_chat(M, "<span class='danger'>Your flesh rapidly mutates!</span>")
-	M.transforming = 1
-	M.canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(M)
 	M.icon = null
 	M.overlays.Cut()
 	M.set_invisibility(101)
@@ -618,6 +675,7 @@
 	taste_description = "slimey metal"
 	reagent_state = LIQUID
 	color = "#535e66"
+	hidden_from_codex = TRUE
 
 /datum/reagent/xenomicrobes
 	name = "Xenomicrobes"
@@ -625,6 +683,8 @@
 	taste_description = "sludge"
 	reagent_state = LIQUID
 	color = "#535e66"
+	hidden_from_codex = TRUE
+	heating_point = 100 CELCIUS
 
 /datum/reagent/toxin/hair_remover
 	name = "Hair Remover"
@@ -634,6 +694,8 @@
 	color = "#d9ffb3"
 	strength = 1
 	overdose = REAGENTS_OVERDOSE
+	heating_products = null
+	heating_point = null
 
 /datum/reagent/toxin/hair_remover/affect_touch(var/mob/living/carbon/human/M, var/alien, var/removed)
 	if(alien == IS_SKRELL)	//skrell can't have hair unless you hack it in, also to prevent tentacles from falling off
@@ -642,29 +704,67 @@
 	to_chat(M, "<span class='warning'>Your feel a chill, your skin feels lighter..</span>")
 	remove_self(volume)
 
-/datum/reagent/toxin/corrupting
-	name = "Corruption"
-	description = "a loyalty changing liquid."
-	taste_description = "blood"
-	color = "#ffffff"
+/datum/reagent/toxin/zombie
+	name = "Liquid Corruption"
+	description = "A filthy, oily substance which slowly churns of its own accord."
+	taste_description = "decaying blood"
+	color = "#800000"
 	taste_mult = 5
 	strength = 10
-	metabolism = REM * 2
+	metabolism = REM * 5
 	overdose = 30
+	hidden_from_codex = TRUE
+	heating_products = null
+	heating_point = null
 
-/datum/reagent/toxin/corrupting/affect_touch(var/mob/living/carbon/M, var/alien, var/removed)
-	affect_blood(M,alien,removed*0.5)
+/datum/reagent/toxin/zombie/affect_touch(var/mob/living/carbon/M, var/alien, var/removed)
+	affect_blood(M, alien, removed * 0.5)
 
-/datum/reagent/toxin/corrupting/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
+/datum/reagent/toxin/zombie/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	..()
-	if(prob(5))
-		if(M.chem_doses[type] < 15)
-			to_chat(M, "<span class='warning'>You feel funny...</span>")
-		else
-			to_chat(M, "<span class='danger'>You feel like you could die at any moment!</span>")
-
-/datum/reagent/toxin/corrupting/overdose(var/mob/living/carbon/M, var/alien)
-	if(istype(M, /mob/living/carbon/human))
+	if (istype(M, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
-		H.zombieze()
-	remove_self(volume)
+		var/true_dose = H.chem_doses[type] + volume
+		if (true_dose >= 5)
+			H.zombify()
+		else if (true_dose > 1 && prob(20))
+			H.zombify()
+		else if (prob(10))
+			to_chat(H, "<span class='warning'>You feel terribly ill!</span>")
+
+/datum/reagent/toxin/bromide
+	name = "Bromide"
+	description = "A dark, nearly opaque, red-orange, toxic element."
+	taste_description = "pestkiller"
+	reagent_state = LIQUID
+	color = "#4c3b34"
+	strength = 3
+	heating_products = null
+	heating_point = null
+
+/datum/reagent/toxin/methyl_bromide
+	name = "Methyl Bromide"
+	description = "A fumigant derived from bromide."
+	taste_description = "pestkiller"
+	reagent_state = LIQUID
+	color = "#4c3b34"
+	strength = 5
+	heating_products = null
+	heating_point = null
+
+/datum/reagent/toxin/methyl_bromide/touch_turf(var/turf/simulated/T)
+	if(istype(T))
+		T.assume_gas("methyl_bromide", volume, T20C)
+		remove_self(volume)
+
+/datum/reagent/toxin/methyl_bromide/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
+	. = ..()
+	if(istype(M))
+		for(var/obj/item/organ/external/E in M.organs)
+			if(LAZYLEN(E.implants))
+				for(var/obj/effect/spider/spider in E.implants)
+					if(prob(25))
+						E.implants -= spider
+						M.visible_message("<span class='notice'>The dying form of \a [spider] emerges from inside \the [M]'s [E.name].</span>")
+						qdel(spider)
+						break

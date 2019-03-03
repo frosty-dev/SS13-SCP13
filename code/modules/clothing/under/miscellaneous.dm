@@ -482,6 +482,7 @@
 /obj/item/clothing/under/suit_jacket/charcoal
 	name = "charcoal suit"
 	desc = "A charcoal suit and red tie. Very professional."
+	item_icons = list(slot_w_uniform_str = 'icons/mob/infinity/uniform.dmi')
 	icon_state = "charcoal_suit"
 	item_state = "bl_suit"
 	worn_state = "charcoal_suit"
@@ -490,6 +491,7 @@
 /obj/item/clothing/under/suit_jacket/navy
 	name = "navy suit"
 	desc = "A navy suit and red tie, intended for the galaxy's finest."
+	item_icons = list(slot_w_uniform_str = 'icons/mob/infinity/uniform.dmi')
 	icon_state = "navy_suit"
 	item_state = "bl_suit"
 	worn_state = "navy_suit"
@@ -498,6 +500,7 @@
 /obj/item/clothing/under/suit_jacket/burgundy
 	name = "burgundy suit"
 	desc = "A burgundy suit and black tie. Somewhat formal."
+	item_icons = list(slot_w_uniform_str = 'icons/mob/infinity/uniform.dmi')
 	icon_state = "burgundy_suit"
 	item_state = "r_suit"
 	worn_state = "burgundy_suit"
@@ -522,6 +525,7 @@
 /obj/item/clothing/under/serviceoveralls
 	name = "workman outfit"
 	desc = "The very image of a working man. Not that you're probably doing work."
+	icon = 'icons/obj/clothing/infinity/uniform.dmi'
 	icon_state = "mechanic"
 	item_state = "lb_suit"
 	worn_state = "mechanic"
@@ -554,8 +558,8 @@
 	desc = "How... minimalist."
 	icon_state = "gear_harness"
 	worn_state = "gear_harness"
-	species_restricted = null
 	body_parts_covered = 0
+	species_restricted = null
 
 /obj/item/clothing/under/pcrc
 	name = "\improper PCRC uniform"
@@ -563,6 +567,16 @@
 	icon_state = "pcrc"
 	item_state = "jensensuit"
 	worn_state = "pcrc"
+
+/obj/item/clothing/under/pcrc/tactical
+	starting_accessories = list(/obj/item/clothing/accessory/ubac)
+
+/obj/item/clothing/under/pcrcsuit
+	name = "\improper PCRC suit"
+	desc = "A suit belonging to Proxima Centauri Risk Control, a private security firm. This one looks more formal than its utility counterpart."
+	icon_state = "pcrcsuit"
+	item_state = "jensensuit"
+	worn_state = "pcrcsuit"
 
 /obj/item/clothing/under/grayson
 	name = "\improper Grayson overalls"
@@ -576,11 +590,29 @@
 	icon_state = "wardt"
 	worn_state = "wardt"
 
+/obj/item/clothing/under/dais
+	name = "\improper Deimos Advanced Information Systems uniform"
+	desc = "The uniform of Deimos Advanced Information Systems, an IT company."
+	icon_state = "dais"
+	worn_state = "dais"
+
 /obj/item/clothing/under/mbill
 	name = "\improper Major Bill's uniform"
 	desc = "A uniform belonging to Major Bill's Transportation, a major shipping company."
 	icon_state = "mbill"
 	worn_state = "mbill"
+
+/obj/item/clothing/under/morpheus
+	name = "\improper Morpheus Cyberkinetics uniform"
+	desc = "A pair of overalls belonging to Morpheus Cyberkinetics, an IPC manufacturing company. It doesn't look like it would be comfortable on a human."
+	icon_state = "morpheus"
+	worn_state = "morpheus"
+
+/obj/item/clothing/under/skinner
+	name = "\improper Skinner Catering uniform"
+	desc = "A uniform belonging to Skinner's Catering, a dining company."
+	icon_state = "skinner"
+	worn_state = "skinner"
 
 // Replace this with actual uniform when someone wants to sprite one
 /obj/item/clothing/under/confederacy
@@ -594,6 +626,9 @@
 	desc = "A uniform belonging to Strategic Assault and Asset Retention Enterprises, a minor private military corporation."
 	icon_state = "saare"
 	worn_state = "saare"
+
+/obj/item/clothing/under/saare/tactical
+	starting_accessories = list(/obj/item/clothing/accessory/ubac/green)
 
 /obj/item/clothing/under/frontier
 	name = "frontier clothes"
@@ -625,7 +660,7 @@
 	icon_state = "punpun"
 	worn_state = "punpun"
 	species_restricted = list("Monkey")
-	sprite_sheets = list("Monkey" = 'icons/mob/species/monkey/uniform.dmi')
+	sprite_sheets = list("Monkey" = 'icons/mob/species/monkey/onmob_under_monkey.dmi')
 
 /obj/item/clothing/under/punpants
 	name = "monkey pants"
@@ -633,7 +668,7 @@
 	icon_state = "jeansmustang"
 	worn_state = "jeansmustang"
 	species_restricted = list("Monkey")
-	sprite_sheets = list("Monkey" = 'icons/mob/species/monkey/uniform.dmi')
+	sprite_sheets = list("Monkey" = 'icons/mob/species/monkey/onmob_under_monkey.dmi')
 
 /obj/item/clothing/under/rank/psych/turtleneck/sweater
 	desc = "A warm looking sweater and a pair of dark blue slacks."
@@ -682,30 +717,9 @@
 	permeability_coefficient = 0.50
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 30, rad = 0)
 
-/obj/item/clothing/under/scp/whiteuniform
-	name = "white uniform"
-	desc = "A sterile white uniform."
-	icon_state = "white"
-
-/obj/item/clothing/under/scp/greyuniform
-	name = "grey uniform"
-	desc = "A dull grey uniform."
-	icon_state = "grey"
-
-/obj/item/clothing/under/scp/suittie
-	name = "suit and tie"
-	desc = "A rather sterile looking suit and tie."
-	icon_state = "suit"
-
-/obj/item/clothing/under/scp/dclass
-	name = "D-Class uniform"
-	desc = "A bright orange jumpsuit, indicative of Class D personnel."
-	icon_state = "d"
-
-/obj/item/clothing/under/ci
-	name = "tactical sweatshirt"
-	desc = "A white tactical shirt for tactical operations."
-	icon_state = "tac"
-	has_sensor = 0
-	armor = list(melee = 10, bullet = 10, laser = 10,energy = 0, bomb = 0, bio = 0, rad = 0)
-	siemens_coefficient = 0.9
+/obj/item/clothing/under/kimono
+	desc = "A traditional robe with remarkably long sleeves, mostly worn by women. <i>Sugoi.</i>"
+	name = "kimono"
+	icon_state = "kimono"
+	worn_state = "kimono"
+	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS

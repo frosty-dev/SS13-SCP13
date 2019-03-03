@@ -17,7 +17,7 @@
 
 //mob verbs are faster than object verbs. See above.
 /mob/living/pointed(atom/A as mob|obj|turf in view())
-	if(src.stat || !src.canmove || src.restrained())
+	if(incapacitated())
 		return 0
 	if(src.status_flags & FAKEDEATH)
 		return 0
@@ -101,8 +101,8 @@ default behaviour is:
 				now_pushing = 0
 				return
 			if(tmob.a_intent != I_HELP)
-				if(istype(tmob, /mob/living/carbon/human) && (FAT in tmob.mutations))
-					if(prob(40) && !(FAT in src.mutations))
+				if(istype(tmob, /mob/living/carbon/human) && (MUTATION_FAT in tmob.mutations))
+					if(prob(40) && !(MUTATION_FAT in src.mutations))
 						to_chat(src, "<span class='danger'>You fail to push [tmob]'s fat ass out of the way.</span>")
 						now_pushing = 0
 						return
@@ -128,8 +128,9 @@ default behaviour is:
 		now_pushing = 0
 		spawn(0)
 			..()
+			var/saved_dir = AM.dir
 			if (!istype(AM, /atom/movable) || AM.anchored)
-				if(confused && prob(50) && m_intent=="run")
+				if(confused && prob(50) && !MOVING_DELIBERATELY(src))
 					Weaken(2)
 					playsound(loc, "punch", 25, 1, -1)
 					visible_message("<span class='warning'>[src] [pick("ran", "slammed")] into \the [AM]!</span>")
@@ -149,13 +150,14 @@ default behaviour is:
 					if(istype(tmob.buckled, /obj/structure/bed))
 						if(!tmob.buckled.anchored)
 							step(tmob.buckled, t)
-				if(ishuman(AM) && AM:grabbed_by)
-					for(var/obj/item/grab/G in AM:grabbed_by)
-						step(G:assailant, get_dir(G:assailant, AM))
+				if(ishuman(AM))
+					var/mob/living/carbon/human/M = AM
+					for(var/obj/item/grab/G in M.grabbed_by)
+						step(G.assailant, get_dir(G.assailant, AM))
 						G.adjust_position()
+				if(saved_dir)
+					AM.set_dir(saved_dir)
 				now_pushing = 0
-			return
-	return
 
 /proc/swap_density_check(var/mob/swapper, var/mob/swapee)
 	var/turf/T = get_turf(swapper)
@@ -173,7 +175,7 @@ default behaviour is:
 	//BubbleWrap: people in handcuffs are always switched around as if they were on 'help' intent to prevent a person being pulled from being seperated from their puller
 	if(!(tmob.mob_always_swap || (tmob.a_intent == I_HELP || tmob.restrained()) && (a_intent == I_HELP || src.restrained())))
 		return 0
-	if(!tmob.canmove || !canmove)
+	if(!tmob.MayMove(src) || incapacitated())
 		return 0
 
 	if(swap_density_check(src, tmob))
@@ -210,37 +212,33 @@ default behaviour is:
 	take_overall_damage(0, burn_amount)
 
 /mob/living/proc/adjustBodyTemp(actual, desired, incrementboost)
-	var/temperature = actual
+	var/btemperature = actual
 	var/difference = abs(actual-desired)	//get difference
 	var/increments = difference/10 //find how many increments apart they are
 	var/change = increments*incrementboost	// Get the amount to change by (x per increment)
 
 	// Too cold
 	if(actual < desired)
-		temperature += change
+		btemperature += change
 		if(actual > desired)
-			temperature = desired
+			btemperature = desired
 	// Too hot
 	if(actual > desired)
-		temperature -= change
+		btemperature -= change
 		if(actual < desired)
-			temperature = desired
+			btemperature = desired
 //	if(istype(src, /mob/living/carbon/human))
 //		log_debug("[src] ~ [src.bodytemperature] ~ [temperature]")
 
-	return temperature
-
-
-// ++++ROCKDTBEN++++ MOB PROCS -- Ask me before touching.
-// Stop! ... Hammertime! ~Carn
-// I touched them without asking... I'm soooo edgy ~Erro (added nodamage checks)
+	return btemperature
 
 /mob/living/proc/getBruteLoss()
 	return maxHealth - health
 
 /mob/living/proc/adjustBruteLoss(var/amount)
-	if(status_flags & GODMODE)	return 0	//godmode
-	health = max(health-amount, 0)
+	if (status_flags & GODMODE)
+		return
+	health = Clamp(health - amount, 0, maxHealth)
 
 /mob/living/proc/getOxyLoss()
 	return 0
@@ -395,6 +393,14 @@ default behaviour is:
 /mob/living/proc/restore_all_organs()
 	return
 
+/mob/living/update_gravity(has_gravity)
+	if(!(GAME_STATE >= RUNLEVEL_GAME))
+		return
+	if(has_gravity)
+		stop_floating()
+	else
+		start_floating()
+
 /mob/living/proc/revive()
 	rejuvenate()
 	if(buckled)
@@ -470,7 +476,9 @@ default behaviour is:
 	set src in view()
 
 	if(config.allow_Metadata)
-		if(client)
+		if(ooc_notes)
+			to_chat(usr, "[src]'s Metainfo:<br>[ooc_notes]")
+		else if(client)
 			to_chat(usr, "[src]'s Metainfo:<br>[client.prefs.metadata]")
 		else
 			to_chat(usr, "[src] does not have any stored infomation!")
@@ -486,12 +494,13 @@ default behaviour is:
 	if (restrained())
 		stop_pulling()
 
+
 	var/t7 = 1
 	if (restrained())
 		for(var/mob/living/M in range(src, 1))
 			if ((M.pulling == src && M.stat == 0 && !( M.restrained() )))
 				t7 = null
-	if ((t7 && (pulling && ((get_dist(src, pulling) <= 1 || pulling.loc == loc) && (client && client.moving)))))
+	if ((t7 && (pulling && ((get_dist(src, pulling) <= 1 || pulling.loc == loc) && (moving)))))
 		var/turf/T = loc
 		. = ..()
 
@@ -568,6 +577,9 @@ default behaviour is:
 									stop_pulling()
 					if (pulling)
 						step(pulling, get_dir(pulling.loc, T))
+						var/obj/O = pulling
+						if(O.w_class >= ITEM_SIZE_HUGE)
+							set_dir(get_dir(src, O))
 	else
 		stop_pulling()
 		. = ..()
@@ -575,26 +587,16 @@ default behaviour is:
 	if (s_active && !( s_active in contents ) && get_turf(s_active) != get_turf(src))	//check !( s_active in contents ) first so we hopefully don't have to call get_turf() so much.
 		s_active.close(src)
 
-	if(update_slimes && GLOB.slimes.len)
+	if(update_slimes)
 		for(var/mob/living/carbon/slime/M in view(1,src))
 			M.UpdateFeed()
-
-	for(var/mob in oviewers(src))
-		var/mob/M = mob
-		M.update_vision_cone()
-
-	update_vision_cone()
-
-/mob/living/set_dir()
-	..()
-	update_vision_cone()
 
 /mob/living/verb/resist()
 	set name = "Resist"
 	set category = "IC"
 
-	if(!incapacitated(INCAPACITATION_KNOCKOUT) && canClick())
-		setClickCooldown(20)
+	if(!incapacitated(INCAPACITATION_KNOCKOUT) && last_resist + 2 SECONDS <= world.time)
+		last_resist = world.time
 		resist_grab()
 		if(!weakened)
 			process_resist()
@@ -631,8 +633,8 @@ default behaviour is:
 			if(istype(A,/mob/living/simple_animal/borer) || istype(A,/obj/item/weapon/holder))
 				return
 		M.status_flags &= ~PASSEMOTES
-	else if(istype(H.loc,/obj/item/clothing/accessory/holster))
-		var/obj/item/clothing/accessory/holster/holster = H.loc
+	else if(istype(H.loc,/obj/item/clothing/accessory/storage/holster) || istype(H.loc,/obj/item/weapon/storage/belt/holster))
+		var/datum/extension/holster/holster = get_extension(src, /datum/extension/holster)
 		if(holster.holstered == H)
 			holster.clear_holster()
 		to_chat(src, "<span class='warning'>You extricate yourself from \the [holster].</span>")
@@ -671,9 +673,6 @@ default behaviour is:
 	resting = !resting
 	to_chat(src, "<span class='notice'>You are now [resting ? "resting" : "getting up"]</span>")
 
-	if (isscp049(src) || isscp106(src))
-		update_canmove()
-
 //called when the mob receives a bright flash
 /mob/living/flash_eyes(intensity = FLASH_PROTECTION_MODERATE, override_blindness_check = FALSE, affect_silicon = FALSE, visual = FALSE, type = /obj/screen/fullscreen/flash)
 	if(override_blindness_check || !(disabilities & BLIND))
@@ -697,8 +696,20 @@ default behaviour is:
 /mob/living/proc/slip(var/slipped_on,stun_duration=8)
 	return 0
 
+/mob/living/carbon/human/canUnEquip(obj/item/I)
+	if(!..())
+		return
+	if(I in internal_organs)
+		return
+	if(I in organs)
+		return
+	return 1
+
+//Organs should not be removed via inventory procs.
 /mob/living/carbon/drop_from_inventory(var/obj/item/W, var/atom/Target = null)
 	if(W in internal_organs)
+		return
+	if(W in organs)
 		return
 	. = ..()
 
@@ -783,3 +794,48 @@ default behaviour is:
 		for(var/a in auras)
 			remove_aura(a)
 	return ..()
+
+/mob/living/proc/melee_accuracy_mods()
+	. = 0
+	if(eye_blind)
+		. += 75
+	if(eye_blurry)
+		. += 15
+	if(confused)
+		. += 30
+	if(MUTATION_CLUMSY in mutations)
+		. += 40
+
+/mob/living/proc/ranged_accuracy_mods()
+	. = 0
+	if(jitteriness)
+		. -= 2
+	if(confused)
+		. -= 2
+	if(eye_blind)
+		. -= 5
+	if(eye_blurry)
+		. -= 1
+	if(MUTATION_CLUMSY in mutations)
+		. -= 3
+
+/mob/living/can_drown()
+	return TRUE
+
+/mob/living/handle_drowning()
+	if(!can_drown() || !loc.is_flooded(lying))
+		return FALSE
+	if(prob(5))
+		to_chat(src, "<span class='danger'>You choke and splutter as you inhale water!</span>")
+	var/turf/T = get_turf(src)
+	T.show_bubbles()
+	return TRUE // Presumably chemical smoke can't be breathed while you're underwater.
+
+/mob/living/water_act(var/depth)
+	..()
+	wash_mob(src)
+	for(var/thing in get_equipped_items(TRUE))
+		if(isnull(thing)) continue
+		var/atom/movable/A = thing
+		if(A.simulated && !A.waterproof)
+			A.water_act(depth)

@@ -31,18 +31,17 @@ var/global/list/rad_collectors = list()
 	last_power_new = 0
 
 	if(P && active)
-		var/rads = radiation_repository.get_rads_at_turf(get_turf(src))
+		var/rads = SSradiation.get_rads_at_turf(get_turf(src))
 		if(rads)
-			receive_pulse(rads * 5) //Maths is hard
+//			receive_pulse(rads * 5) //Maths is hard
+			receive_pulse(rads * 2)
 
 	if(P)
 		if(P.air_contents.gas["phoron"] == 0)
 			investigate_log("<font color='red'>out of fuel</font>.","singulo")
 			eject()
 		else
-			P.air_contents.adjust_gas("phoron", -0.001*drainratio)
-	return
-
+			P.air_adjust_gas("phoron", -0.001*drainratio)
 
 /obj/machinery/power/rad_collector/attack_hand(mob/user as mob)
 	if(anchored)
@@ -55,7 +54,6 @@ var/global/list/rad_collectors = list()
 		else
 			to_chat(user, "<span class='warning'>The controls are locked!</span>")
 			return
-..()
 
 
 /obj/machinery/power/rad_collector/attackby(obj/item/W, mob/user)
@@ -66,10 +64,10 @@ var/global/list/rad_collectors = list()
 		if(src.P)
 			to_chat(user, "<span class='warning'>There's already a phoron tank loaded.</span>")
 			return 1
-		user.drop_item()
+		if(!user.unEquip(W, src))
+			return
 		src.P = W
-		W.loc = src
-		update_icons()
+		update_icon()
 		return 1
 	else if(isCrowbar(W))
 		if(P && !src.locked)
@@ -93,7 +91,7 @@ var/global/list/rad_collectors = list()
 		else
 			disconnect_from_network()
 		return 1
-	else if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))
+	else if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/modular_computer))
 		if (src.allowed(user))
 			if(active)
 				src.locked = !src.locked
@@ -126,13 +124,13 @@ var/global/list/rad_collectors = list()
 	var/obj/item/weapon/tank/phoron/Z = src.P
 	if (!Z)
 		return
-	Z.forceMove(get_turf(src))
+	Z.dropInto(loc)
 	Z.reset_plane_and_layer()
 	src.P = null
 	if(active)
 		toggle_power()
 	else
-		update_icons()
+		update_icon()
 
 /obj/machinery/power/rad_collector/proc/receive_pulse(var/pulse_strength)
 	if(P && active)
@@ -144,7 +142,12 @@ var/global/list/rad_collectors = list()
 	return
 
 
-/obj/machinery/power/rad_collector/proc/update_icons()
+/obj/machinery/power/rad_collector/on_update_icon()
+	if(active)
+		icon_state = "ca_on"
+	else
+		icon_state = "ca"
+
 	overlays.Cut()
 	if(P)
 		overlays += image('icons/obj/singularity.dmi', "ptank")
@@ -157,10 +160,7 @@ var/global/list/rad_collectors = list()
 /obj/machinery/power/rad_collector/proc/toggle_power()
 	active = !active
 	if(active)
-		icon_state = "ca_on"
 		flick("ca_active", src)
 	else
-		icon_state = "ca"
 		flick("ca_deactive", src)
-	update_icons()
-	return
+	update_icon()

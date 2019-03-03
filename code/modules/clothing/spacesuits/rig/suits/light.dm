@@ -18,9 +18,17 @@
 	boot_type =  /obj/item/clothing/shoes/magboots/rig/light
 	glove_type = /obj/item/clothing/gloves/rig/light
 
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/rig_back.dmi',
+		SPECIES_UNATHI = 'icons/mob/onmob/Unathi/rig_back.dmi'
+		)
+
 /obj/item/clothing/suit/space/rig/light
-	name = "suit"
 	breach_threshold = 18 //comparable to voidsuits
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/suit.dmi',
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/suit.dmi'
+		)
 
 /obj/item/clothing/gloves/rig/light
 	name = "gloves"
@@ -28,8 +36,20 @@
 /obj/item/clothing/shoes/magboots/rig/light
 	name = "shoes"
 
+	stealth_step = TRUE
+
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/feet.dmi'
+	)
+
 /obj/item/clothing/head/helmet/space/rig/light
 	name = "hood"
+
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/head.dmi',
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/helmet.dmi'
+
+	)
 
 /obj/item/weapon/rig/light/hacker
 	name = "cybersuit control module"
@@ -46,6 +66,10 @@
 	chest_type = /obj/item/clothing/suit/lightrig/hacker
 	glove_type = /obj/item/clothing/gloves/lightrig/hacker
 	boot_type = /obj/item/clothing/shoes/lightrig/hacker
+
+	sprite_sheets = list(
+		SPECIES_UNATHI = 'icons/mob/onmob/Unathi/rig_back.dmi'
+		)
 
 	initial_modules = list(
 		/obj/item/rig_module/ai_container,
@@ -71,6 +95,8 @@
 
 /obj/item/clothing/gloves/lightrig/hacker
 	siemens_coefficient = 0
+	item_flags = ITEM_FLAG_THICKMATERIAL | ITEM_FLAG_NOCUFFS
+
 
 /obj/item/weapon/rig/light/ninja
 	name = "ominous suit control module"
@@ -95,7 +121,7 @@
 		/obj/item/rig_module/vision,
 		/obj/item/rig_module/voice,
 		/obj/item/rig_module/fabricator/energy_net,
-		/obj/item/rig_module/chem_dispenser,
+		/obj/item/rig_module/chem_dispenser/combat,
 		/obj/item/rig_module/grenade_launcher/ninja,
 		/obj/item/rig_module/ai_container,
 		/obj/item/rig_module/power_sink,
@@ -104,7 +130,10 @@
 		/obj/item/rig_module/cooling_unit
 		)
 
-	..()
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/rig_back.dmi',
+		SPECIES_UNATHI = 'icons/mob/onmob/Unathi/rig_back.dmi'
+		)
 
 /obj/item/weapon/rig/light/ninja/verb/rename_suit()
 	set name = "Name Ninja Suit"
@@ -140,6 +169,11 @@
 /obj/item/clothing/gloves/rig/light/ninja
 	name = "insulated gloves"
 	siemens_coefficient = 0
+	item_flags = ITEM_FLAG_THICKMATERIAL | ITEM_FLAG_NOCUFFS
+
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/hands.dmi'
+	)
 
 /obj/item/clothing/suit/space/rig/light/ninja
 	breach_threshold = 38 //comparable to regular hardsuits

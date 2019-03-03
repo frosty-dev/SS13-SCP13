@@ -5,12 +5,11 @@
 	icon_state = "telescreen"
 	icon_state_unpowered = "telescreen"
 	icon_state_menu = "menu"
-	icon_state_screensaver = "standby"
 	hardware_flag = PROGRAM_TELESCREEN
 	anchored = TRUE
 	density = 0
-	base_idle_power_usage = 75
-	base_active_power_usage = 300
+	base_idle_power_usage = 25
+	base_active_power_usage = 120
 	max_hardware_size = 2
 	steel_sheet_cost = 10
 	light_strength = 4

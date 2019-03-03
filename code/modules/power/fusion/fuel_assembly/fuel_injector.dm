@@ -23,7 +23,7 @@ var/list/fuel_injectors = list()
 
 /obj/machinery/fusion_fuel_injector/Destroy()
 	if(cur_assembly)
-		cur_assembly.forceMove(get_turf(src))
+		cur_assembly.dropInto(loc)
 		cur_assembly = null
 	fuel_injectors -= src
 	return ..()
@@ -51,17 +51,14 @@ var/list/fuel_injectors = list()
 		if(injecting)
 			to_chat(user, "<span class='warning'>Shut \the [src] off before playing with the fuel rod!</span>")
 			return
-
+		if(!user.unEquip(W, src))
+			return
 		if(cur_assembly)
-			cur_assembly.forceMove(get_turf(src))
 			visible_message("<span class='notice'>\The [user] swaps \the [src]'s [cur_assembly] for \a [W].</span>")
 		else
 			visible_message("<span class='notice'>\The [user] inserts \a [W] into \the [src].</span>")
-
-		user.drop_from_inventory(W)
-		W.forceMove(src)
 		if(cur_assembly)
-			cur_assembly.forceMove(get_turf(src))
+			cur_assembly.dropInto(loc)
 			user.put_in_hands(cur_assembly)
 		cur_assembly = W
 		return
@@ -87,7 +84,7 @@ var/list/fuel_injectors = list()
 		return
 
 	if(cur_assembly)
-		cur_assembly.forceMove(get_turf(src))
+		cur_assembly.dropInto(loc)
 		user.put_in_hands(cur_assembly)
 		visible_message("<span class='notice'>\The [user] removes \the [cur_assembly] from \the [src].</span>")
 		cur_assembly = null

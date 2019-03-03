@@ -141,7 +141,6 @@
 		for(var/datum/playingcard/P in cards)
 			H.cards += P
 		H.concealed = src.concealed
-		user.drop_from_inventory(src)
 		qdel(src)
 		H.update_icon()
 		return
@@ -180,7 +179,6 @@
 
 	H.cards += cards
 	cards.Cut();
-	user.drop_item()
 	qdel(src)
 
 	H.update_icon()
@@ -218,7 +216,7 @@
 	H.update_icon()
 	src.update_icon()
 	usr.visible_message("\The [usr] plays \the [discarding].")
-	H.loc = get_step(usr,usr.dir)
+	H.forceMove(loc = get_step(usr,usr.dir))
 
 	if(!cards.len)
 		qdel(src)
@@ -235,7 +233,7 @@
 		for(var/datum/playingcard/P in cards)
 			to_chat(user, "The [P.name].")
 
-/obj/item/weapon/hand/update_icon(var/direction = 0)
+/obj/item/weapon/hand/on_update_icon(var/direction = 0)
 
 	if(!cards.len)
 		qdel(src)
@@ -313,7 +311,7 @@
 	. = ..()
 
 	var/list/deck_list = list()
-	for(var/obj/item/weapon/deck/D in global.item_list)
+	for(var/obj/item/weapon/deck/D in world)
 		if(isturf(D.loc))		//Decks hiding in inventories are safe. Respect the sanctity of loadout items.
 			deck_list += D
 

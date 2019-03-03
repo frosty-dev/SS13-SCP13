@@ -11,7 +11,7 @@
 	id = "awaysite_lar_maria"
 	description = "An orbital virus research station."
 	suffixes = list("lar_maria/lar_maria-1.dmm", "lar_maria/lar_maria-2.dmm")
-	cost = 2
+	cost = 1
 
 ///////////////////////////////////custom virus for prisoners to spread
 /datum/disease2/disease/lar_maria
@@ -33,7 +33,6 @@
 	var/datum/disease2/effect/rage/E4 = new()
 	E4.stage = 4
 	effects += E4
-
 
 /datum/disease2/effect/rage //custom effect, fills PC with uncontrollable rage
 	name = "Rampage Syndrome"
@@ -83,7 +82,7 @@
 	name = "Lar Maria hostile mob"
 	desc = "You shouldn't see me!"
 	icon = 'maps/away/lar_maria/lar_maria_sprites.dmi'
-	unsuitable_atoms_damage = 15
+	unsuitable_atmos_damage = 15
 	environment_smash = 1
 	faction = "lar_maria"
 	status_flags = CANPUSH
@@ -96,6 +95,7 @@
 	response_disarm = "shoves"
 	response_harm = "hits"
 	speed = 8
+	can_escape = 1
 	stop_automated_movement_when_pulled = 0
 	attacktext = "punched"
 	var/obj/effect/landmark/corpse/lar_maria/corpse = null
@@ -112,6 +112,10 @@
 		new corpse (src.loc)
 	if (weapon)
 		new weapon(src.loc)
+	visible_message("<span class='warning'>Small shining spores float away from dying [src]!</span>")
+	for (var/mob/living/carbon/human/L in orange(3))//infect those who are around
+		if (prob(infection_chance(L, "Airborne")))
+			infect_virus2(L, LMD, 1)
 	qdel(src)
 
 /mob/living/simple_animal/hostile/lar_maria/AttackingTarget()
@@ -194,8 +198,9 @@
 /obj/item/clothing/head/soft/lar_maria/zhp_cap
 	name = "Zeng-Hu Pharmaceuticals cap"
 	icon = 'maps/away/lar_maria/lar_maria_sprites.dmi'
+	desc = "A green cap with Zeng-Hu Pharmaceuticals symbol on it."
 	icon_state = "zhp_cap"
-	item_icons = list(slot_head_str = 'maps/away/lar_maria/lar_maria_sprites.dmi')
+	item_icons = list(slot_head_str = 'maps/away/lar_maria/lar_maria_clothing_sprites.dmi')
 
 /mob/living/simple_animal/hostile/lar_maria/virologist
 	name = "\improper virologist"
@@ -290,7 +295,7 @@
 	name = "paper note"
 	info = {"<center><b><font color='green'>Zeng-Hu Pharmaceuticals</font></b></center>
 			<center><font color='red'><small>CONFIDENTIAL USE ONLY</small></font></center>
-			<i>Can we get some more diversity in test subjects? I know we're mostly working off SCG undesirables, but martians and frontier colonists aren't exactly the most varied bunch. We could majorly benefit from having some tajaran or Skrell test subjects, for example. Oooh, or one of those GAS things Xynergy's got a monopoly on.</i>
+			<i>Can we get some more diversity in test subjects? I know we're mostly working off SCG undesirables, but martians and frontier colonists aren't exactly the most varied bunch. We could majorly benefit from having some Skrell test subjects, for example. Oooh, or one of those GAS things Xynergy's got a monopoly on.</i>
 			"}
 
 /obj/item/weapon/paper/lar_maria/note_8

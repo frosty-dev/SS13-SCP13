@@ -21,6 +21,7 @@ GLOBAL_VAR_CONST(PREF_CTRL_CLICK, "ctrl click")
 GLOBAL_VAR_CONST(PREF_CTRL_SHIFT_CLICK, "ctrl shift click")
 GLOBAL_VAR_CONST(PREF_HEAR, "Hear")
 GLOBAL_VAR_CONST(PREF_SILENT, "Silent")
+GLOBAL_VAR_CONST(PREF_SHORTHAND, "Shorthand")
 
 var/list/_client_preferences
 var/list/_client_preferences_by_key
@@ -90,9 +91,10 @@ var/list/_client_preferences_by_type
 
 /datum/client_preference/play_lobby_music/changed(var/mob/preference_mob, var/new_value)
 	if(new_value == GLOB.PREF_YES)
-		GLOB.using_map.lobby_music.play_to(preference_mob)
+		if(isnewplayer(preference_mob))
+			GLOB.using_map.lobby_track.play_to(preference_mob)
 	else
-		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 85, channel = 1))
+		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 85, channel = GLOB.lobby_sound_channel))
 
 /datum/client_preference/play_ambiance
 	description ="Play ambience"
@@ -100,8 +102,24 @@ var/list/_client_preferences_by_type
 
 /datum/client_preference/play_ambiance/changed(var/mob/preference_mob, var/new_value)
 	if(new_value == GLOB.PREF_NO)
-		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 0, channel = 1))
-		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 0, channel = 2))
+		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 0, channel = GLOB.lobby_sound_channel))
+		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 0, channel = GLOB.ambience_sound_channel))
+
+/datum/client_preference/play_instruments
+	description ="Play instruments"
+	key = "SOUND_INSTRUMENTS"
+
+/datum/client_preference/play_jukeboxes
+	description ="Play jukeboxes"
+	key = "SOUND_JUKEBOXES"
+
+/datum/client_preference/play_boomboxes
+	description ="Play boomboxes"
+	key = "SOUND_BOOMBOXES"
+
+/datum/client_preference/play_pmps
+	description ="Play pmps"
+	key = "SOUND_PMPS"
 
 /datum/client_preference/ghost_ears
 	description ="Ghost ears"
@@ -117,6 +135,11 @@ var/list/_client_preferences_by_type
 	description ="Ghost radio"
 	key = "CHAT_GHOSTRADIO"
 	options = list(GLOB.PREF_ALL_CHATTER, GLOB.PREF_NEARBY)
+
+/datum/client_preference/language_display
+	description = "Display Language Names"
+	key = "LANGUAGE_DISPLAY"
+	options = list(GLOB.PREF_FULL, GLOB.PREF_SHORTHAND, GLOB.PREF_OFF)
 
 /datum/client_preference/ghost_follow_link_length
 	description ="Ghost Follow Links"
@@ -176,16 +199,30 @@ var/list/_client_preferences_by_type
 	description = "Fake NanoUI Browser Style"
 	key = "BROWSER_STYLED"
 	options = list(GLOB.PREF_FANCY, GLOB.PREF_PLAIN)
-/*
+
 /datum/client_preference/autohiss
 	description = "Autohiss"
 	key = "AUTOHISS"
 	options = list(GLOB.PREF_OFF, GLOB.PREF_BASIC, GLOB.PREF_FULL)
-*/
+
 /datum/client_preference/hardsuit_activation
 	description = "Hardsuit Module Activation Key"
 	key = "HARDSUIT_ACTIVATION"
 	options = list(GLOB.PREF_MIDDLE_CLICK, GLOB.PREF_CTRL_CLICK, GLOB.PREF_ALT_CLICK, GLOB.PREF_CTRL_SHIFT_CLICK)
+
+/datum/client_preference/holster_on_intent
+	description = "Draw gun based on intent"
+	key = "HOLSTER_ON_INTENT"
+
+/datum/client_preference/show_credits
+	description = "Show End Titles"
+	key = "SHOW_CREDITS"
+
+/datum/client_preference/anon_say
+	description ="Anonymous Chat"
+	key = "CHAT_ANONSAY"
+	options = list(GLOB.PREF_YES, GLOB.PREF_NO)
+	default_value = GLOB.PREF_NO
 
 /********************
 * General Staff Preferences *

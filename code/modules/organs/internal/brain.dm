@@ -13,13 +13,13 @@
 	origin_tech = list(TECH_BIO = 3)
 	attack_verb = list("attacked", "slapped", "whacked")
 	relative_size = 60
-	scp106_vulnerable = FALSE
 
 	var/can_use_mmi = TRUE
 	var/mob/living/carbon/brain/brainmob = null
 	var/const/damage_threshold_count = 10
 	var/damage_threshold_value
 	var/healed_threshold = 1
+	var/oxygen_reserve = 6
 	var/fake_brain = 0
 
 /obj/item/organ/internal/brain/robotize()
@@ -38,36 +38,31 @@
 		tmp_owner.internal_organs_by_name[organ_tag] = new replace_path(tmp_owner, 1)
 		tmp_owner = null
 
-/obj/item/organ/internal/brain/xeno
-	name = "thinkpan"
-	desc = "It looks kind of like an enormous wad of purple bubblegum."
-	icon = 'icons/mob/alien.dmi'
-	icon_state = "chitin"
-
 /obj/item/organ/internal/brain/robotize()
 	. = ..()
 	icon_state = "brain-prosthetic"
 
 /obj/item/organ/internal/brain/New(var/mob/living/carbon/holder)
 	..()
-	max_damage = 200
 	if(species)
-		max_damage = species.total_health
-	min_bruised_damage = max_damage*0.25
-	min_broken_damage = max_damage*0.75
+		set_max_damage(species.total_health)
+	else
+		set_max_damage(200)
 
-	damage_threshold_value = round(max_damage / damage_threshold_count)
 	spawn(5)
 		if(brainmob && brainmob.client)
 			brainmob.client.screen.len = null //clear the hud
+
+/obj/item/organ/internal/brain/set_max_damage(var/ndamage)
+	..()
+	damage_threshold_value = round(max_damage / damage_threshold_count)
 
 /obj/item/organ/internal/brain/Destroy()
 	QDEL_NULL(brainmob)
 	. = ..()
 
 /obj/item/organ/internal/brain/proc/transfer_identity(var/mob/living/carbon/H)
-	if(fake_brain)
-		return
+	if(fake_brain) return
 	if(!brainmob)
 		brainmob = new(src)
 		brainmob.SetName(H.real_name)
@@ -87,7 +82,7 @@
 		to_chat(user, "You can feel the small spark of life still left in this one.")
 	else
 		if(fake_brain)
-			to_chat(user, "This one seems particularly lifeless. Perhaps it will regain some of its luster later.")
+			to_chat(user, "This one seems particularly lifeless. Perhaps it will regain some of its luster later...")
 		else
 			to_chat(user, "This one is completely devoid of life.")
 
@@ -115,26 +110,16 @@
 	if(target.key)
 		target.ghostize()
 
-	if(brainmob)
-		if(brainmob.mind && !fake_brain)
+	if(brainmob && !fake_brain)
+		if(brainmob.mind)
 			brainmob.mind.transfer_to(target)
 		else
 			target.key = brainmob.key
 
 	return 1
 
-/obj/item/organ/internal/brain/slime
-	name = "slime core"
-	desc = "A complex, organic knot of jelly and crystalline particles."
-	icon = 'icons/mob/slimes.dmi'
-	icon_state = "green slime extract"
-
-/obj/item/organ/internal/brain/golem
-	name = "chem"
-	desc = "A tightly furled roll of paper, covered with indecipherable runes."
-	icon = 'icons/obj/wizard.dmi'
-	icon_state = "scroll"
-
+/obj/item/organ/internal/brain/can_recover()
+	return ~status & ORGAN_DEAD
 
 /obj/item/organ/internal/brain/proc/get_current_damage_threshold()
 	return round(damage / damage_threshold_value)
@@ -143,58 +128,37 @@
 	return (get_current_damage_threshold() > threshold)
 
 /obj/item/organ/internal/brain/Process()
-
 	if(owner)
 		if(damage > max_damage / 2 && healed_threshold)
-			if(fake_brain)
-				to_chat(owner, "<span class='warning'>Your brain has taken massive damage. Not like you care, but it might be good for acting.</span>")
-			else
-				spawn()
+			spawn()
+				if(fake_brain)
+					to_chat(owner, "<span class='warning'>Your brain has taken massive damage. Not like you care, but it might be good for acting.</span>")
+				else
+					to_chat(owner, "<span class = 'notice' font size='10'><B>Where am I...?</B></span>")
+					sleep(5 SECONDS)
+					to_chat(owner, "<span class = 'notice' font size='10'><B>What's going on...?</B></span>")
+					sleep(10 SECONDS)
+					to_chat(owner, "<span class = 'notice' font size='10'><B>What happened...?</B></span>")
 					alert(owner, "You have taken massive brain damage! You will not be able to remember the events leading up to your injury.", "Brain Damaged")
 			healed_threshold = 0
 
 		if(damage < (max_damage / 4))
 			healed_threshold = 1
 
-		if(owner.paralysis < 1) // Skip it if we're already down.
-
-			if((owner.disabilities & EPILEPSY) && prob(1))
-				to_chat(owner, "<span class='warning'>You have a seizure!</span>")
-				owner.visible_message("<span class='danger'>\The [owner] starts having a seizure!</span>")
-				owner.Paralyse(10)
-				owner.make_jittery(1000)
-			else if((owner.disabilities & TOURETTES) && prob(10))
-				owner.Stun(10)
-				switch(rand(1, 3))
-					if(1)
-						owner.emote("twitch")
-					if(2 to 3)
-						owner.say("[prob(50) ? ";" : ""][pick("SHIT", "PISS", "FUCK", "CUNT", "COCKSUCKER", "MOTHERFUCKER", "TITS")]")
-				owner.make_jittery(100)
-			else if((owner.disabilities & NERVOUS) && prob(10))
-				owner.stuttering = max(10, owner.stuttering)
-
-			if(owner.stat == CONSCIOUS)
-				if(damage > 0 && prob(1))
-					owner.custom_pain("Your head feels numb and painful.",10)
-				if(is_bruised() && prob(1) && owner.eye_blurry <= 0)
-					to_chat(owner, "<span class='warning'>It becomes hard to see for some reason.</span>")
-					owner.eye_blurry = 10
-				if(is_broken() && prob(1) && owner.get_active_hand())
-					to_chat(owner, "<span class='danger'>Your hand won't respond properly, and you drop what you are holding!</span>")
-					owner.drop_item()
-				if((damage >= (max_damage * 0.75)))
-					if(!owner.lying)
-						to_chat(owner, "<span class='danger'>You black out!</span>")
-					owner.Paralyse(10)
+		handle_disabilities()
+		handle_damage_effects()
 
 		// Brain damage from low oxygenation or lack of blood.
 		if(owner.should_have_organ(BP_HEART))
 
 			// No heart? You are going to have a very bad time. Not 100% lethal because heart transplants should be a thing.
 			var/blood_volume = owner.get_blood_oxygenation()
-
-			if(owner.is_asystole()) // Heart is missing or isn't beating and we're not breathing (hardcrit)
+			if(blood_volume < BLOOD_VOLUME_SURVIVE)
+				if(!owner.chem_effects[CE_STABLE] || prob(60))
+					oxygen_reserve = max(0, oxygen_reserve-1)
+			else
+				oxygen_reserve = min(initial(oxygen_reserve), oxygen_reserve+1)
+			if(!oxygen_reserve) //(hardcrit)
 				owner.Paralyse(3)
 			var/can_heal = damage && damage < max_damage && (damage % damage_threshold_value || owner.chem_effects[CE_BRAIN_REGEN] || (!past_damage_threshold(3) && owner.chem_effects[CE_STABLE]))
 			var/damprob
@@ -203,32 +167,98 @@
 
 				if(BLOOD_VOLUME_SAFE to INFINITY)
 					if(can_heal)
-						damage--
+						damage = max(damage-1, 0)
 				if(BLOOD_VOLUME_OKAY to BLOOD_VOLUME_SAFE)
 					if(prob(1))
-						to_chat(owner, "<span class='warning'>You feel [pick("dizzy","woozy","faint")]...</span>")
+						to_chat(owner, "<span class='warning'>[pick("У вас кружитс&#255; голова","Вам т&#255;жело удержать равновесие","Вы чувствуете слабость")]...</span>")
 					damprob = owner.chem_effects[CE_STABLE] ? 30 : 60
 					if(!past_damage_threshold(2) && prob(damprob))
-						take_damage(1)
+						take_internal_damage(1)
 				if(BLOOD_VOLUME_BAD to BLOOD_VOLUME_OKAY)
 					owner.eye_blurry = max(owner.eye_blurry,6)
 					damprob = owner.chem_effects[CE_STABLE] ? 40 : 80
 					if(!past_damage_threshold(4) && prob(damprob))
-						take_damage(1)
+						take_internal_damage(1)
 					if(!owner.paralysis && prob(10))
 						owner.Paralyse(rand(1,3))
-						to_chat(owner, "<span class='warning'>You feel extremely [pick("dizzy","woozy","faint")]...</span>")
+						to_chat(owner, "<span class='warning'>[pick("Вы падаете от головоружени&#255;","Вы тер&#255;ете равновесие и падаете от слабости","Вы обессиленно упали")]...</span>")
 				if(BLOOD_VOLUME_SURVIVE to BLOOD_VOLUME_BAD)
 					owner.eye_blurry = max(owner.eye_blurry,6)
 					damprob = owner.chem_effects[CE_STABLE] ? 60 : 100
 					if(!past_damage_threshold(6) && prob(damprob))
-						take_damage(1)
+						take_internal_damage(1)
 					if(!owner.paralysis && prob(15))
 						owner.Paralyse(3,5)
-						to_chat(owner, "<span class='warning'>You feel extremely [pick("dizzy","woozy","faint")]...</span>")
+						to_chat(owner, "<span class='warning'>[pick("Вы падаете от головоружени&#255;","Вы тер&#255;ете равновесие и падаете от слабости","Вы обессиленно упали")]...</span>")
 				if(-(INFINITY) to BLOOD_VOLUME_SURVIVE) // Also see heart.dm, being below this point puts you into cardiac arrest.
 					owner.eye_blurry = max(owner.eye_blurry,6)
 					damprob = owner.chem_effects[CE_STABLE] ? 80 : 100
 					if(prob(damprob))
-						take_damage(1)
+						take_internal_damage(1)
+					if(prob(damprob))
+						take_internal_damage(1)
 	..()
+
+/obj/item/organ/internal/brain/take_internal_damage(var/damage, var/silent)
+	set waitfor = 0
+	..()
+	if(damage >= 10) //This probably won't be triggered by oxyloss or mercury. Probably.
+		var/damage_secondary = damage * 0.20
+		owner.flash_eyes()
+		owner.eye_blurry += damage_secondary
+		owner.confused += damage_secondary * 2
+		owner.Paralyse(damage_secondary)
+		owner.Weaken(round(damage, 1))
+		if(prob(30))
+			addtimer(CALLBACK(src, .proc/brain_damage_callback, damage), rand(6, 20) SECONDS, TIMER_UNIQUE)
+
+/obj/item/organ/internal/brain/proc/brain_damage_callback(var/damage) //Confuse them as a somewhat uncommon aftershock. Side note: Only here so a spawn isn't used. Also, for the sake of a unique timer.
+	to_chat(owner, "<span class = 'notice' font size='10'><B>I can't remember which way is forward...</B></span>")
+	owner.confused += damage
+
+/obj/item/organ/internal/brain/proc/handle_disabilities()
+	if(owner.stat)
+		return
+	if((owner.disabilities & EPILEPSY) && prob(1))
+		to_chat(owner, "<span class='warning'>You have a seizure!</span>")
+		owner.visible_message("<span class='danger'>\The [owner] starts having a seizure!</span>")
+		owner.Paralyse(10)
+		owner.make_jittery(1000)
+	else if((owner.disabilities & TOURETTES) && prob(10))
+		owner.Stun(10)
+		switch(rand(1, 3))
+			if(1)
+				owner.emote("twitch")
+			if(2 to 3)
+				owner.say("[prob(50) ? ";" : ""][pick("SHIT", "PISS", "FUCK", "CUNT", "COCKSUCKER", "MOTHERFUCKER", "TITS")]")
+		owner.make_jittery(100)
+	else if((owner.disabilities & NERVOUS) && prob(10))
+		owner.stuttering = max(10, owner.stuttering)
+
+/obj/item/organ/internal/brain/proc/handle_damage_effects()
+	if(owner.stat)
+		return
+	if(damage > 0 && prob(1))
+		owner.custom_pain("Your head feels numb and painful.",10)
+	if(is_bruised() && prob(1) && owner.eye_blurry <= 0)
+		to_chat(owner, "<span class='warning'>It becomes hard to see for some reason.</span>")
+		owner.eye_blurry = 10
+	if(damage >= 0.5*max_damage && prob(1) && owner.get_active_hand())
+		to_chat(owner, "<span class='danger'>Your hand won't respond properly, and you drop what you are holding!</span>")
+		owner.unequip_item()
+	if(damage >= 0.6*max_damage)
+		owner.slurring = max(owner.slurring, 2)
+	if(is_broken())
+		if(!owner.lying)
+			to_chat(owner, "<span class='danger'>You black out!</span>")
+		owner.Paralyse(10)
+
+/obj/item/organ/internal/brain/surgical_fix(mob/user)
+	var/blood_volume = owner.get_blood_oxygenation()
+	if(blood_volume < BLOOD_VOLUME_SURVIVE)
+		to_chat(user, "<span class='danger'>Parts of [src] didn't survive the procedure due to lack of air supply!</span>")
+		set_max_damage(Floor(max_damage - 0.25*damage))
+	heal_damage(damage)
+
+/obj/item/organ/internal/brain/get_scarring_level()
+	. = (species.total_health - max_damage)/species.total_health

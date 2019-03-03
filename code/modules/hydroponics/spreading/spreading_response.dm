@@ -43,7 +43,7 @@
 		if(buckled_mob.buckled == src)
 			buckled_mob.buckled = null
 			buckled_mob.anchored = initial(buckled_mob.anchored)
-			buckled_mob.update_canmove()
+			buckled_mob.UpdateLyingBuckledAndVerbStatus()
 		buckled_mob = null
 	START_PROCESSING(SSvines, src)
 	return
@@ -93,10 +93,14 @@
 	if(!victim.anchored && (Adjacent(victim) || victim.loc == src.loc))
 		var/can_grab = 1
 		if(istype(victim, /mob/living/carbon/human))
+			if(H.species.reagent_tag == IS_XENOS)
+				can_grab = FALSE
 			if(((istype(H.shoes, /obj/item/clothing/shoes/magboots) && (H.shoes.item_flags & ITEM_FLAG_NOSLIP)) || (H.species.species_flags & SPECIES_FLAG_NO_SLIP)) && victim.loc != src.loc)
 				if(prob(90))
 					src.visible_message("<span class='danger'>Tendrils lash to drag \the [victim] but \the [src] can't pull them across the ground!</span>")
 					can_grab = 0
+		if(istype(victim, /mob/living/carbon/alien/larva))
+			can_grab = FALSE
 		if(can_grab)
 			victim.visible_message("<span class='danger'>Tendrils lash out from \the [src] and drag \the [victim] in!</span>", "<span class='danger'>Tendrils lash out from \the [src] and drag you in!</span>")
 			victim.forceMove(src.loc)

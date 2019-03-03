@@ -178,7 +178,9 @@ This saves us from having to call add_fingerprint() any time something is put in
 			if(I.flags_inv & (BLOCKHAIR|BLOCKHEADHAIR))
 				update_hair(0)	//rebuild hair
 				update_inv_ears(0)
-		REMOVE_INTERNALS
+		var/obj/item/clothing/mask/head = src.get_equipped_item(slot_head)
+		if(!(head && (head.item_flags & ITEM_FLAG_AIRTIGHT)))
+			REMOVE_INTERNALS
 		update_inv_wear_mask()
 	else if (W == wear_id)
 		wear_id = null
@@ -336,7 +338,8 @@ This saves us from having to call add_fingerprint() any time something is put in
 			W.forceMove(src.back)
 		if(slot_tie)
 			var/obj/item/clothing/under/uniform = src.w_uniform
-			uniform.attackby(W,src)
+			if(uniform)
+				uniform.attackby(W,src)
 		else
 			to_chat(src, "<span class='danger'>You are trying to eqip this item to an unsupported inventory slot. If possible, please write a ticket with steps to reproduce. Slot was: [slot]</span>")
 			return
@@ -422,5 +425,11 @@ This saves us from having to call add_fingerprint() any time something is put in
 		if(r_store)    . += r_store
 		if(handcuffed) . += handcuffed
 		if(s_store)    . += s_store
+
+//Same as get_covering_equipped_items, but using target zone instead of bodyparts flags
+/mob/living/carbon/human/proc/get_covering_equipped_item_by_zone(var/zone)
+	var/obj/item/organ/external/O = get_organ(zone)
+	if(O)
+		return get_covering_equipped_item(O.body_part)
 
 #undef REMOVE_INTERNALS

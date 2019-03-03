@@ -1,6 +1,7 @@
 /mob/living/bot/remotebot
 	name = "Remote-Bot"
 	desc = "A remote controlled robot used by lazy people to switch channels and get pizza."
+	icon = 'icons/mob/bot/fetchbot.dmi'
 	icon_state = "fetchbot1"
 	health = 15
 	maxHealth = 15
@@ -33,7 +34,7 @@
 	for(var/i in 1 to rand(3,5))
 		var/obj/item/stack/material/cardboard/C = new(src.loc)
 		if(prob(50))
-			C.loc = get_step(src, pick(GLOB.alldirs))
+			C.forceMove(get_step(src, pick(GLOB.alldirs)))
 
 	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 	s.set_up(3, 1, src)
@@ -87,7 +88,7 @@
 		return
 	if(isturf(a) || get_dist(src,a) > 1)
 		walk_to(src,a,0,movement_delay())
-	else if(istype(a, /obj/item))
+	else if(istype(a, /obj/item) && !istype(a, /mob))
 		pickup(a)
 	else
 		hit(a)
@@ -166,5 +167,4 @@
 	var/turf/T = get_turf(src.loc)
 	new /mob/living/bot/remotebot(T)
 	new /obj/item/device/bot_controller(T)
-	user.drop_from_inventory(src)
 	qdel(src)

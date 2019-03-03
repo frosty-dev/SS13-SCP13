@@ -1,12 +1,15 @@
 /mob/living
 	see_in_dark = 2
 	see_invisible = SEE_INVISIBLE_LIVING
+	waterproof = FALSE
 
 	//Health and life related vars
 	var/maxHealth = 100 //Maximum health that should be possible.
 	var/health = 100 	//A mob's health
 
 	var/hud_updateflag = 0
+
+	var/ooc_notes = null
 
 	//Damage related vars, NOTE: THESE SHOULD ONLY BE MODIFIED BY PROCS // what a joke
 	//var/bruteloss = 0 //Brutal damage caused by brute force (punching, being clubbed by a toolbox ect... this also accounts for pressure damage)
@@ -32,7 +35,7 @@
 	var/list/datum/action/actions = list()
 
 	var/update_slimes = 1
-	//var/silent = null 		// Can't talk. Value goes down every life proc.
+	var/silent = null 		// Can't talk. Value goes down every life proc.
 	var/on_fire = 0 //The "Are we on fire?" var
 	var/fire_stacks
 
@@ -50,10 +53,8 @@
 
 	var/obj/screen/cells = null
 
+	var/last_resist = 0
 
-	var/doing_something = 0	//Like pulling teeth?
-
-
+	//FOV system
 	var/list/in_vision_cones = list()
-
 	var/footstep = 0

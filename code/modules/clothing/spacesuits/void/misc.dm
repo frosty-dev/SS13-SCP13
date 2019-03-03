@@ -1,4 +1,3 @@
-
 /obj/item/clothing/suit/space/void/swat
 	name = "\improper SWAT suit"
 	desc = "A heavily armored suit that protects against moderate damage. Used in special operations."

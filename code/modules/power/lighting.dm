@@ -13,7 +13,6 @@
 #define LIGHTING_POWER_FACTOR 5		//5W per luminosity * range
 
 
-#define LIGHTMODE_EMERGENCY_BRIGHT "emergency_lighting_bright"
 #define LIGHTMODE_EMERGENCY "emergency_lighting"
 #define LIGHTMODE_READY "ready"
 
@@ -23,8 +22,8 @@
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "tube-construct-stage1"
 	anchored = 1
-	plane = ABOVE_HUMAN_PLANE
-	layer = ABOVE_HUMAN_LAYER
+	plane = BLOB_PLANE
+	layer = BLOB_SHIELD_LAYER
 
 	var/stage = 1
 	var/fixture_type = /obj/machinery/light
@@ -43,7 +42,7 @@
 
 	update_icon()
 
-/obj/machinery/light_construct/update_icon()
+/obj/machinery/light_construct/on_update_icon()
 	switch(stage)
 		if(1) icon_state = "tube-construct-stage1"
 		if(2) icon_state = "tube-construct-stage2"
@@ -120,13 +119,13 @@
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "bulb-construct-stage1"
 	anchored = 1
-	plane = ABOVE_HUMAN_PLANE
-	layer = ABOVE_HUMAN_LAYER
+	plane = BLOB_PLANE //Yesyes but we can't type '-5.5' at planes.
+	layer = BLOB_SHIELD_LAYER
 	stage = 1
 	fixture_type = /obj/machinery/light/small
 	sheets_refunded = 1
 
-/obj/machinery/light_construct/small/update_icon()
+/obj/machinery/light_construct/small/on_update_icon()
 	switch(stage)
 		if(1) icon_state = "bulb-construct-stage1"
 		if(2) icon_state = "bulb-construct-stage2"
@@ -137,11 +136,11 @@
 	name = "light fixture"
 	icon = 'icons/obj/lighting.dmi'
 	var/base_state = "tube"		// base description and icon_state
-	icon_state = "tube1"
+	icon_state = "tube_map"
 	desc = "A lighting fixture."
 	anchored = 1
-	plane = ABOVE_HUMAN_PLANE
-	layer = ABOVE_HUMAN_LAYER  					// They were appearing under mobs which is a little weird - Ostaf
+	plane = BLOB_PLANE //Yesyes but we can't type '-5.5' at planes.
+	layer = BLOB_SHIELD_LAYER
 	use_power = 2
 	idle_power_usage = 2
 	active_power_usage = 20
@@ -149,7 +148,6 @@
 
 	var/on = 0					// 1 if on, 0 if off
 	var/flickering = 0
-	var/defective = 0
 	var/light_type = /obj/item/weapon/light/tube		// the type of light item
 	var/construct_type = /obj/machinery/light_construct
 
@@ -161,7 +159,7 @@
 
 // the smaller bulb light fixture
 /obj/machinery/light/small
-	icon_state = "bulb1"
+	icon_state = "bulb_map"
 	base_state = "bulb"
 	desc = "A small lighting fixture."
 	light_type = /obj/item/weapon/light/bulb
@@ -178,6 +176,9 @@
 	desc = "A more robust socket for light tubes that demand more power."
 	light_type = /obj/item/weapon/light/tube/large
 
+/obj/machinery/light/halogen
+	light_type = /obj/item/weapon/light/tube/halogen
+
 // create a new lighting fixture
 /obj/machinery/light/New(atom/newloc, obj/machinery/light_construct/construct = null)
 	..(newloc)
@@ -192,8 +193,6 @@
 		lightbulb = new light_type(src)
 		if(prob(lightbulb.broken_chance))
 			broken(1)
-		if(prob(lightbulb.defective_chance))
-			cause_defect()
 
 	on = powered()
 	update_icon(0)
@@ -203,8 +202,8 @@
 	QDEL_NULL(s)
 	. = ..()
 
-/obj/machinery/light/update_icon(var/trigger = 1)
-	overlays = overlays.Cut()
+/obj/machinery/light/on_update_icon(var/trigger = 1)
+	overlays.Cut()
 	icon_state = "[base_state]_empty" //Never use the initial state. That'll just reset it to the mapping icon.
 	pixel_y = 0
 	pixel_x = 0
@@ -217,28 +216,33 @@
 		else if(src.dir == WEST)
 			pixel_x = -10
 
-
+	var/_state
 	switch(get_status())		// set icon_states
 		if(LIGHT_OK)
-			icon_state = "[base_state][on]"
+			_state = "[base_state][on]"
 		if(LIGHT_EMPTY)
-			icon_state = "[base_state]-empty"
 			on = 0
 		if(LIGHT_BURNED)
-			icon_state = "[base_state]-burned"
+			_state = "[base_state]_burned"
 			on = 0
 		if(LIGHT_BROKEN)
-			icon_state = "[base_state]-broken"
+			_state = "[base_state]_broken"
 			on = 0
 
+	if(istype(lightbulb, /obj/item/weapon/light/))
+		var/image.I = image(icon, src, _state)
+		I.color = lightbulb.b_colour
+		overlays += I
+
 	if(on)
+
 		use_power = 2
 
 		var/changed = 0
 		if(current_mode && (current_mode in lightbulb.lighting_modes))
 			changed = set_light(arglist(lightbulb.lighting_modes[current_mode]))
 		else
-			changed = set_light(lightbulb.brightness_range, lightbulb.brightness_power, lightbulb.brightness_color)
+			changed = set_light(lightbulb.b_max_bright, lightbulb.b_inner_range, lightbulb.b_outer_range, lightbulb.b_curve, lightbulb.b_colour)
 
 		if(trigger && changed && get_status() == LIGHT_OK)
 			switch_check()
@@ -246,7 +250,7 @@
 		use_power = 0
 		set_light(0)
 
-	active_power_usage = ((light_range * light_power) * LIGHTING_POWER_FACTOR)
+	active_power_usage = ((light_outer_range * light_max_bright) * LIGHTING_POWER_FACTOR)
 
 /obj/machinery/light/proc/get_status()
 	if(!lightbulb)
@@ -280,11 +284,11 @@
 
 /obj/machinery/light/proc/set_emergency_lighting(var/enable)
 	if(enable)
-		if(LIGHTMODE_EMERGENCY_BRIGHT in lightbulb.lighting_modes)
-			set_mode(LIGHTMODE_EMERGENCY_BRIGHT)
+		if(LIGHTMODE_EMERGENCY in lightbulb.lighting_modes)
+			set_mode(LIGHTMODE_EMERGENCY)
 			power_channel = ENVIRON
 	else
-		if(current_mode == LIGHTMODE_EMERGENCY_BRIGHT)
+		if(current_mode == LIGHTMODE_EMERGENCY)
 			set_mode(null)
 			power_channel = initial(power_channel)
 
@@ -300,13 +304,13 @@
 	var/fitting = get_fitting_name()
 	switch(get_status())
 		if(LIGHT_OK)
-			to_chat(user, "[desc] It is turned [on? "on" : "off"].")
+			to_chat(user, "It is turned [on? "on" : "off"].")
 		if(LIGHT_EMPTY)
-			to_chat(user, "[desc] The [fitting] has been removed.")
+			to_chat(user, "The [fitting] has been removed.")
 		if(LIGHT_BURNED)
-			to_chat(user, "[desc] The [fitting] is burnt out.")
+			to_chat(user, "The [fitting] is burnt out.")
 		if(LIGHT_BROKEN)
-			to_chat(user, "[desc] The [fitting] has been smashed.")
+			to_chat(user, "The [fitting] has been smashed.")
 
 /obj/machinery/light/proc/get_fitting_name()
 	var/obj/item/weapon/light/L = light_type
@@ -330,14 +334,6 @@
 
 /obj/machinery/light/attackby(obj/item/W, mob/user)
 
-	//Light replacer code
-	if(istype(W, /obj/item/device/lightreplacer))
-		var/obj/item/device/lightreplacer/LR = W
-		if(isliving(user))
-			var/mob/living/U = user
-			LR.ReplaceLight(src, U)
-			return
-
 	// attempt to insert light
 	if(istype(W, /obj/item/weapon/light))
 		if(lightbulb)
@@ -346,9 +342,9 @@
 		if(!istype(W, light_type))
 			to_chat(user, "This type of light requires a [get_fitting_name()].")
 			return
-
+		if(!user.unEquip(W, src))
+			return
 		to_chat(user, "You insert [W].")
-		user.drop_item()
 		insert_bulb(W)
 		src.add_fingerprint(user)
 
@@ -444,9 +440,9 @@
 		else
 			prot = 1
 
-		if(prot > 0 || (COLD_RESISTANCE in user.mutations))
+		if(prot > 0 || (MUTATION_COLD_RESISTANCE in user.mutations))
 			to_chat(user, "You remove the [get_fitting_name()]")
-		else if(TK in user.mutations)
+		else if(MUTATION_TK in user.mutations)
 			to_chat(user, "You telekinetically remove the [get_fitting_name()].")
 		else
 			to_chat(user, "You try to remove the [get_fitting_name()], but it's too hot and you don't want to burn your hand.")
@@ -492,22 +488,6 @@
 	lightbulb.status = LIGHT_OK
 	on = 1
 	update_icon()
-
-/obj/machinery/light/proc/cause_defect()
-	// Defective lights flicker randomly, there's a small chance this will be called on any given light
-	if(!src)
-		return
-
-	src.defective = 1
-	while (src.defective == 1)
-		if(!src)
-			break
-		src.flicker(rand(1,5))
-		sleep(rand(10,300)) // Don't constantly flicker, wait a bit
-
-
-/obj/machinery/light/proc/fix_defect()
-	src.defective = 0
 
 // explosion effect
 // destroy the whole light fixture or just shatter it
@@ -561,81 +541,78 @@
 	var/status = 0		// LIGHT_OK, LIGHT_BURNED or LIGHT_BROKEN
 	var/base_state
 	var/switchcount = 0	// number of times switched
-	matter = list(DEFAULT_WALL_MATERIAL = 60)
+	matter = list(MATERIAL_STEEL = 60)
 	var/rigged = 0		// true if rigged to explode
 	var/broken_chance = 2
-	var/defective_chance = 3
 
-	var/brightness_range = 2 //how much light it gives off
-	var/brightness_power = 1
-	var/brightness_color = "#ffffff"
+	var/b_max_bright = 0.9
+	var/b_inner_range = 1
+	var/b_outer_range = 5
+	var/b_curve = 2
+	var/b_colour = LIGHT_COLOR_LYELLOW
 	var/list/lighting_modes = list()
 	var/sound_on
 
 /obj/item/weapon/light/tube
-	name = "incandescent light tube"
+	name = "light tube"
 	desc = "A replacement light tube."
 	icon_state = "ltube"
 	base_state = "ltube"
 	item_state = "c_tube"
-	matter = list("glass" = 100)
+	matter = list(MATERIAL_GLASS = 100)
 
-	brightness_range = 7	// luminosity when on, also used in power calculation
-	brightness_power = 5
-	brightness_color = "#f9e8a9" // White: fffee0
+	b_outer_range = 5
 	lighting_modes = list(
-		LIGHTMODE_EMERGENCY = list(l_range = 4, l_power = 1, l_color = "#da0205"),
-		LIGHTMODE_EMERGENCY_BRIGHT = list(l_range = 5, l_power = 3, l_color = "#ea492c")
+		LIGHTMODE_EMERGENCY = list(l_outer_range = 4, l_max_bright = 1, l_color = "#da0205"),
 		)
 	sound_on = 'sound/machines/lightson.ogg'
 
-
-/obj/item/weapon/light/tube/old
-	defective_chance = 50
-
-/obj/item/weapon/light/tube/defective
-	defective_chance = 100
+/obj/item/weapon/light/tube/party/Initialize() //Randomly colored light tubes. Mostly for testing, but maybe someone will find a use for them.
+	. = ..()
+	b_colour = rgb(pick(0,255), pick(0,255), pick(0,255))
 
 /obj/item/weapon/light/tube/large
 	w_class = ITEM_SIZE_SMALL
-	name = "large incandescent light tube"
-	brightness_range = 9
-	brightness_power = 5
+	name = "large light tube"
+	b_max_bright = 0.95
+	b_inner_range = 2
+	b_outer_range = 8
+	b_curve = 2.5
 
-/obj/item/weapon/light/tube/large/fluorescent
-	w_class = ITEM_SIZE_SMALL
-	name = "fluorescent light tube"
-	brightness_range = 9
-	brightness_power = 4
-	brightness_color = "#fffee0"
+/obj/item/weapon/light/tube/large/party/Initialize() //Randomly colored light tubes. Mostly for testing, but maybe someone will find a use for them.
+	. = ..()
+	b_colour = rgb(pick(0,255), pick(0,255), pick(0,255))
+
+/obj/item/weapon/light/tube/halogen
+	name = "halogen light tube"
+	color = LIGHT_COLOR_HALOGEN //visual icon
+	b_colour = LIGHT_COLOR_HALOGEN
 
 /obj/item/weapon/light/bulb
-	name = "incandescent light bulb"
+	name = "light bulb"
 	desc = "A replacement light bulb."
 	icon_state = "lbulb"
 	base_state = "lbulb"
 	item_state = "contvapour"
-	broken_chance = 5
-	matter = list("glass" = 100)
+	broken_chance = 3
+	matter = list(MATERIAL_GLASS = 100)
 
-	brightness_range = 4
-	brightness_power = 3
-	brightness_color = "#a0a080"
+	b_max_bright = 0.6
+	b_inner_range = 0.1
+	b_outer_range = 4
+	b_curve = 3
+	b_colour = LIGHT_COLOR_TUNGSTEN
 	lighting_modes = list(
-		LIGHTMODE_EMERGENCY = list(l_range = 3, l_power = 1, l_color = "#da0205"),
-		LIGHTMODE_EMERGENCY_BRIGHT = list(l_range = 4, l_power = 3, l_color = "#ea492c")
+		LIGHTMODE_EMERGENCY = list(l_outer_range = 3, l_max_bright = 1, l_color = "#da0205"),
 		)
 
 /obj/item/weapon/light/bulb/red
 	color = "#da0205"
-	brightness_color = "#da0205"
+	b_colour = "#da0205"
 
 /obj/item/weapon/light/bulb/red/readylight
-	brightness_range = 5
-	brightness_power = 2
 	lighting_modes = list(
-		LIGHTMODE_READY = list(l_range = 5, l_power = 1, l_color = "#00ff00"),,
-		LIGHTMODE_EMERGENCY_BRIGHT = list(l_range = 5, l_power = 2, l_color = "#ea492c")
+		LIGHTMODE_READY = list(l_outer_range = 5, l_max_bright = 1, l_color = "#00ff00"),
 		)
 
 /obj/item/weapon/light/throw_impact(atom/hit_atom)
@@ -648,22 +625,26 @@
 	icon_state = "fbulb"
 	base_state = "fbulb"
 	item_state = "egg4"
-	matter = list("glass" = 100)
-	brightness_range = 4
-	brightness_power = 4
+	matter = list(MATERIAL_GLASS = 100)
 
 // update the icon state and description of the light
-/obj/item/weapon/light/update_icon()
+/obj/item/weapon/light/on_update_icon()
+	color = b_colour
+	var/broken
 	switch(status)
 		if(LIGHT_OK)
 			icon_state = base_state
 			desc = "A replacement [name]."
 		if(LIGHT_BURNED)
-			icon_state = "[base_state]-burned"
+			icon_state = "[base_state]_burned"
 			desc = "A burnt-out [name]."
 		if(LIGHT_BROKEN)
-			icon_state = "[base_state]-broken"
+			icon_state = "[base_state]_broken"
 			desc = "A broken [name]."
+			broken = TRUE
+	var/image/I = image(icon, src, "[base_state]_attachment[broken ? "_broken" : ""]")
+	I.color = null
+	overlays += I
 
 /obj/item/weapon/light/New(atom/newloc, obj/machinery/light/fixture = null)
 	..()
@@ -727,5 +708,5 @@
 	else if(prob(min(60, switchcount*switchcount*0.01)))
 		status = LIGHT_BURNED
 	else if(sound_on)
-		playsound(get_turf(src),sound_on, 40)
+		playsound(src, sound_on, 75)
 	return status

@@ -1,3 +1,4 @@
+/var/total_lighting_overlays = 0
 /atom/movable/lighting_overlay
 	name = ""
 	mouse_opacity = 0
@@ -9,7 +10,9 @@
 	invisibility = INVISIBILITY_LIGHTING
 	color = LIGHTING_BASE_MATRIX
 	icon_state = "light1"
-	blend_mode = BLEND_MULTIPLY
+	blend_mode = BLEND_OVERLAY
+
+	appearance_flags = 0
 
 	var/lum_r = 0
 	var/lum_g = 0
@@ -19,7 +22,7 @@
 
 /atom/movable/lighting_overlay/Initialize()
 	// doesn't need special init
-	initialized = TRUE
+	atom_flags |= ATOM_FLAG_INITIALIZED
 	return INITIALIZE_HINT_NORMAL
 
 /atom/movable/lighting_overlay/New(var/atom/loc, var/no_update = FALSE)
@@ -27,15 +30,13 @@
 	if(T.dynamic_lighting)
 		. = ..()
 		verbs.Cut()
-
-		++SSlighting.total_lighting_overlays
+		total_lighting_overlays++
 
 		T.lighting_overlay = src
 		T.luminosity = 0
 		if(no_update)
 			return
 		update_overlay()
-		global.lighting_overlay_list += src 
 	else
 		qdel(src)
 
@@ -95,21 +96,21 @@
 	var/set_luminosity = max > 1e-6
 	#endif
 
-	if((rr & gr & br & ar) && (rg + gg + bg + ag + rb + gb + bb + ab == 8))
+	/* if((rr & gr & br & ar) && (rg + gg + bg + ag + rb + gb + bb + ab == 8)) // Черные тайлы не оч. Да и проверка касается всего. ~bear1ake
 	//anything that passes the first case is very likely to pass the second, and addition is a little faster in this case
 		icon_state = "transparent"
 		color = null
-	else if(!set_luminosity)
+	else */if(!set_luminosity)
 		icon_state = LIGHTING_ICON_STATE_DARK
 		color = null
 	else
 		icon_state = null
 		color = list(
-			rr, rg, rb, 00,
-			gr, gg, gb, 00,
-			br, bg, bb, 00,
-			ar, ag, ab, 00,
-			00, 00, 00, 01
+			-rr, -rg, -rb, 00,
+			-gr, -gg, -gb, 00,
+			-br, -bg, -bb, 00,
+			-ar, -ag, -ab, 00,
+			01, 01, 01, 01
 		)
 
 	luminosity = set_luminosity
@@ -122,10 +123,8 @@
 	return
 
 /atom/movable/lighting_overlay/Destroy()
-	--SSlighting.total_lighting_overlays
-	global.lighting_overlay_list -= src
-	SSlighting.update_overlays     -= src
-	SSlighting.update_overlays_old -= src
+	total_lighting_overlays--
+	SSlighting.overlay_queue -= src
 
 	var/turf/T = loc
 	if(istype(T))

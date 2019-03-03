@@ -26,7 +26,6 @@
 			return
 
 		to_chat(M, "<span class='notice'>You swallow \the [src].</span>")
-		M.drop_from_inventory(src) //icon update
 		if(reagents.total_volume)
 			reagents.trans_to_mob(M, reagents.total_volume, CHEM_INGEST)
 		qdel(src)
@@ -40,7 +39,6 @@
 		user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 		if(!do_mob(user, M))
 			return
-		user.drop_from_inventory(src) //icon update
 		user.visible_message("<span class='warning'>[user] forces [M] to swallow \the [src].</span>")
 		var/contained = reagentlist()
 		admin_attack_log(user, M, "Fed the victim with [name] (Reagents: [contained])", "Was fed [src] (Reagents: [contained])", "used [src] (Reagents: [contained]) to feed")
@@ -71,14 +69,14 @@
 /// Pills. END
 ////////////////////////////////////////////////////////////////////////////////
 
-//Pills
+//We lied - it's pills all the way down
 /obj/item/weapon/reagent_containers/pill/antitox
-	name = "Dylovene (25u)"
+	name = "Dylovene (15u)"
 	desc = "Neutralizes many common toxins."
 	icon_state = "pill1"
 /obj/item/weapon/reagent_containers/pill/antitox/New()
 	..()
-	reagents.add_reagent(/datum/reagent/dylovene, 25)
+	reagents.add_reagent(/datum/reagent/dylovene, 15)
 	color = reagents.get_color()
 
 
@@ -95,21 +93,20 @@
 /obj/item/weapon/reagent_containers/pill/cyanide
 	name = "strange pill"
 	desc = "It's marked 'KCN'. Smells vaguely of almonds."
-	icon_state = "pillS"
+	icon_state = "pillC"
 /obj/item/weapon/reagent_containers/pill/cyanide/New()
 	..()
 	reagents.add_reagent(/datum/reagent/toxin/cyanide, 50)
 
 
-/obj/item/weapon/reagent_containers/pill/scp500
-	name = "SCP-500"
-	desc = "A pill supposedly curing everything."
-	icon_state = "pill9"
-	
-/obj/item/weapon/reagent_containers/pill/scp500/New()
-	..()
-	reagents.add_reagent(/datum/reagent/adminordrazine, 50)
+/obj/item/weapon/reagent_containers/pill/adminordrazine
+	name = "Adminordrazine pill"
+	desc = "It's magic. We don't have to explain it."
+	icon_state = "pillA"
 
+/obj/item/weapon/reagent_containers/pill/adminordrazine/Initialize()
+	. = ..()
+	reagents.add_reagent(/datum/reagent/adminordrazine, 1)
 
 /obj/item/weapon/reagent_containers/pill/stox
 	name = "Soporific (15u)"
@@ -133,7 +130,7 @@
 
 /obj/item/weapon/reagent_containers/pill/paracetamol
 	name = "Paracetamol (15u)"
-	desc = "Tylenol! A painkiller for the ages. Chewables!"
+	desc = "A painkiller for the ages. Chewables!"
 	icon_state = "pill3"
 /obj/item/weapon/reagent_containers/pill/paracetamol/New()
 	..()
@@ -152,14 +149,23 @@
 
 
 /obj/item/weapon/reagent_containers/pill/inaprovaline
-	name = "Inaprovaline (30u)"
+	name = "Inaprovaline (20u)"
 	desc = "Used to stabilize patients."
 	icon_state = "pill1"
 /obj/item/weapon/reagent_containers/pill/inaprovaline/New()
 	..()
-	reagents.add_reagent(/datum/reagent/inaprovaline, 30)
+	reagents.add_reagent(/datum/reagent/inaprovaline, 20)
 	color = reagents.get_color()
 
+/obj/item/weapon/reagent_containers/pill/nanoblood
+	name = "Nanoblood (5u)"
+	desc = "Used to stabilize blood level."
+	icon_state = "pill8"
+
+/obj/item/weapon/reagent_containers/pill/nanoblood/New()
+	..()
+	reagents.add_reagent(/datum/reagent/nanoblood, 5)
+	color = reagents.get_color()
 
 /obj/item/weapon/reagent_containers/pill/dexalin
 	name = "Dexalin (15u)"
@@ -190,6 +196,14 @@
 	reagents.add_reagent(/datum/reagent/dermaline, 15)
 	color = reagents.get_color()
 
+/obj/item/weapon/reagent_containers/pill/hyronalin
+	name = "Hyronalin (15u)"
+	desc = "Used to treat burn wounds."
+	icon_state = "pill2"
+/obj/item/weapon/reagent_containers/pill/hyronalin/New()
+	..()
+	reagents.add_reagent(/datum/reagent/hyronalin, 15)
+	color = reagents.get_color()
 
 /obj/item/weapon/reagent_containers/pill/dylovene
 	name = "Dylovene (15u)"
@@ -201,23 +215,13 @@
 	color = reagents.get_color()
 
 
-/obj/item/weapon/reagent_containers/pill/inaprovaline
-	name = "Inaprovaline (30u)"
-	desc = "Used to stabilize patients."
-	icon_state = "pill2"
-/obj/item/weapon/reagent_containers/pill/inaprovaline/New()
-	..()
-	reagents.add_reagent(/datum/reagent/inaprovaline, 30)
-	color = reagents.get_color()
-
-
 /obj/item/weapon/reagent_containers/pill/bicaridine
-	name = "Bicaridine (20u)"
+	name = "Bicaridine (15u)"
 	desc = "Used to treat physical injuries."
 	icon_state = "pill2"
 /obj/item/weapon/reagent_containers/pill/bicaridine/New()
 	..()
-	reagents.add_reagent(/datum/reagent/bicaridine, 20)
+	reagents.add_reagent(/datum/reagent/bicaridine, 15)
 	color = reagents.get_color()
 
 
@@ -314,39 +318,43 @@ obj/item/weapon/reagent_containers/pill/noexcutite/New()
 	..()
 	reagents.add_reagent(/datum/reagent/paroxetine, 10)
 	color = reagents.get_color()
-	
-/obj/item/weapon/reagent_containers/pill/amnestics/classa
-	name = "Amnestics_A (1u)"
-	desc = "Removes all memory up until the last experiment."
-	icon_state = "pill4"
-/obj/item/weapon/reagent_containers/pill/amnestics/classa/New()
+
+
+/obj/item/weapon/reagent_containers/pill/hyronalin
+	name = "Hyronalin (7u)"
+	desc = "Used to treat radiation poisoning."
+	icon_state = "pill1"
+/obj/item/weapon/reagent_containers/pill/hyronalin/New()
 	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classa, 1)
+	reagents.add_reagent(/datum/reagent/hyronalin, 7)
 	color = reagents.get_color()
-	
-/obj/item/weapon/reagent_containers/pill/amnestics/classb
-	name = "Amnestics_B (1u)"
-	desc = "Removes all memory up until the subject woke up."
-	icon_state = "pill4"
-/obj/item/weapon/reagent_containers/pill/amnestics/classb/New()
+
+/obj/item/weapon/reagent_containers/pill/antirad
+	name = "AntiRad"
+	desc = "Used to treat radiation poisoning."
+	icon_state = "yellow"
+/obj/item/weapon/reagent_containers/pill/antirad/New()
 	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classb, 1)
-	color = reagents.get_color()
-	
-/obj/item/weapon/reagent_containers/pill/amnestics/classc
-	name = "Amnestics_C (1u)"
-	desc = "Removes all memory up until the subject arrived at the foundation."
-	icon_state = "pill4"
-/obj/item/weapon/reagent_containers/pill/amnestics/classc/New()
+	reagents.add_reagent(/datum/reagent/hyronalin, 5)
+	reagents.add_reagent(/datum/reagent/dylovene, 10)
+
+
+/obj/item/weapon/reagent_containers/pill/sugariron
+	name = "Sugar-Iron (10u)"
+	desc = "Used to help the body naturally replenish blood."
+	icon_state = "pill1"
+/obj/item/weapon/reagent_containers/pill/sugariron/New()
 	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classc, 1)
+	reagents.add_reagent(/datum/reagent/iron, 5)
+	reagents.add_reagent(/datum/reagent/sugar, 5)
 	color = reagents.get_color()
-	
-/obj/item/weapon/reagent_containers/pill/amnestics/classe
-	name = "Amnestics_E (1u)"
-	desc = "Removes all memories and personality, turning the subject into a blank slate to mold."
-	icon_state = "pill4"
-/obj/item/weapon/reagent_containers/pill/amnestics/classe/New()
+
+/obj/item/weapon/reagent_containers/pill/detergent
+	name = "detergent pod"
+	desc = "Put in water to get space cleaner. Do not eat. Really."
+	icon_state = "pod21"
+	var/smell_clean_time = 10 MINUTES
+
+/obj/item/weapon/reagent_containers/pill/detergent/New()
 	..()
-	reagents.add_reagent(/datum/reagent/amnestics/classe, 1)
-	color = reagents.get_color()
+	reagents.add_reagent(/datum/reagent/ammonia, 30)

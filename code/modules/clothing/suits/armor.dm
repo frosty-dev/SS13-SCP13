@@ -38,13 +38,6 @@
 	cold_protection = UPPER_TORSO|LOWER_TORSO|ARMS
 	heat_protection = UPPER_TORSO|LOWER_TORSO|ARMS
 
-/obj/item/clothing/suit/armor/vest/bgguard
-	name = "guard vest"
-	armor = list(melee = 50, bullet = 40, laser = 20, energy = 25, bomb = 30, bio = 0, rad = 0)
-	desc = "A synthetic armor vest, commonly worn by security personnel. This one has added ballistic plates."
-	icon_state = "bgarmor"
-	item_state = "bgarmor"
-
 /obj/item/clothing/suit/armor/swat/officer
 	name = "officer jacket"
 	desc = "An armored jacket used in special operations."
@@ -101,7 +94,7 @@
 		spark_system.start()
 		playsound(user.loc, "sparks", 50, 1)
 
-		user.loc = picked
+		user.forceMove(picked)
 		return PROJECTILE_FORCE_MISS
 	return 0
 
@@ -124,16 +117,6 @@
 	src.item_state = "reactiveoff"
 	..()
 
-/obj/item/clothing/suit/armor/chaos
-	name = "tactical hazmat suit"
-	desc = "An armored hazmat suit with a distinct orange appearance."
-	icon_state = "tac_hazmat"
-	item_state = "tac_hazmat"
-	permeability_coefficient = 0
-	gas_transfer_coefficient = 0
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
-	armor = list(melee = 80, bullet = 65, laser = 65, energy = 15, bomb = 80, bio = 100, rad = 60)
-
 /*
 /obj/item/clothing/suit/armor/tactical
 	name = "tactical armor"
@@ -145,7 +128,7 @@
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
 	armor = list(melee = 60, bullet = 60, laser = 60, energy = 40, bomb = 20, bio = 0, rad = 0)
 	siemens_coefficient = 0.7
-	var/obj/item/clothing/accessory/holster/holster
+	var/obj/item/clothing/accessory/storage/holster/holster
 
 /obj/item/clothing/suit/armor/tactical/New()
 	..()
@@ -211,8 +194,8 @@
 	valid_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA)
 
 /obj/item/clothing/suit/armor/vest/nt
-	name = "\improper NanoTrasen armored vest"
-	desc = "A synthetic armor vest. This one is marked with the crest of NanoTrasen."
+	name = "corporate armored vest"
+	desc = "A synthetic armor vest. This one is marked with a corporate logo."
 	icon_state = "ntvest"
 
 /obj/item/clothing/suit/armor/vest/detective
@@ -286,12 +269,19 @@
 /obj/item/clothing/suit/armor/pcarrier
 	name = "plate carrier"
 	desc = "A lightweight black plate carrier vest. It can be equipped with armor plates, but provides no protection of its own."
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "pcarrier"
 	valid_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_C, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L, ACCESSORY_SLOT_ARMOR_S, ACCESSORY_SLOT_ARMOR_M)
 	restricted_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_C, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L, ACCESSORY_SLOT_ARMOR_S)
 	blood_overlay_type = "armor"
+
+	sprite_sheets = list(
+		SPECIES_VOX = 'icons/mob/species/vox/suit.dmi',
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/modular_armor.dmi',
+		SPECIES_UNATHI = 'icons/mob/onmob/Unathi/suit.dmi',
+		SPECIES_NABBER = 'icons/mob/species/nabber/suit.dmi'
+		)
 
 /obj/item/clothing/suit/armor/pcarrier/light
 	starting_accessories = list(/obj/item/clothing/accessory/armorplate)
@@ -308,9 +298,6 @@
 /obj/item/clothing/suit/armor/pcarrier/medium/nt
 	starting_accessories = list(/obj/item/clothing/accessory/armorplate/medium, /obj/item/clothing/accessory/storage/pouches, /obj/item/clothing/accessory/armor/tag/nt)
 
-/obj/item/clothing/suit/armor/pcarrier/scp/ntf
-	starting_accessories = list(/obj/item/clothing/accessory/armorplate/merc, /obj/item/clothing/accessory/storage/pouches/large, /obj/item/clothing/accessory/legguards/merc, /obj/item/clothing/accessory/armguards/merc)
-
 /obj/item/clothing/suit/armor/pcarrier/blue
 	name = "blue plate carrier"
 	desc = "A lightweight blue plate carrier vest. It can be equipped with armor plates, but provides no protection of its own."
@@ -320,6 +307,10 @@
 	name = "green plate carrier"
 	desc = "A lightweight green plate carrier vest. It can be equipped with armor plates, but provides no protection of its own."
 	icon_state = "pcarrier_green"
+
+/obj/item/clothing/suit/armor/pcarrier/green/heavy_saare
+	starting_accessories = list(/obj/item/clothing/accessory/armorplate/medium, /obj/item/clothing/accessory/armguards/green, /obj/item/clothing/accessory/legguards/green, /obj/item/clothing/accessory/storage/pouches/green, /obj/item/clothing/accessory/armor/tag/saare)
+
 
 /obj/item/clothing/suit/armor/pcarrier/navy
 	name = "navy plate carrier"
@@ -336,14 +327,17 @@
 	starting_accessories = list(/obj/item/clothing/accessory/armorplate/tactical, /obj/item/clothing/accessory/storage/pouches/large/tan)
 
 /obj/item/clothing/suit/armor/pcarrier/merc
-	starting_accessories = list(/obj/item/clothing/accessory/armorplate/merc, /obj/item/clothing/accessory/armguards/merc, /obj/item/clothing/accessory/legguards/merc, /obj/item/clothing/accessory/storage/pouches/large)
+	starting_accessories = list(/obj/item/clothing/accessory/armorplate/merc, /obj/item/clothing/accessory/armguards/merc, /obj/item/clothing/accessory/legguards/merc, /obj/item/clothing/accessory/storage/pouches)
+
+/obj/item/clothing/suit/armor/pcarrier/tactical
+	starting_accessories = list(/obj/item/clothing/accessory/armorplate/tactical, /obj/item/clothing/accessory/armguards/tactical, /obj/item/clothing/accessory/legguards/tactical)
 
 //Modular specialty armor
 /obj/item/clothing/suit/armor/riot
 	name = "riot vest"
 	desc = "An armored vest with heavy padding to protect against melee attacks."
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "riot"
 	valid_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L)
 	restricted_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L)
@@ -355,8 +349,8 @@
 /obj/item/clothing/suit/armor/bulletproof
 	name = "ballistic vest"
 	desc = "An armored vest with heavy plates to protect against ballistic projectiles."
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "ballistic"
 	valid_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L)
 	restricted_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L)
@@ -371,8 +365,8 @@
 /obj/item/clothing/suit/armor/laserproof
 	name = "ablative vest"
 	desc = "An armored vest with advanced shielding to protect against energy weapons."
-	icon = 'icons/obj/clothing/modular_armor.dmi'
-	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/modular_armor.dmi')
+	icon = 'icons/obj/clothing/obj_suit_modular_armor.dmi'
+	item_icons = list(slot_wear_suit_str = 'icons/mob/onmob/onmob_modular_armor.dmi')
 	icon_state = "ablative"
 	valid_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L)
 	restricted_accessory_slots = list(ACCESSORY_SLOT_INSIGNIA, ACCESSORY_SLOT_ARMOR_A, ACCESSORY_SLOT_ARMOR_L)

@@ -40,7 +40,7 @@
 		handleInactive()
 	update_icon()
 
-/obj/machinery/power/port_gen/update_icon()
+/obj/machinery/power/port_gen/on_update_icon()
 	if(!active)
 		icon_state = initial(icon_state)
 		return 1
@@ -113,7 +113,7 @@
 
 	var/sheets = 0			//How many sheets of material are loaded in the generator
 	var/sheet_left = 0		//How much is left of the current sheet
-	var/temperature = 0		//The current temperature
+	var/operating_temperature = 0		//The current temperature
 	var/overheating = 0		//if this gets high enough the generator explodes
 	var/max_overheat = 150
 
@@ -153,6 +153,12 @@
 	to_chat(user, "There [sheets == 1 ? "is" : "are"] [sheets] sheet\s left in the hopper.")
 	if(IsBroken()) to_chat(user, "<span class='warning'>\The [src] seems to have broken down.</span>")
 	if(overheating) to_chat(user, "<span class='danger'>\The [src] is overheating!</span>")
+
+/obj/machinery/power/port_gen/pacman/proc/process_exhaust()
+	var/datum/gas_mixture/environment = loc.return_air()
+	if(environment)
+		environment.adjust_gas("carbon_monoxide", 0.05*power_output)
+
 /obj/machinery/power/port_gen/pacman/HasFuel()
 	var/needed_sheets = power_output / time_per_sheet
 	if(sheets >= needed_sheets - sheet_left)
@@ -192,7 +198,7 @@
 	*/
 	var/datum/gas_mixture/environment = loc.return_air()
 	if (environment)
-		var/outer_temp = 0.1 * temperature + T0C
+		var/outer_temp = 0.1 * operating_temperature + T0C
 		if(outer_temp > environment.temperature) //sharing the heat
 			var/heat_transfer = environment.get_thermal_energy_change(outer_temp)
 			if(heat_transfer > 1)
@@ -208,13 +214,14 @@
 	var/average = (upper_limit + lower_limit)/2
 
 	//calculate the temperature increase
-	var/bias = Clamp(round((average - temperature)/TEMPERATURE_DIVISOR, 1),  -TEMPERATURE_CHANGE_MAX, TEMPERATURE_CHANGE_MAX)
-	temperature += bias + rand(-7, 7)
+	var/bias = Clamp(round((average - operating_temperature)/TEMPERATURE_DIVISOR, 1),  -TEMPERATURE_CHANGE_MAX, TEMPERATURE_CHANGE_MAX)
+	operating_temperature += bias + rand(-7, 7)
 
-	if (temperature > max_temperature)
+	if (operating_temperature > max_temperature)
 		overheat()
 	else if (overheating > 0)
 		overheating--
+	process_exhaust()
 
 /obj/machinery/power/port_gen/pacman/handleInactive()
 	var/cooling_temperature = 20
@@ -224,10 +231,10 @@
 		var/ambient = environment.temperature - T20C
 		cooling_temperature += ambient*ratio
 
-	if (temperature > cooling_temperature)
-		var/temp_loss = (temperature - cooling_temperature)/TEMPERATURE_DIVISOR
+	if (operating_temperature > cooling_temperature)
+		var/temp_loss = (operating_temperature - cooling_temperature)/TEMPERATURE_DIVISOR
 		temp_loss = between(2, round(temp_loss, 1), TEMPERATURE_CHANGE_MAX)
-		temperature = max(temperature - temp_loss, cooling_temperature)
+		operating_temperature = max(operating_temperature - temp_loss, cooling_temperature)
 		src.updateDialog()
 
 	if(overheating)
@@ -245,7 +252,7 @@
 	var/phoron = (sheets+sheet_left)*20
 	var/datum/gas_mixture/environment = loc.return_air()
 	if (environment)
-		environment.adjust_gas_temp("phoron", phoron/10, temperature + T0C)
+		environment.adjust_gas_temp("phoron", phoron/10, operating_temperature + T0C)
 
 	sheets = 0
 	sheet_left = 0
@@ -294,7 +301,7 @@
 		else if(isCrowbar(O) && open)
 			var/obj/machinery/constructable_frame/machine_frame/new_frame = new /obj/machinery/constructable_frame/machine_frame(src.loc)
 			for(var/obj/item/I in component_parts)
-				I.loc = src.loc
+				I.dropInto(loc)
 			while ( sheets > 0 )
 				DropFuel()
 
@@ -327,7 +334,7 @@
 	data["output_max"] = max_power_output
 	data["output_safe"] = max_safe_output
 	data["output_watts"] = power_output * power_gen
-	data["temperature_current"] = src.temperature
+	data["temperature_current"] = src.operating_temperature
 	data["temperature_max"] = src.max_temperature
 	if(overheating)
 		data["temperature_overheat"] = ((overheating / max_overheat) * 100)		// Overheat percentage. Generator explodes at 100%
@@ -341,7 +348,7 @@
 
 
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "pacman.tmpl", src.name, 500, 560)
 		ui.set_initial_data(data)
@@ -411,13 +418,17 @@
 	board_path = /obj/item/weapon/circuitboard/pacman/super
 	var/rad_power = 2
 
+//nuclear energy is green energy!
+/obj/machinery/power/port_gen/pacman/super/process_exhaust()
+	return
+
 /obj/machinery/power/port_gen/pacman/super/UseFuel()
 	//produces a tiny amount of radiation when in use
 	if (prob(rad_power*power_output))
-		radiation_repository.radiate(src, 2*rad_power)
+		SSradiation.radiate(src, 2*rad_power)
 	..()
 
-/obj/machinery/power/port_gen/pacman/super/update_icon()
+/obj/machinery/power/port_gen/pacman/super/on_update_icon()
 	if(..())
 		set_light(0)
 		return 1
@@ -427,7 +438,7 @@
 		I.blend_mode = BLEND_ADD
 		I.alpha = round(255*power_output/max_power_output)
 		overlays += I
-		set_light(rad_power + power_output - max_safe_output,1,"#3b97ca")
+		set_light(0.7, 0.1, rad_power + power_output - max_safe_output, 2, "#3b97ca")
 	else
 		set_light(0)
 
@@ -435,21 +446,21 @@
 /obj/machinery/power/port_gen/pacman/super/explode()
 	//a nice burst of radiation
 	var/rads = rad_power*25 + (sheets + sheet_left)*1.5
-	radiation_repository.radiate(src, (max(20, rads)))
+	SSradiation.radiate(src, (max(20, rads)))
 
 	explosion(src.loc, rad_power+1, rad_power+1, rad_power*2, 3)
 	qdel(src)
 
 /obj/machinery/power/port_gen/pacman/super/potato
 	name = "nuclear reactor"
-	desc = "PTTO-3, an industrial all-in-one nuclear power plant by Neo-Chernobyl GmbH. It uses uranium and vodka as a fuel source. Rated for 150 kW max safe output."
-	power_gen = 30000			//Watts output per power_output level
+	desc = "PTTO-3, an industrial all-in-one nuclear power plant by Neo-Chernobyl GmbH. It uses uranium and vodka as a fuel source, but water will reduce reactor's temperature gain. Rated for 140 kW max safe output."
+	power_gen = 35000			//Watts output per power_output level
 	icon_state = "potato"
 	max_safe_output = 4
 	max_power_output = 8	//The maximum power setting without emagging.
 	temperature_gain = 80	//how much the temperature increases per power output level, in degrees per level
 	max_temperature = 450
-	time_per_sheet = 400
+	time_per_sheet = 550
 	rad_power = 6
 	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 	board_path = /obj/item/weapon/circuitboard/pacman/super/potato
@@ -469,13 +480,18 @@
 		temperature_gain = 60
 		reagents.remove_any(1)
 		if(prob(2))
-			audible_message("<span class='notice'>[src] churns happily</span>")
+			audible_message("<span class='notice'>[src] churns happily!</span>")
+	else if(reagents.has_reagent("water"))
+		temperature_gain = -10
+		reagents.remove_any(1)
+		if(prob(2))
+			audible_message("<span class='notice'>[src] churns unhappily...</span>")
 	else
 		rad_power = initial(rad_power)
 		temperature_gain = initial(temperature_gain)
 	..()
 
-/obj/machinery/power/port_gen/pacman/super/potato/update_icon()
+/obj/machinery/power/port_gen/pacman/super/potato/on_update_icon()
 	if(..())
 		return 1
 	if(power_output > max_safe_output)

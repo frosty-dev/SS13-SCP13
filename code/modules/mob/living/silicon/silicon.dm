@@ -1,6 +1,7 @@
 /mob/living/silicon
 	gender = NEUTER
 	voice_name = "synthesized voice"
+	skillset = /datum/skillset/silicon
 	var/syndicate = 0
 	var/const/MAIN_CHANNEL = "Main Frequency"
 	var/lawchannel = MAIN_CHANNEL // Default channel on which to state laws
@@ -53,9 +54,9 @@
 
 /mob/living/silicon/fully_replace_character_name(new_name)
 	..()
+	create_or_rename_email(new_name, "root.rt")
 	if(istype(idcard))
 		idcard.registered_name = new_name
-		idcard.update_name()
 
 /mob/living/silicon/proc/init_id()
 	if(ispath(idcard))
@@ -71,10 +72,11 @@
 /mob/living/silicon/emp_act(severity)
 	switch(severity)
 		if(1)
-			src.take_organ_damage(0,20,emp=1)
-			Stun(rand(5,10))
+			src.take_organ_damage(0,16,emp=1)
+			if(prob(50)) Stun(rand(5,10))
+			else confused = (min(confused + 2, 40))
 		if(2)
-			src.take_organ_damage(0,10,emp=1)
+			src.take_organ_damage(0,7,emp=1)
 			confused = (min(confused + 2, 30))
 	flash_eyes(affect_silicon = 1)
 	to_chat(src, "<span class='danger'><B>*BZZZT*</B></span>")
@@ -179,7 +181,7 @@
 	return universal_speak || (speaking in src.speech_synthesizer_langs)	//need speech synthesizer support to vocalize a language
 
 /mob/living/silicon/add_language(var/language, var/can_speak=1)
-	var/var/datum/language/added_language = all_languages[language]
+	var/datum/language/added_language = all_languages[language]
 	if(!added_language)
 		return
 
@@ -337,10 +339,10 @@
 
 
 /mob/living/silicon/proc/is_traitor()
-	return mind && (mind in traitors.current_antagonists)
+	return mind && (mind in GLOB.traitors.current_antagonists)
 
 /mob/living/silicon/proc/is_malf()
-	return mind && (mind in malf.current_antagonists)
+	return mind && (mind in GLOB.malf.current_antagonists)
 
 /mob/living/silicon/proc/is_malf_or_traitor()
 	return is_traitor() || is_malf()
@@ -360,7 +362,7 @@
 	//Handle job slot/tater cleanup.
 	var/job = mind.assigned_role
 
-	job_master.FreeRole(job)
+	job_master.ClearSlot(job)
 
 	if(mind.objectives.len)
 		qdel(mind.objectives)

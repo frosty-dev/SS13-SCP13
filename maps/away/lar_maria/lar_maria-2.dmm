@@ -171,12 +171,6 @@
 	},
 /turf/simulated/floor/plating,
 /area/lar_maria/solar_control)
-"at" = (
-/obj/structure/bed/chair{
-	dir = 8
-	},
-/turf/simulated/floor/plating,
-/area/lar_maria/solar_control)
 "au" = (
 /obj/machinery/power/port_gen/pacman/super,
 /turf/simulated/floor/plating,
@@ -198,12 +192,6 @@
 /obj/structure/closet/crate,
 /obj/random/tool,
 /obj/random/tool,
-/turf/simulated/floor/plating,
-/area/lar_maria/solar_control)
-"ay" = (
-/obj/structure/bed/chair{
-	dir = 4
-	},
 /turf/simulated/floor/plating,
 /area/lar_maria/solar_control)
 "az" = (
@@ -668,24 +656,6 @@
 	},
 /turf/simulated/floor/plating,
 /area/lar_maria/solar_control)
-"bk" = (
-/obj/structure/lattice,
-/obj/machinery/atmospherics/pipe/zpipe/down/scrubbers{
-	color = "#ff0000";
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/zpipe/down/supply{
-	color = "#0000ff";
-	dir = 8
-	},
-/obj/structure/cable{
-	d1 = 32;
-	d2 = 1;
-	dir = 1;
-	icon_state = "32-2"
-	},
-/turf/simulated/open,
-/area/lar_maria/solar_control)
 "bl" = (
 /obj/structure/cable/yellow{
 	d1 = 1;
@@ -694,10 +664,6 @@
 	},
 /turf/simulated/floor/reinforced,
 /area/space)
-"bm" = (
-/obj/structure/dispenser/oxygen,
-/turf/simulated/floor/plating,
-/area/lar_maria/solar_control)
 "bn" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply,
 /obj/structure/cable{
@@ -714,10 +680,6 @@
 "bp" = (
 /obj/effect/landmark/corpse/lar_maria/zhp_guard,
 /obj/effect/decal/cleanable/blood,
-/turf/simulated/floor/plating,
-/area/lar_maria/solar_control)
-"bq" = (
-/obj/structure/ladder,
 /turf/simulated/floor/plating,
 /area/lar_maria/solar_control)
 "br" = (
@@ -863,12 +825,6 @@
 /obj/machinery/atmospherics/pipe/manifold/visible/red{
 	icon_state = "map";
 	dir = 1
-	},
-/turf/simulated/floor/plating,
-/area/lar_maria/atmos)
-"bL" = (
-/obj/machinery/atmospherics/binary/pump{
-	dir = 8
 	},
 /turf/simulated/floor/plating,
 /area/lar_maria/atmos)
@@ -1137,7 +1093,9 @@
 /turf/simulated/floor/wood,
 /area/lar_maria/dorms)
 "cI" = (
-/obj/item/modular_computer/console,
+/obj/item/modular_computer/console{
+	dir = 8
+	},
 /turf/simulated/floor/wood,
 /area/lar_maria/dorms)
 "cJ" = (
@@ -1205,7 +1163,9 @@
 /obj/structure/window/basic{
 	dir = 1
 	},
-/obj/item/modular_computer/console,
+/obj/item/modular_computer/console{
+	dir = 8
+	},
 /turf/simulated/floor/tiled,
 /area/lar_maria/library)
 "cQ" = (
@@ -1263,7 +1223,7 @@
 /turf/simulated/floor/plating,
 /area/lar_maria/atmos)
 "cY" = (
-/obj/structure/bed/chair/comfy/purp{
+/obj/structure/bed/chair/comfy/purple{
 	dir = 1
 	},
 /turf/simulated/floor/wood,
@@ -1311,8 +1271,10 @@
 /turf/simulated/floor/wood,
 /area/lar_maria/dorms)
 "dh" = (
-/obj/item/modular_computer/console,
 /obj/structure/window/basic,
+/obj/item/modular_computer/console{
+	dir = 4
+	},
 /turf/simulated/floor/tiled,
 /area/lar_maria/library)
 "di" = (
@@ -1333,7 +1295,9 @@
 	icon_state = "tube1";
 	dir = 4
 	},
-/obj/item/modular_computer/console,
+/obj/item/modular_computer/console{
+	dir = 8
+	},
 /turf/simulated/floor/tiled,
 /area/lar_maria/library)
 "dl" = (
@@ -1479,8 +1443,9 @@
 /obj/structure/window/basic{
 	dir = 1
 	},
-/obj/structure/table/standard,
-/obj/item/modular_computer/console,
+/obj/item/modular_computer/console{
+	dir = 4
+	},
 /turf/simulated/floor/tiled,
 /area/lar_maria/library)
 "dK" = (
@@ -1574,14 +1539,6 @@
 /obj/machinery/atmospherics/pipe/simple/visible/blue{
 	dir = 9;
 	icon_state = "intact"
-	},
-/turf/simulated/floor/plating,
-/area/lar_maria/atmos)
-"dU" = (
-/obj/machinery/portable_atmospherics/canister/oxygen,
-/obj/effect/floor_decal/industrial/warning{
-	icon_state = "warning";
-	dir = 8
 	},
 /turf/simulated/floor/plating,
 /area/lar_maria/atmos)
@@ -1800,7 +1757,7 @@
 /turf/simulated/floor/wood,
 /area/lar_maria/dorms)
 "eI" = (
-/obj/structure/toilet,
+/obj/structure/hygiene/toilet,
 /obj/machinery/light/small{
 	dir = 1
 	},
@@ -1809,7 +1766,7 @@
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_m)
 "eJ" = (
-/obj/structure/toilet,
+/obj/structure/hygiene/toilet,
 /obj/machinery/light/small{
 	dir = 1
 	},
@@ -1817,7 +1774,7 @@
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_m)
 "eK" = (
-/obj/structure/urinal{
+/obj/structure/hygiene/urinal{
 	pixel_x = -30
 	},
 /turf/simulated/floor/tiled/white,
@@ -1829,23 +1786,6 @@
 /obj/random/trash,
 /obj/effect/landmark/corpse/lar_maria/test_subject,
 /obj/effect/decal/cleanable/blood,
-/turf/simulated/floor/tiled/white,
-/area/lar_maria/head_m)
-"eM" = (
-/obj/structure/sink{
-	dir = 4;
-	icon_state = "sink";
-	pixel_x = 11;
-	pixel_y = 0
-	},
-/obj/structure/mirror{
-	pixel_x = 30
-	},
-/obj/machinery/alarm{
-	frequency = 1439;
-	pixel_y = 23;
-	req_one_access = list(201)
-	},
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_m)
 "eN" = (
@@ -1911,26 +1851,13 @@
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_m)
 "eY" = (
-/obj/structure/urinal{
+/obj/structure/hygiene/urinal{
 	pixel_x = -30
 	},
 /obj/random/trash,
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_m)
 "eZ" = (
-/turf/simulated/floor/tiled/white,
-/area/lar_maria/head_m)
-"fa" = (
-/obj/structure/sink{
-	dir = 4;
-	icon_state = "sink";
-	pixel_x = 11;
-	pixel_y = 0
-	},
-/obj/structure/mirror{
-	pixel_x = 30
-	},
-/obj/random/trash,
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_m)
 "fb" = (
@@ -2261,7 +2188,7 @@
 /turf/simulated/floor/wood,
 /area/lar_maria/dorms)
 "fZ" = (
-/obj/machinery/shower{
+/obj/structure/hygiene/shower{
 	dir = 4;
 	icon_state = "shower";
 	pixel_x = 0;
@@ -2286,7 +2213,7 @@
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_f)
 "gd" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 8
 	},
 /obj/machinery/light/small{
@@ -2576,7 +2503,7 @@
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/mess_hall)
 "gW" = (
-/obj/structure/sink/kitchen{
+/obj/structure/hygiene/sink/kitchen{
 	pixel_y = 25
 	},
 /turf/simulated/floor/tiled/white,
@@ -2912,7 +2839,7 @@
 /turf/simulated/floor/tiled/freezer,
 /area/lar_maria/mess_hall)
 "hN" = (
-/obj/machinery/shower{
+/obj/structure/hygiene/shower{
 	dir = 4;
 	icon_state = "shower";
 	pixel_x = 0;
@@ -3041,7 +2968,7 @@
 /turf/simulated/floor/tiled/freezer,
 /area/lar_maria/mess_hall)
 "ij" = (
-/obj/machinery/shower{
+/obj/structure/hygiene/shower{
 	dir = 4;
 	icon_state = "shower";
 	pixel_x = 0;
@@ -3055,18 +2982,6 @@
 /area/lar_maria/head_f)
 "il" = (
 /obj/structure/closet/athletic_mixed,
-/turf/simulated/floor/tiled/white,
-/area/lar_maria/head_f)
-"im" = (
-/obj/structure/sink{
-	icon_state = "sink";
-	dir = 8;
-	pixel_x = -12;
-	pixel_y = 2
-	},
-/obj/structure/mirror{
-	pixel_x = -30
-	},
 /turf/simulated/floor/tiled/white,
 /area/lar_maria/head_f)
 "in" = (
@@ -3535,6 +3450,162 @@
 	},
 /turf/simulated/floor/plating,
 /area/space)
+"kb" = (
+/obj/structure/bed/chair{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/solar_control)
+"lb" = (
+/obj/structure/bed/chair{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/solar_control)
+"mb" = (
+/obj/structure/lattice,
+/obj/machinery/atmospherics/pipe/zpipe/down/scrubbers{
+	color = "#ff0000";
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/zpipe/down/supply{
+	color = "#0000ff";
+	dir = 8
+	},
+/obj/structure/cable{
+	d1 = 1;
+	d2 = 32;
+	dir = 2;
+	icon_state = "32-1"
+	},
+/turf/simulated/open,
+/area/lar_maria/solar_control)
+"nb" = (
+/obj/structure/dispenser/oxygen,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/solar_control)
+"ob" = (
+/obj/structure/ladder,
+/obj/machinery/light/small{
+	dir = 4;
+	pixel_y = 8
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/solar_control)
+"pb" = (
+/obj/machinery/atmospherics/binary/pump{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/atmos)
+"qb" = (
+/obj/structure/table/rack,
+/obj/random/tank,
+/obj/random/tool,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/atmos)
+"rb" = (
+/obj/machinery/atmospherics/pipe/tank/nitrogen{
+	dir = 4
+	},
+/obj/effect/floor_decal/industrial/warning{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/atmos)
+"sb" = (
+/obj/machinery/atmospherics/portables_connector{
+	dir = 8
+	},
+/obj/machinery/portable_atmospherics/canister/empty,
+/obj/machinery/light/small{
+	dir = 4;
+	pixel_y = 8
+	},
+/turf/simulated/floor/plating,
+/area/lar_maria/atmos)
+"tb" = (
+/obj/machinery/atmospherics/binary/pump{
+	dir = 8
+	},
+/obj/machinery/light/small,
+/turf/simulated/floor/plating,
+/area/lar_maria/atmos)
+"ub" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/effect/floor_decal/industrial/warning{
+	icon_state = "warning";
+	dir = 8
+	},
+/obj/machinery/light/small,
+/turf/simulated/floor/plating,
+/area/lar_maria/atmos)
+"vb" = (
+/obj/structure/hygiene/sink{
+	dir = 4;
+	icon_state = "sink";
+	pixel_x = 11;
+	pixel_y = 0
+	},
+/obj/item/weapon/storage/mirror{
+	pixel_x = 30
+	},
+/obj/machinery/alarm{
+	frequency = 1439;
+	pixel_y = 23;
+	req_one_access = list(201)
+	},
+/turf/simulated/floor/tiled/white,
+/area/lar_maria/head_m)
+"wb" = (
+/obj/structure/hygiene/sink{
+	dir = 4;
+	icon_state = "sink";
+	pixel_x = 11;
+	pixel_y = 0
+	},
+/obj/item/weapon/storage/mirror{
+	pixel_x = 30
+	},
+/obj/random/trash,
+/turf/simulated/floor/tiled/white,
+/area/lar_maria/head_m)
+"xb" = (
+/obj/structure/hygiene/sink{
+	icon_state = "sink";
+	dir = 8;
+	pixel_x = -12;
+	pixel_y = 2
+	},
+/obj/item/weapon/storage/mirror{
+	pixel_x = -30
+	},
+/turf/simulated/floor/tiled/white,
+/area/lar_maria/head_f)
+"DG" = (
+/obj/item/modular_computer/console{
+	dir = 1
+	},
+/turf/simulated/floor/tiled,
+/area/lar_maria/office)
 
 (1,1,1) = {"
 aa
@@ -20596,7 +20667,7 @@ ct
 cL
 dh
 cd
-cP
+dJ
 ec
 er
 eJ
@@ -21000,7 +21071,7 @@ cv
 cN
 dh
 cd
-cP
+dJ
 ed
 er
 eK
@@ -21014,8 +21085,8 @@ gr
 gr
 gr
 hP
-im
-im
+xb
+xb
 hp
 hp
 aa
@@ -21407,8 +21478,8 @@ ce
 cd
 ef
 er
-eM
-fa
+vb
+wb
 fl
 fv
 er
@@ -22411,7 +22482,7 @@ bx
 bJ
 bJ
 bJ
-bJ
+rb
 dl
 dl
 dl
@@ -22812,13 +22883,13 @@ ah
 ah
 ah
 bx
-bL
+pb
 ci
 cA
 cR
 cR
 dB
-bL
+tb
 bx
 eu
 eu
@@ -23208,11 +23279,11 @@ ac
 ad
 ah
 ah
-at
+kb
 aJ
 aY
 bg
-bm
+nb
 br
 br
 bx
@@ -24218,11 +24289,11 @@ ac
 ad
 ah
 ah
-ay
+lb
 aJ
 bb
-bk
-bq
+mb
+ob
 bu
 bC
 bx
@@ -24428,19 +24499,19 @@ ah
 ah
 ah
 bx
-bS
+qb
 cl
 cB
 cB
 dq
 dF
-dU
+ub
 bx
 eC
 eU
 ff
 ex
-eW
+DG
 eW
 ex
 gu
@@ -24835,7 +24906,7 @@ bD
 bU
 cn
 cn
-cX
+sb
 cX
 dH
 dW

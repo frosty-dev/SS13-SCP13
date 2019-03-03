@@ -6,7 +6,7 @@
 	icon_state = "globe"
 	known = 0
 	in_space = 0
-	generic_waypoints = list(
+	initial_generic_waypoints = list(
 		"nav_icarus_1",
 		"nav_icarus_2",
 		"nav_icarus_antag"
@@ -30,7 +30,7 @@ obj/effect/icarus/irradiate/Initialize()
 	S.decay = FALSE
 	S.source_turf = get_turf(src)
 	S.update_rad_power(radiation_power)
-	radiation_repository.add_source(S)
+	SSradiation.add_source(S)
 
 obj/effect/icarus/irradiate/Destroy()
 	. = ..()
@@ -41,19 +41,22 @@ obj/effect/icarus/irradiate/Destroy()
 	id = "awaysite_icarus"
 	description = "The crashlanding site of the SEV Icarus."
 	suffixes = list("icarus/icarus-1.dmm", "icarus/icarus-2.dmm")
-	cost = 2
+	cost = 1
 
 /obj/effect/shuttle_landmark/nav_icarus/nav1
 	name = "Planetary Navpoint #1"
 	landmark_tag = "nav_icarus_1"
+	flags = SLANDMARK_FLAG_AUTOSET
 
 /obj/effect/shuttle_landmark/nav_icarus/nav2
 	name = "Planetary Navpoint #2"
 	landmark_tag = "nav_icarus_2"
+	flags = SLANDMARK_FLAG_AUTOSET
 
 /obj/effect/shuttle_landmark/nav_icarus/nav3
 	name = "Planetary Navpoint #3"
 	landmark_tag = "nav_icarus_antag"
+	flags = SLANDMARK_FLAG_AUTOSET
 
 obj/structure/icarus/broken_cryo
 	name = "destroyed cryo sleeper"

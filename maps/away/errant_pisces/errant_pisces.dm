@@ -4,9 +4,7 @@
 	name = "XCV Ahab's Harpoon"
 	desc = "Sensors detect civilian vessel with unusual signs of life aboard."
 	color = "#bd6100"
-	vessel_mass = 150
-	default_delay = 20 SECONDS
-	speed_mod = 10 SECONDS
+	max_speed = 1/(3 SECONDS)
 	burn_delay = 15 SECONDS
 
 /datum/map_template/ruin/away_site/errant_pisces
@@ -24,16 +22,22 @@
 	icon_living = "shark"
 	icon_dead = "shark_dead"
 	icon_gib = "shark_dead"
-	turns_per_move = 8
+	turns_per_move = 5
 	meat_type = /obj/item/weapon/reagent_containers/food/snacks/sharkmeat
-	speed = 8
-	maxHealth = 75
-	health = 75
-	harm_intent_damage = 20
-	melee_damage_lower = 20
-	melee_damage_upper = 20
-	break_stuff_probability = 25
+	speed = 2
+	maxHealth = 100
+	health = 100
+	harm_intent_damage = 5
+	melee_damage_lower = 15
+	melee_damage_upper = 25
+	break_stuff_probability = 35
 	faction = "shark"
+
+/mob/living/simple_animal/hostile/carp/shark/carp_randomify()
+	return
+
+/mob/living/simple_animal/hostile/carp/shark/on_update_icon()
+	return
 
 /mob/living/simple_animal/hostile/carp/shark/death()
 	..()
@@ -132,7 +136,7 @@ obj/structure/net/Initialize(var/mapload)
 		visible_message("<span class='warning'>\The [src] is torn apart!</span>")
 		qdel(src)
 
-/obj/structure/net/proc/update_connections()//maybe this should also be called when any of the walls nearby is removed but no idea how I can make it happen
+/obj/structure/net/update_connections()//maybe this should also be called when any of the walls nearby is removed but no idea how I can make it happen
 	overlays.Cut()
 	var/turf/T = get_turf(src)
 	for (var/turf/AT in T.CardinalTurfs(FALSE))
@@ -188,7 +192,7 @@ obj/structure/net/Initialize(var/mapload)
 /obj/item/stack/net/thirty
 	amount = 30
 
-/obj/item/stack/net/update_icon()
+/obj/item/stack/net/on_update_icon()
 	if(amount == 1)
 		icon_state = "net"
 	else
@@ -233,7 +237,7 @@ obj/structure/net/Initialize(var/mapload)
 /obj/effect/landmark/corpse/carp_fisher
 	name = "carp fisher"
 	corpse_outfits = list(/decl/hierarchy/outfit/corpse/carp_fisher)
-	species = list(SPECIES_HUMAN = 70, SPECIES_IPC = 20, SPECIES_UNATHI = 10)
+//	species = list(SPECIES_HUMAN = 70, SPECIES_IPC = 20, SPECIES_UNATHI = 10)
 
 /decl/hierarchy/outfit/corpse/carp_fisher
 	name = "Dead carp fisher"

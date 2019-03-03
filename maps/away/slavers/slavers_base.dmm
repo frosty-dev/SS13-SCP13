@@ -201,7 +201,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "aO" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 4
 	},
 /turf/simulated/floor/airless/ceiling,
@@ -216,11 +216,11 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "aR" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "aS" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/weapon/reagent_containers/glass/rag,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -249,7 +249,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "aX" = (
-/obj/machinery/shower{
+/obj/structure/hygiene/shower{
 	dir = 4;
 	icon_state = "shower";
 	pixel_x = 0;
@@ -263,7 +263,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "aZ" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/weapon/reagent_containers/food/drinks/cans/waterbottle,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -292,7 +292,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bd" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/trash/liquidfood,
 /obj/effect/landmark/corpse/slavers_base/slave,
 /turf/simulated/floor/airless/ceiling,
@@ -319,7 +319,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bh" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/machinery/flasher{
 	id = "permentryflash";
 	name = "Floor mounted flash";
@@ -332,7 +332,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bj" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan{
 	d2 = 2;
 	icon_state = "0-2"
@@ -478,7 +478,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "bu" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/effect/landmark/corpse/slavers_base/slave,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -503,7 +503,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "by" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "bz" = (
@@ -566,7 +566,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "bG" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -585,7 +585,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bK" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan{
 	d2 = 4;
 	icon_state = "0-4"
@@ -593,7 +593,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bL" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan{
 	d1 = 2;
 	d2 = 4;
@@ -611,7 +611,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bM" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan{
 	d2 = 8;
 	icon_state = "0-8"
@@ -632,12 +632,12 @@
 /area/slavers_base/cells)
 "bP" = (
 /obj/machinery/light/small/red,
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/effect/landmark/corpse/slavers_base/slave,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "bQ" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/random/junk,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -796,7 +796,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "ca" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan{
 	d1 = 1;
 	d2 = 4;
@@ -833,7 +833,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "cd" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 4
 	},
 /obj/item/weapon/reagent_containers/food/snacks/liquidfood,
@@ -843,11 +843,11 @@
 /obj/machinery/light/small/red{
 	dir = 1
 	},
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "cf" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/random/snack,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -859,7 +859,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "ch" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/remains/human,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -1029,7 +1029,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
 "cx" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan,
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/cells)
@@ -1134,7 +1134,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "cM" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/weapon/reagent_containers/food/drinks/cans/waterbottle,
 /obj/random/junk,
 /turf/simulated/floor/airless/ceiling,
@@ -1145,14 +1145,14 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "cO" = (
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/weapon/reagent_containers/glass/rag,
 /obj/item/weapon/reagent_containers/food/drinks/cans/waterbottle,
 /obj/effect/landmark/corpse/slavers_base/slave,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
 "cP" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 4
 	},
 /obj/item/trash/liquidfood,
@@ -1160,7 +1160,7 @@
 /area/slavers_base/cells)
 "cQ" = (
 /obj/machinery/light/small/red,
-/obj/structure/slavers_base/mattress,
+/obj/structure/mattress/dirty,
 /obj/item/weapon/reagent_containers/glass/rag,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/cells)
@@ -1319,7 +1319,7 @@
 /turf/simulated/floor/tiled,
 /area/slavers_base/secwing)
 "dr" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable/cyan{
 	d1 = 4;
 	d2 = 8;
@@ -1432,7 +1432,7 @@
 /area/slavers_base/med)
 "dz" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/shower{
+/obj/structure/hygiene/shower{
 	pixel_y = 30
 	},
 /turf/simulated/floor/tiled/airless,
@@ -1559,7 +1559,7 @@
 /turf/simulated/floor/tiled,
 /area/slavers_base/secwing)
 "dS" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable{
 	d1 = 4;
 	d2 = 8;
@@ -1717,7 +1717,7 @@
 /turf/simulated/floor/tiled,
 /area/slavers_base/secwing)
 "eq" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/secwing)
 "er" = (
@@ -3420,7 +3420,7 @@
 "iy" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/paper{
-	info = "<center><b> Contract </b></center> <br>This contract describes exchanging of monetary pieces for the right o? the ownership for following examples: <list><*> Tajaran, age 17. Price - 1500 thalers. <*> Tajaran, age 49. Price - 1100 thalers. <*> Tajaran, age 28. Good fist fighter. Price - 2400 thalers. <*> Human, age 34. Expirienced medic. Price - 6800 thalers. </list> <b> Overall price: 11800 thalers</b><br><small>Place for signatures</small>";
+	info = "<center><b> Contract </b></center> <br>This contract describes exchanging of monetary pieces for the right o? the ownership for following examples: <list><*> Human, age 17. Price - 1500 thalers. <*> Human, age 49. Price - 1100 thalers. <*> Unathi, age 28. Good fist fighter. Price - 2400 thalers. <*> Human, age 34. Expirienced medic. Price - 6800 thalers. </list> <b> Overall price: 11800 thalers</b><br><small>Place for signatures</small>";
 	name = "Contract"
 	},
 /turf/simulated/floor/tiled/airless,
@@ -3770,7 +3770,7 @@
 /turf/simulated/floor/tiled,
 /area/slavers_base/dorms)
 "jm" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /obj/structure/cable{
 	d1 = 1;
 	d2 = 2;
@@ -3779,7 +3779,7 @@
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/demo)
 "jn" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /turf/simulated/floor/tiled/airless,
 /area/slavers_base/demo)
 "jo" = (
@@ -4027,7 +4027,7 @@
 /turf/simulated/floor/tiled,
 /area/slavers_base/demo)
 "jX" = (
-/obj/machinery/shower{
+/obj/structure/hygiene/shower{
 	dir = 4;
 	icon_state = "shower";
 	pixel_x = 0;
@@ -4065,7 +4065,7 @@
 /turf/simulated/floor/tiled/white/airless,
 /area/slavers_base/dorms)
 "ke" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 8
 	},
 /obj/random/junk,
@@ -4192,26 +4192,6 @@
 /obj/machinery/chemical_dispenser/bar_alc,
 /turf/simulated/floor/tiled,
 /area/slavers_base/demo)
-"kx" = (
-/obj/structure/sink{
-	pixel_y = -20
-	},
-/obj/structure/mirror{
-	pixel_y = -35
-	},
-/obj/effect/landmark/corpse/slavers_base/slaver2,
-/obj/effect/decal/cleanable/blood,
-/turf/simulated/floor/tiled/white,
-/area/slavers_base/dorms)
-"ky" = (
-/obj/structure/sink{
-	pixel_y = -20
-	},
-/obj/structure/mirror{
-	pixel_y = -35
-	},
-/turf/simulated/floor/tiled/white,
-/area/slavers_base/dorms)
 "kz" = (
 /mob/living/simple_animal/hostile/abolition_extremist,
 /turf/simulated/floor/tiled/white,
@@ -4268,7 +4248,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/maint)
 "kJ" = (
-/obj/effect/wingrille_spawn/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /turf/simulated/floor/airless/ceiling,
 /area/slavers_base/maint)
 "kK" = (
@@ -4348,6 +4328,26 @@
 /obj/effect/landmark/random_gen/asteroid,
 /turf/space,
 /area/space)
+"lb" = (
+/obj/structure/hygiene/sink{
+	pixel_y = -20
+	},
+/obj/item/weapon/storage/mirror{
+	pixel_y = -35
+	},
+/obj/effect/landmark/corpse/slavers_base/slaver2,
+/obj/effect/decal/cleanable/blood,
+/turf/simulated/floor/tiled/white,
+/area/slavers_base/dorms)
+"mb" = (
+/obj/structure/hygiene/sink{
+	pixel_y = -20
+	},
+/obj/item/weapon/storage/mirror{
+	pixel_y = -35
+	},
+/turf/simulated/floor/tiled/white,
+/area/slavers_base/dorms)
 
 (1,1,1) = {"
 aa
@@ -17609,7 +17609,7 @@ jA
 jP
 ka
 kb
-kx
+lb
 gi
 ad
 ad
@@ -17811,7 +17811,7 @@ jB
 gi
 kb
 kb
-ky
+mb
 gi
 ad
 ad

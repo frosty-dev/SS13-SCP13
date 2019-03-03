@@ -1,6 +1,6 @@
 /obj/item/weapon/clipboard
 	name = "clipboard"
-	icon = 'icons/obj/bureaucracy.dmi'
+	icon = 'icons/obj/bureaucracy_inf.dmi'
 	icon_state = "clipboard"
 	item_state = "clipboard"
 	throwforce = 0
@@ -10,7 +10,7 @@
 	var/obj/item/weapon/pen/haspen		//The stored pen.
 	var/obj/item/weapon/toppaper	//The topmost piece of paper.
 	slot_flags = SLOT_BELT
-	matter = list(DEFAULT_WALL_MATERIAL = 70)
+	matter = list(MATERIAL_STEEL = 70)
 
 /obj/item/weapon/clipboard/New()
 	update_icon()
@@ -33,7 +33,7 @@
 			add_fingerprint(usr)
 			return
 
-/obj/item/weapon/clipboard/update_icon()
+/obj/item/weapon/clipboard/on_update_icon()
 	overlays.Cut()
 	if(toppaper)
 		overlays += toppaper.icon_state
@@ -46,8 +46,8 @@
 /obj/item/weapon/clipboard/attackby(obj/item/weapon/W as obj, mob/user as mob)
 
 	if(istype(W, /obj/item/weapon/paper) || istype(W, /obj/item/weapon/photo))
-		user.drop_item()
-		W.loc = src
+		if(!user.unEquip(W, src))
+			return
 		if(istype(W, /obj/item/weapon/paper))
 			toppaper = W
 		to_chat(user, "<span class='notice'>You clip the [W] onto \the [src].</span>")
@@ -92,7 +92,6 @@
 
 		if(href_list["pen"])
 			if(istype(haspen) && (haspen.loc == src))
-				haspen.loc = usr.loc
 				usr.put_in_hands(haspen)
 				haspen = null
 
@@ -100,8 +99,8 @@
 			if(!haspen)
 				var/obj/item/weapon/pen/W = usr.get_active_hand()
 				if(istype(W, /obj/item/weapon/pen))
-					usr.drop_item()
-					W.loc = src
+					if(!usr.unEquip(W, src))
+						return
 					haspen = W
 					to_chat(usr, "<span class='notice'>You slot the pen into \the [src].</span>")
 
@@ -120,8 +119,6 @@
 			var/obj/item/P = locate(href_list["remove"])
 
 			if(P && (P.loc == src) && (istype(P, /obj/item/weapon/paper) || istype(P, /obj/item/weapon/photo)) )
-
-				P.loc = usr.loc
 				usr.put_in_hands(P)
 				if(P == toppaper)
 					toppaper = null

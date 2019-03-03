@@ -13,7 +13,7 @@
 
 /mob/Initialize()
 	. = ..()
-	update_emotes() //lets see what happens
+	update_emotes()
 
 // Specific defines follow.
 /mob/living/carbon/alien
@@ -39,7 +39,31 @@
 		/decl/emote/audible/scretch,
 		/decl/emote/audible/choke,
 		/decl/emote/audible/moan,
+		/decl/emote/audible/gnarl
+		)
+
+/mob/living/carbon/alien/diona
+	default_emotes = list(
+		/decl/emote/visible,
+		/decl/emote/visible/scratch,
+		/decl/emote/visible/drool,
+		/decl/emote/visible/nod,
+		/decl/emote/visible/sway,
+		/decl/emote/visible/sulk,
+		/decl/emote/visible/twitch,
+		/decl/emote/visible/dance,
+		/decl/emote/visible/roll,
+		/decl/emote/visible/shake,
+		/decl/emote/visible/jump,
+		/decl/emote/visible/hiss,
+		/decl/emote/visible/shiver,
+		/decl/emote/visible/collapse,
+		/decl/emote/audible,
+		/decl/emote/audible/scretch,
+		/decl/emote/audible/choke,
 		/decl/emote/audible/gnarl,
+		/decl/emote/audible/bug_hiss,
+		/decl/emote/audible/bug_chitter,
 		/decl/emote/audible/chirp
 		)
 
@@ -70,15 +94,18 @@
 		/decl/emote/visible/shake,
 		/decl/emote/visible/shiver,
 		/decl/emote/visible/collapse,
+		/decl/emote/audible/salute,
 		/decl/emote/audible/gasp,
 		/decl/emote/audible/sneeze,
 		/decl/emote/audible/sniff,
 		/decl/emote/audible/snore,
 		/decl/emote/audible/whimper,
+		/decl/emote/audible/whistle,
 		/decl/emote/audible/yawn,
 		/decl/emote/audible/clap,
 		/decl/emote/audible/chuckle,
 		/decl/emote/audible/cough,
+		/decl/emote/audible/choke,
 		/decl/emote/audible/cry,
 		/decl/emote/audible/sigh,
 		/decl/emote/audible/laugh,
@@ -86,6 +113,8 @@
 		/decl/emote/audible/grumble,
 		/decl/emote/audible/groan,
 		/decl/emote/audible/moan,
+		/decl/emote/audible/grunt,
+		/decl/emote/audible/slap,
 		/decl/emote/human,
 		/decl/emote/human/deathgasp,
 		/decl/emote/audible/giggle,
@@ -93,7 +122,6 @@
 		/decl/emote/visible/airguitar,
 		/decl/emote/visible/blink_r,
 		/decl/emote/visible/bow,
-		/decl/emote/visible/salute,
 		/decl/emote/visible/flap,
 		/decl/emote/visible/aflap,
 		/decl/emote/visible/drool,
@@ -119,18 +147,31 @@
 		/decl/emote/visible/dap,
 		/decl/emote/visible/signal,
 		/decl/emote/visible/handshake,
-		/decl/emote/audible/clearthroat,
-		/decl/emote/audible/hem,
-		/decl/emote/audible/snap
+		/decl/emote/visible/afold,
+		/decl/emote/visible/alook,
+		/decl/emote/visible/eroll,
+		/decl/emote/visible/hbow,
+		/decl/emote/visible/hip,
+		/decl/emote/visible/holdup,
+		/decl/emote/visible/hshrug,
+		/decl/emote/visible/crub,
+		/decl/emote/visible/erub,
+		/decl/emote/visible/fslap,
+		/decl/emote/visible/ftap,
+		/decl/emote/visible/hrub,
+		/decl/emote/visible/hspread,
+		/decl/emote/visible/pocket,
+		/decl/emote/visible/rsalute,
+		/decl/emote/visible/rshoulder,
+		/decl/emote/visible/squint,
+		/decl/emote/visible/tfist,
+		/decl/emote/visible/tilt
 	)
 
 /mob/living/silicon/robot
 	default_emotes = list(
 		/decl/emote/audible/clap,
 		/decl/emote/visible/bow,
-		/decl/emote/visible/salute,
-		/decl/emote/visible/flap,
-		/decl/emote/visible/aflap,
 		/decl/emote/visible/twitch,
 		/decl/emote/visible/twitch_v,
 		/decl/emote/visible/nod,
@@ -164,4 +205,13 @@
 		/decl/emote/slime/angry,
 		/decl/emote/slime/frown,
 		/decl/emote/slime/smile
+		)
+
+/mob/living/silicon/pai
+	default_emotes = list(
+		/decl/emote/audible/synth,
+		/decl/emote/audible/synth/ping,
+		/decl/emote/audible/synth/buzz,
+		/decl/emote/audible/synth/confirm,
+		/decl/emote/audible/synth/deny
 		)

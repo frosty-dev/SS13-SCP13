@@ -48,17 +48,7 @@
 /turf/simulated/floor/asteroid,
 /area/mine/explored)
 "al" = (
-/obj/structure/grille,
-/obj/structure/window/reinforced{
-	dir = 4
-	},
-/obj/structure/window/reinforced{
-	dir = 8
-	},
-/obj/structure/window/reinforced{
-	dir = 1
-	},
-/obj/structure/window/reinforced,
+/obj/effect/wallframe_spawn/reinforced,
 /turf/simulated/wall/r_wall,
 /area/smugglers/base)
 "am" = (
@@ -103,43 +93,7 @@
 /turf/simulated/floor,
 /area/smugglers/base)
 "ar" = (
-/obj/structure/window/reinforced,
-/obj/structure/window/reinforced{
-	dir = 1
-	},
-/obj/structure/grille,
-/obj/structure/window/reinforced{
-	dir = 8
-	},
-/obj/machinery/door/blast/regular,
-/obj/structure/cable{
-	icon_state = "0-2";
-	d2 = 2
-	},
-/turf/simulated/floor/airless,
-/area/smugglers/base)
-"as" = (
-/obj/structure/window/reinforced,
-/obj/structure/window/reinforced{
-	dir = 1
-	},
-/obj/structure/grille,
-/obj/machinery/door/blast/regular,
-/obj/structure/cable{
-	icon_state = "0-2";
-	d2 = 2
-	},
-/turf/simulated/floor/airless,
-/area/smugglers/base)
-"at" = (
-/obj/structure/window/reinforced,
-/obj/structure/window/reinforced{
-	dir = 1
-	},
-/obj/structure/grille,
-/obj/structure/window/reinforced{
-	dir = 4
-	},
+/obj/effect/wallframe_spawn/reinforced,
 /obj/machinery/door/blast/regular,
 /obj/structure/cable{
 	icon_state = "0-2";
@@ -148,11 +102,11 @@
 /turf/simulated/floor/airless,
 /area/smugglers/base)
 "au" = (
-/obj/item/device/flashlight/glowstick/yellow{
+/obj/item/device/flashlight/flare/glowstick/yellow{
 	pixel_x = 5;
 	pixel_y = 7
 	},
-/obj/item/device/flashlight/glowstick/yellow,
+/obj/item/device/flashlight/flare/glowstick/yellow,
 /turf/simulated/floor/asteroid,
 /area/mine/explored)
 "av" = (
@@ -555,7 +509,7 @@
 /turf/simulated/floor,
 /area/smugglers/base)
 "bg" = (
-/obj/item/weapon/pickaxe/hand{
+/obj/item/weapon/pickaxe/xeno/hand{
 	pixel_x = -15
 	},
 /turf/simulated/floor/asteroid,
@@ -970,19 +924,6 @@
 /obj/effect/decal/cleanable/cobweb,
 /turf/simulated/floor/airless/ceiling,
 /area/smugglers/dorms)
-"ck" = (
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/structure/sink{
-	pixel_y = 15
-	},
-/obj/structure/mirror{
-	pixel_y = 30
-	},
-/obj/random/soap,
-/turf/simulated/floor/airless/ceiling,
-/area/smugglers/dorms)
 "cl" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
@@ -1015,7 +956,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/smugglers/dorms)
 "cq" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 8
 	},
 /turf/simulated/floor/airless/ceiling,
@@ -1032,7 +973,7 @@
 /obj/structure/table/standard,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/weapon/paper/smug_3,
-/obj/item/weapon/flame/lighter/random,
+/obj/item/weapon/flame/lighter,
 /obj/random/coin,
 /turf/simulated/floor/tiled,
 /area/smugglers/dorms)
@@ -1113,6 +1054,19 @@
 /obj/effect/landmark/corpse/doctor,
 /turf/simulated/floor/asteroid,
 /area/mine/explored)
+"eb" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/structure/hygiene/sink{
+	pixel_y = 15
+	},
+/obj/item/weapon/storage/mirror{
+	pixel_y = 30
+	},
+/obj/random/soap,
+/turf/simulated/floor/airless/ceiling,
+/area/smugglers/dorms)
 
 (1,1,1) = {"
 aa
@@ -4918,7 +4872,7 @@ aa
 aa
 aa
 aa
-as
+ar
 aC
 aS
 aZ
@@ -5020,7 +4974,7 @@ aa
 aa
 aa
 aa
-at
+ar
 aD
 aT
 be
@@ -5031,7 +4985,7 @@ bI
 bO
 bW
 cc
-ck
+eb
 cq
 ca
 ab

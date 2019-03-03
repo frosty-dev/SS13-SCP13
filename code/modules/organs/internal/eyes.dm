@@ -11,9 +11,10 @@
 	var/list/eye_colour = list(0,0,0)
 	var/innate_flash_protection = FLASH_PROTECTION_NONE
 	max_damage = 45
+	var/night_vision = 0
 
 /obj/item/organ/internal/eyes/optics
-	robotic = ORGAN_ROBOT
+	status = ORGAN_ROBOTIC
 	organ_tag = BP_OPTICS
 
 /obj/item/organ/internal/eyes/optics/New()
@@ -26,10 +27,30 @@
 	icon = 'icons/obj/robot_component.dmi'
 	icon_state = "camera"
 	dead_icon = "camera_broken"
+	verbs |= /obj/item/organ/internal/eyes/proc/change_eye_color
 	update_colour()
 
 /obj/item/organ/internal/eyes/robot
 	name = "optical sensor"
+
+/obj/item/organ/internal/eyes/proc/change_eye_color()
+	set name = "Change Eye Color"
+	set desc = "Changes your robotic eye color."
+	set category = "IC"
+	set src in usr
+	if (owner.incapacitated())
+		return
+	var/new_eyes = input("Please select eye color.", "Eye Color", rgb(owner.r_eyes, owner.g_eyes, owner.b_eyes)) as color|null
+	if(new_eyes)
+		var/r_eyes = hex2num(copytext(new_eyes, 2, 4))
+		var/g_eyes = hex2num(copytext(new_eyes, 4, 6))
+		var/b_eyes = hex2num(copytext(new_eyes, 6, 8))
+		if(do_after(owner, 10) && owner.change_eye_color(r_eyes, g_eyes, b_eyes))
+			update_colour()
+			// Finally, update the eye icon on the mob.
+			owner.regenerate_icons()
+			owner.visible_message(SPAN_NOTICE("\The [owner] changes their eye color."),SPAN_NOTICE("You change your eye color."),)
+
 
 /obj/item/organ/internal/eyes/robot/New()
 	..()
@@ -54,11 +75,11 @@
 		owner.b_eyes ? owner.b_eyes : 0
 		)
 
-/obj/item/organ/internal/eyes/take_damage(amount, var/silent=0)
+/obj/item/organ/internal/eyes/take_internal_damage(amount, var/silent=0)
 	var/oldbroken = is_broken()
 	. = ..()
 	if(is_broken() && !oldbroken && owner && !owner.stat)
-		to_chat(owner, "<span class='danger'>You go blind!</span>")
+		to_chat(owner, "<span class='danger'>Вы ослепли!</span>")
 
 /obj/item/organ/internal/eyes/Process() //Eye damage replaces the old eye_stat var.
 	..()
@@ -68,6 +89,8 @@
 		owner.eye_blurry = 20
 	if(is_broken())
 		owner.eye_blind = 20
+	if(night_vision == TRUE)
+		owner.see_invisible = 15
 
 /obj/item/organ/internal/eyes/proc/get_total_protection(var/flash_protection = FLASH_PROTECTION_NONE)
 	return (flash_protection + innate_flash_protection)

@@ -55,7 +55,7 @@
 				circ1 = null
 				circ2 = null
 
-/obj/machinery/power/generator/update_icon()
+/obj/machinery/power/generator/on_update_icon()
 	if(stat & (NOPOWER|BROKEN))
 		overlays.Cut()
 	else
@@ -96,6 +96,8 @@
 			else
 				air2.temperature = air2.temperature + heat/air2_heat_capacity
 				air1.temperature = air1.temperature - energy_transfer/air1_heat_capacity
+		playsound(src.loc, 'sound/effects/beam.ogg', 25, 0, 10)
+		playsound(src.loc, 'sound/effects/beam.ogg', 25, 0, 10, is_ambiance = 1)
 		playsound(src.loc, 'sound/effects/beam.ogg', 25, 0, 10,  is_ambiance = 1)
 
 	//Transfer the air
@@ -199,7 +201,7 @@
 
 
 	// update the ui if it exists, returns null if no ui is passed/found
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if(!ui)
 		// the ui does not exist, so we'll create a new() one
 		// for a list of parameters and their descriptions see the code docs in \code\modules\nano\nanoui.dm

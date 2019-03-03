@@ -43,13 +43,16 @@
 	down_icon_state = "steriledown"
 	pull_mask = 1
 	sprite_sheets = list(
-		SPECIES_TAJARA = 'icons/mob/species/tajaran/mask.dmi'
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/mask.dmi',
+		SPECIES_UNATHI = 'icons/mob/onmob/Unathi/mask.dmi',
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/masks.dmi'
 		)
 
 /obj/item/clothing/mask/fakemoustache
 	name = "fake moustache"
 	desc = "Warning: moustache is fake."
 	icon_state = "fake-moustache"
+	item_state = "fake-moustache"
 	flags_inv = HIDEFACE
 	body_parts_covered = 0
 	visible_name = "Scoundrel"
@@ -58,6 +61,7 @@
 	name = "Snorkel"
 	desc = "For the Swimming Savant."
 	icon_state = "snorkel"
+	item_state = "snorkel"
 	flags_inv = HIDEFACE
 	body_parts_covered = 0
 
@@ -232,7 +236,9 @@
 	visible_name = species
 	var/datum/species/S = all_species[species]
 	if(istype(S))
-		visible_name = S.get_random_name(pick(MALE,FEMALE))
+		var/decl/cultural_info/C = SSculture.get_culture(S.default_cultural_info[TAG_CULTURE])
+		if(istype(C))
+			visible_name = C.get_random_name(pick(MALE,FEMALE))
 
 /obj/item/clothing/mask/rubber/species/tajaran
 	name = "tajara mask"
@@ -259,7 +265,7 @@
 	item_state = "spirit_mask"
 	flags_inv = HIDEFACE
 	body_parts_covered = FACE|EYES
-	
+
 // Bandanas below
 /obj/item/clothing/mask/bandana
 	name = "black bandana"
@@ -307,22 +313,22 @@
 	name = "gold bandana"
 	icon_state = "bandgold"
 	item_state = "bandgold"
-	
+
 /obj/item/clothing/mask/bandana/orange
 	name = "orange bandana"
 	icon_state = "bandorange"
 	item_state = "bandorange"
-	
+
 /obj/item/clothing/mask/bandana/purple
 	name = "purple bandana"
 	icon_state = "bandpurple"
 	item_state = "bandpurple"
-	
+
 /obj/item/clothing/mask/bandana/botany
 	name = "botany bandana"
 	icon_state = "bandbotany"
 	item_state = "bandbotany"
-	
+
 /obj/item/clothing/mask/bandana/camo
 	name = "camo bandana"
 	icon_state = "bandcamo"
@@ -333,4 +339,4 @@
 	desc = "A fine black bandana with nanotech lining and a skull emblem. Can be worn on the head or face."
 	icon_state = "bandskull"
 	item_state = "bandskull"
-	
+

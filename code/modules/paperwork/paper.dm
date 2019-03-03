@@ -1,21 +1,3 @@
-/hook/roundstart/proc/bundle_loose_papers()
-	var/list/tile2paper = list()
-	for (var/obj/item/weapon/paper/paper in global.item_list)
-		if (isturf(paper.loc) && !tile2paper[paper.loc])
-			tile2paper[paper.loc] = list()
-		if (tile2paper[paper.loc])
-			tile2paper[paper.loc] += paper 
-		
-	for (var/turf in tile2paper)
-		var/list = tile2paper[turf]
-		if (length(list) > 1)
-			var/obj/item/weapon/paper_bundle/PB = new /obj/item/weapon/paper_bundle (turf)
-			for (var/paper in list)
-				var/obj/item/weapon/paper/P = paper 
-				PB.insert_sheet_at(null, PB.pages.len+1, P)
-			PB.update_icon()
-	return TRUE
-
 /*
  * Paper
  * also scraps of paper
@@ -24,7 +6,7 @@
 /obj/item/weapon/paper
 	name = "sheet of paper"
 	gender = NEUTER
-	icon = 'icons/obj/bureaucracy.dmi'
+	icon = 'icons/obj/bureaucracy_inf.dmi'
 	icon_state = "paper"
 	item_state = "paper"
 	randpixel = 8
@@ -36,6 +18,9 @@
 	slot_flags = SLOT_HEAD
 	body_parts_covered = HEAD
 	attack_verb = list("bapped")
+	sprite_sheets = list(
+		SPECIES_RESOMI = 'icons/mob/onmob/Resomi/head.dmi'
+		)
 
 	var/info		//What's actually written on the paper.
 	var/info_links	//A different version of the paper which includes html links at fields and EOF
@@ -48,25 +33,34 @@
 	var/list/offset_y[0] //usage by the photocopier
 	var/rigged = 0
 	var/spam_flag = 0
+	var/last_modified_ckey
+	var/age = 0
+	var/log = ""
+	var/list/metadata
 
 	var/const/deffont = "Verdana"
 	var/const/signfont = "Times New Roman"
 	var/const/crayonfont = "Comic Sans MS"
+	var/const/fancyfont = "Segoe Script"
 
-/obj/item/weapon/paper/New(loc, text,title)
+	var/scan_file_type = /datum/computer_file/data/text
+
+/obj/item/weapon/paper/New(loc, text, title, list/md = null)
 	..(loc)
 	set_content(text ? text : info, title)
+	metadata = md
 
 /obj/item/weapon/paper/proc/set_content(text,title)
 	if(title)
 		SetName(title)
 	info = html_encode(text)
+	text = preSign(text)
 	info = parsepencode(text)
 	update_icon()
 	update_space(info)
 	updateinfolinks()
 
-/obj/item/weapon/paper/update_icon()
+/obj/item/weapon/paper/on_update_icon()
 	if(icon_state == "paper_talisman")
 		return
 	else if(info)
@@ -92,175 +86,7 @@
 	if(!forceshow && istype(user,/mob/living/silicon/ai))
 		var/mob/living/silicon/ai/AI = user
 		can_read = get_dist(src, AI.camera) < 2
-	var/content = info
-	
-	// SCP-078: Too Late To Die Young
-	var/mob/living/carbon/human/H = user
-	if(istype(H) && H.dies_young > 0)
-		if(prob(50))
-			H.dies_young += 1
-		var/solace_possibilities = list(
-			"It hurt them, but they deserved it.",
-			"You cannot be blamed for what you did.",
-			"You had no choice.",
-			"You'll find a way to forgive yourself."
-		)
-
-		if(H.job)
-			if (H.job == "Class D")
-				solace_possibilities += list(
-					"Nobody blames you for your crimes.",
-					"You needn't feel ashamed of what brought you here.",
-					"There is no shame in what you did to survive.",
-					"It's a brutal world, and you're already atoning for your mistakes.",
-					"Thirty days. That's all it takes to see freedom again."
-				)
-			if (H.job == "LCZ Guard")
-				solace_possibilities += list(
-					"He was a death row criminal. He had it coming.",
-					"You were protecting everybody else.",
-					"You were just following orders."
-				)
-			if (H.job == "HCZ Guard")
-				solace_possibilities += list(
-					"You are the only thing standing between the monsters and them.",
-					"It was his fault for running into the HCZ. You did what you had to.",
-					"Anyone would have run, when faced with something like that."
-				)
-			if (H.job == "LCZ Junior Guard")
-				solace_possibilities += list(
-					"You're still new. Maybe you've just seen the roughest of the fights.",
-					"They're all murderers and rapists. They deserve to be here.",
-					"Nobody's going to blame you for listening to the experienced guards."
-				)
-			if (H.job == "Guard Commander")
-				solace_possibilities += list(
-					"In time, everyone will understand why you gave the orders you did.",
-					"You're protecting the Director from the truth of what it takes to run this place.",
-					"Nobody has to know what your team did that day."
-				)
-			if (H.job == "LCZ Zone Commander")
-				solace_possibilities += list(
-					"You were just protecting your Junior Guard.",
-					"You didn't show weakness, and the rookies respect you for it.",
-					"You gave the order, they carried it out. Brutal, but it had to be done."
-				)
-			if (H.job == "HCZ Zone Commander")
-				solace_possibilities += list(
-					"The breach in your sector wasn't your fault.",
-					"You didn't put them at risk. They signed up for this.",
-					"It was the Containment Engineeer's responsibility."
-				)
-			if (H.job == "EZ Senior Agent")
-				solace_possibilities += list(
-					"An evacuation was impossible. You just told them the truth.",
-					"Some people are more worth protecting than others.",
-					"You gave the order, and your agents carried it out."
-				)
-			if (H.job == "EZ Agent")
-				solace_possibilities += list(
-					"She cried when you demanded answers. But you had to be sure she wasn't a spy.",
-					"This facility's secrets are worth anyone's freedom.",
-					"Asking the hard questions is just part of the job."
-				)
-			if (H.job == "Containment Engineer")
-				solace_possibilities += list(
-					"The breach in HCZ wasn't your fault.",
-					"You don't do the experiments. Your hands are clean.",
-					"It killed three people before they recontained it."
-				)
-			if (H.job == "Senior Scientist")
-				solace_possibilities += list(
-					"Their sacrifices are for the greater good.",
-					"The other scientists are counting on you to save humanity.",
-					"The associates look up to you. You cannot show regret."
-				)
-			if (H.job == "Scientist")
-				solace_possibilities += list(
-					"Their sacrifices are for the greater good.",
-					"Groundbreaking treatments need live subjects to be perfected.",
-					"Your work will save humanity. Right?"
-				)
-			if (H.job == "Scientist Associate")
-				solace_possibilities += list(
-					"You're new here. You'll get used to it.",
-					"Maybe the experiments aren't always like this.",
-					"Your work will save humanity!"
-				)
-			if (H.job == "Facility Director")
-				solace_possibilities += list(
-					"In time, everyone will understand why this facility was needed.",
-					"The end justifies the means.",
-					"When things truly go wrong, you save yourself."
-				)
-			if (H.job == "Research Director")
-				solace_possibilities += list(
-					"If we did not contain them, it would be much worse.",
-					"Your experiments save countless lives.",
-					"The younger scientists do not understand the sacrifices you make."
-				)
-			if (H.job == "Medical Doctor")	
-				solace_possibilities += list(
-					"There were good reasons not to save him.",
-					"Some patients really are more important.",
-					"It would have ruined the experiment if you'd stepped in."
-				)
-			if (H.job == "Surgeon")	
-				solace_possibilities += list(
-					"He would have died on the table anyway.",
-					"You didn't have enough time to remove the bullets.",
-					"Some of them don't deserve surgery."
-				)
-			if (H.job == "Janitor")
-				solace_possibilities += list(
-					"Memory is a small price to pay for comfort.",
-					"You're not responsible for anything that happens here. It's just a job.",
-					"No one here has cleaner hands than you."
-				)
-			if (H.job == "Cook")
-				solace_possibilities += list(
-					"Memory is a small price to pay for comfort.",
-					"You're not responsible for anything that happens here. It's just a job.",
-					"You aren't to blame. You just serve the food."
-				)
-			if (H.job == "Bartender")
-				solace_possibilities += list(
-					"Memory is a small price to pay for comfort.",
-					"You're not responsible for anything that happens here. It's just a job.",
-					"You aren't to blame. You just pour the drinks."
-				)
-		if (H.dies_young > 4)
-			solace_possibilities += list(
-				"There is no shame in this life you have lived.",
-				"Your life was spent well, if this is how it ends.",
-				"Even if you die today, you will do no more wrong.",
-				"Your life was not wasted, in the end."
-			)
-		if (H.dies_young > 7)
-			solace_possibilities = list(
-				"If you let yourself see tomorrow, you will only hurt them again.",
-				"When you finally end it all, the guilt will end too.",
-				"You know what you have to do to redeem yourself.",
-				"You'll never harm anyone again, once you're gone.",
-				"Nobody will miss you. They barely even know your name.",
-				"It's better for everyone if you get rid of yourself.",
-				"Everyone will be better off when you end it all."
-			)
-		var/solace = pick(solace_possibilities)
-		var/fullstop = findtext(info,". ")
-		while(prob(30))
-			var/nextFullstop = findtext(info,". ", fullstop + 1)
-			if (nextFullstop > fullstop)
-				fullstop = nextFullstop
-
-		if(fullstop)
-			var/start_text = copytext(info, 1, fullstop + 2)
-			var/end_text = copytext(info, fullstop + 1, 0)
-			content = start_text + solace + end_text
-
-	// End of SCP-078's horrible messages.
-
-	user << browse("<HTML><HEAD><TITLE>[name]</TITLE></HEAD><BODY bgcolor='[color]'>[can_read ? content : stars(content)][stamps]</BODY></HTML>", "window=[name]")
+	user << browse("<HTML><HEAD><TITLE>[name]</TITLE></HEAD><BODY bgcolor='[color]'>[can_read ? info : stars(info)][stamps]</BODY></HTML>", "window=[name]")
 	onclose(user, "[name]")
 
 /obj/item/weapon/paper/verb/rename()
@@ -268,7 +94,7 @@
 	set category = "Object"
 	set src in usr
 
-	if((CLUMSY in usr.mutations) && prob(50))
+	if((MUTATION_CLUMSY in usr.mutations) && prob(50))
 		to_chat(usr, "<span class='warning'>You cut yourself on the paper.</span>")
 		return
 	var/n_name = sanitizeSafe(input(usr, "What would you like to label the paper?", "Paper Labelling", null)  as text, MAX_NAME_LEN)
@@ -379,7 +205,7 @@
 		return P.get_signature(user)
 	return (user && user.real_name) ? user.real_name : "Anonymous"
 
-/obj/item/weapon/paper/proc/parsepencode(t, obj/item/weapon/pen/P, mob/user, iscrayon)
+/obj/item/weapon/paper/proc/parsepencode(t, obj/item/weapon/pen/P, mob/user, iscrayon, isfancy)
 	if(length(t) == 0)
 		return ""
 
@@ -399,8 +225,13 @@
 		t = replacetext(t, "\[cell\]", "")
 		t = replacetext(t, "\[logo\]", "")
 
+	if(!istype(src, /obj/item/weapon/paper/nano))
+		t = replacetext(t, "\[img\]", "")
+
 	if(iscrayon)
 		t = "<font face=\"[crayonfont]\" color=[P ? P.colour : "black"]><b>[t]</b></font>"
+	else if(isfancy)
+		t = "<font face=\"[fancyfont]\" color=[P ? P.colour : "black"]><i>[t]</i></font>"
 	else
 		t = "<font face=\"[deffont]\" color=[P ? P.colour : "black"]>[t]</font>"
 
@@ -433,10 +264,7 @@
 				user.visible_message("<span class='[class]'>[user] burns right through \the [src], turning it to ash. It flutters through the air before settling on the floor in a heap.</span>", \
 				"<span class='[class]'>You burn right through \the [src], turning it to ash. It flutters through the air before settling on the floor in a heap.</span>")
 
-				if(user.get_inactive_hand() == src)
-					user.drop_from_inventory(src)
-
-				new /obj/effect/decal/cleanable/ash(src.loc)
+				new /obj/effect/decal/cleanable/ash(get_turf(src))
 				qdel(src)
 
 			else
@@ -461,8 +289,9 @@
 		if(!t)
 			return
 
-		var/obj/item/i = usr.get_active_hand() // Check to see if he still got that darn pen, also check if he's using a crayon or pen.
+		var/obj/item/i = usr.get_active_hand() // Check to see if he still got that darn pen, also check what type of pen
 		var/iscrayon = 0
+		var/isfancy = 0
 		if(!istype(i, /obj/item/weapon/pen))
 			if(usr.back && istype(usr.back,/obj/item/weapon/rig))
 				var/obj/item/weapon/rig/r = usr.back
@@ -477,14 +306,23 @@
 		if(istype(i, /obj/item/weapon/pen/crayon))
 			iscrayon = 1
 
+		if(istype(i, /obj/item/weapon/pen/fancy))
+			isfancy = 1
+
 
 		// if paper is not in usr, then it must be near them, or in a clipboard or folder, which must be in or near usr
 		if(src.loc != usr && !src.Adjacent(usr) && !((istype(src.loc, /obj/item/weapon/clipboard) || istype(src.loc, /obj/item/weapon/folder)) && (src.loc.loc == usr || src.loc.Adjacent(usr)) ) )
 			return
 
+		log += "<br />\[[time_stamp()]] [key_name(usr)] added: [t]"
+
+		if(istype(src, /obj/item/weapon/paper/nano))
+			if(findtext(t,"\[img]"))
+				message_admins("[key_name_admin(usr)] added an image to <a href='?_src_=holder;adminplayerobservefollow=\ref[src]'>[src]</a>.")
+
 		var/last_fields_value = fields
 
-		t = parsepencode(t, i, usr, iscrayon) // Encode everything from pencode to html
+		t = parsepencode(t, i, usr, iscrayon, isfancy) // Encode everything from pencode to html
 
 
 		if(fields > 50)//large amount of fields creates a heavy load on the server, see updateinfolinks() and addtofield()
@@ -498,10 +336,15 @@
 			info += t // Oh, he wants to edit to the end of the file, let him.
 			updateinfolinks()
 
+		playsound(src,'sound/effects/PEN_Ball_Point_Pen_Circling_01_mono.ogg',40,1)
+
+		last_modified_ckey = usr.ckey
+
 		update_space(t)
 
 		usr << browse("<HTML><HEAD><TITLE>[name]</TITLE></HEAD><BODY bgcolor='[color]'>[info_links][stamps]</BODY></HTML>", "window=[name]") // Update the window
 
+		playsound(src, pick('sound/effects/pen1.ogg','sound/effects/pen2.ogg'), 10)
 		update_icon()
 
 
@@ -517,6 +360,11 @@
 		return
 
 	if(istype(P, /obj/item/weapon/paper) || istype(P, /obj/item/weapon/photo))
+		if(!can_bundle())
+			return
+		var/obj/item/weapon/paper/other = P
+		if(istype(other) && !other.can_bundle())
+			return
 		if (istype(P, /obj/item/weapon/paper/carbon))
 			var/obj/item/weapon/paper/carbon/C = P
 			if (!C.iscopy && !C.copied)
@@ -529,11 +377,9 @@
 		else if (P.name != "paper" && P.name != "photo")
 			B.SetName(P.name)
 
-		user.drop_from_inventory(P)
-		user.drop_from_inventory(src)
+		if(!user.unEquip(P, B) || !user.unEquip(src, B))
+			return
 		user.put_in_hands(B)
-		src.forceMove(B)
-		P.forceMove(B)
 
 		to_chat(user, "<span class='notice'>You clip the [P.name] to [(src.name == "paper") ? "the paper" : src.name].</span>")
 
@@ -557,6 +403,7 @@
 		if((!in_range(src, usr) && loc != user && !( istype(loc, /obj/item/weapon/clipboard) ) && loc.loc != user && user.get_active_hand() != P))
 			return
 
+		playsound(src,'sound/effects/Stamp2.ogg',40,1)
 		stamps += (stamps=="" ? "<HR>" : "<BR>") + "<i>This paper has been stamped with the [P.name].</i>"
 
 		var/image/stampoverlay = image('icons/obj/bureaucracy.dmi')
@@ -587,19 +434,69 @@
 		stamped += P.type
 		overlays += stampoverlay
 
+		playsound(src, 'sound/effects/stamp2.ogg', 50, 1)
 		to_chat(user, "<span class='notice'>You stamp the paper with your [P.name].</span>")
 
 	else if(istype(P, /obj/item/weapon/flame))
 		burnpaper(P, user)
 
 	else if(istype(P, /obj/item/weapon/paper_bundle))
+		if(!can_bundle())
+			return
 		var/obj/item/weapon/paper_bundle/attacking_bundle = P
 		attacking_bundle.insert_sheet_at(user, (attacking_bundle.pages.len)+1, src)
 		attacking_bundle.update_icon()
 
 	add_fingerprint(user)
-	return
 
+/obj/item/weapon/paper/proc/preStampPaper(stamp_path)
+	var/obj/item/weapon/stamp/P = new stamp_path
+	stamps += (stamps=="" ? "<HR>" : "<BR>") + "<i>This paper has been stamped with the [P.name].</i>"
+
+	var/image/stampoverlay = image('icons/obj/bureaucracy.dmi')
+	var/{x; y;}
+	if(istype(P, /obj/item/weapon/stamp/captain) || istype(P, /obj/item/weapon/stamp/centcomm))
+		x = rand(-2, 0)
+		y = rand(-1, 2)
+	else
+		x = rand(-2, 2)
+		y = rand(-3, 2)
+	offset_x += x
+	offset_y += y
+	stampoverlay.pixel_x = x
+	stampoverlay.pixel_y = y
+
+	if(!ico)
+		ico = new
+	ico += "paper_[P.icon_state]"
+	stampoverlay.icon_state = "paper_[P.icon_state]"
+
+	if(!stamped)
+		stamped = new
+	stamped += P.type
+	overlays += stampoverlay
+
+	qdel(P)
+
+/obj/item/weapon/paper/proc/preSign(t)
+	t = replacetext(t, "\[sign\]", "<font face=\"[signfont]\"><i>")
+	t = replacetext(t, "\[/sign\]", "</i></font>")
+	return t
+
+/obj/item/weapon/paper/nano
+	name = "nano paper"
+	color = "#ccffff"
+
+/obj/item/weapon/paper/proc/can_bundle()
+	return TRUE
+
+/obj/item/weapon/paper/proc/show_info(var/mob/user)
+	return info
+
+//For supply.
+/obj/item/weapon/paper/manifest
+	name = "supply manifest"
+	var/is_copy = 1
 /*
  * Premade paper
  */
@@ -611,7 +508,7 @@
 	name = "paper scrap"
 	icon_state = "scrap"
 
-/obj/item/weapon/paper/crumpled/update_icon()
+/obj/item/weapon/paper/crumpled/on_update_icon()
 	return
 
 /obj/item/weapon/paper/crumpled/bloody
@@ -624,11 +521,6 @@
 /obj/item/weapon/paper/exodus_cmo
 	name = "outgoing CMO's notes"
 	info = "<I><center>To the incoming CMO of Exodus:</I></center><BR><BR>I wish you and your crew well. Do take note:<BR><BR><BR>The Medical Emergency Red Phone system has proven itself well. Take care to keep the phones in their designated places as they have been optimised for broadcast. The two handheld green radios (I have left one in this office, and one near the Emergency Entrance) are free to be used. The system has proven effective at alerting Medbay of important details, especially during power outages.<BR><BR>I think I may have left the toilet cubicle doors shut. It might be a good idea to open them so the staff and patients know they are not engaged.<BR><BR>The new syringe gun has been stored in secondary storage. I tend to prefer it stored in my office, but 'guidelines' are 'guidelines'.<BR><BR>Also in secondary storage is the grenade equipment crate. I've just realised I've left it open - you may wish to shut it.<BR><BR>There were a few problems with their installation, but the Medbay Quarantine shutters should now be working again  - they lock down the Emergency and Main entrances to prevent travel in and out. Pray you shan't have to use them.<BR><BR>The new version of the Medical Diagnostics Manual arrived. I distributed them to the shelf in the staff break room, and one on the table in the corner of this room.<BR><BR>The exam/triage room has the walking canes in it. I'm not sure why we'd need them - but there you have it.<BR><BR>Emergency Cryo bags are beside the emergency entrance, along with a kit.<BR><BR>Spare paper cups for the reception are on the left side of the reception desk.<BR><BR>I've fed Runtime. She should be fine.<BR><BR><BR><center>That should be all. Good luck!</center>"
-
-/obj/item/weapon/paper/dclass_orientation
-	name = "Class-D Orientation Letter"
-	info = "<small>Greetings,<br><br>On behalf of all staff within The Foundation, we welcome you to Site-53. You have chosen, or been chosen for the honor of joining the Foundation Rehabilitation Program. During your thirty day stay within this facility, you will be known as Class-D personnel, and be given a unique numerical designation for ease of access, which has been printed on your new ID card. <br><br>Over the course of your stay here, you will undergo various programs to ensure that you are ready to re-enter the world again. You will be given the opportunity to select a job within your block, in order to assist your fellow D-Class. From working the kitchen, to digging out objects within our mining area. On top of this, you may be selected for various medical or research tests to assist in our projects. What are those projects? Unfortunately, we can't tell you that.<br><br>Given that you are cooperative with our staff for the entirety of your stay here, you will be released back into the world, and have your criminal record erased completely. With that being said, we hope that you enjoy your stay here.<br><br>Sincerely,<br>The Administrator</small>"
-	desc = "A laminated piece of paper given to D-Class personnel upon their arrival."
 
 /obj/item/weapon/paper/exodus_bartender
 	name = "shotgun permit"
@@ -646,3 +538,28 @@
 /obj/item/weapon/paper/workvisa/New()
 	..()
 	icon_state = "workvisa" //Has to be here or it'll assume default paper sprites.
+
+/obj/item/weapon/paper/reacengi
+	name = "reactive engines guide"
+	info = "<I>Смена #03-A, инженерный департамент произвел модификацию реактивных двигателей. <br>Кратка&#255; инструкци&#255; по эксплуатации: <br>1) В начале Вашей смены нажмите на все кнопочки над консолью включени&#255;/отключени&#255; подачи топлива движков. Все должны гореть зеленым. <br>2) Всю смену нажимайте на запальник слева от указанных выше кнопок. <br>3) В случае ЧП, мы <b>не виноваты</b>.</i>"
+
+/obj/item/weapon/paper/compactor
+	name = "compactor guide"
+	info = "<I>Обслуживание гидравлического пресса <br>Кратка&#255; инструкци&#255; по эксплуатации: <br>1) Не помещайте крупные объекты в камеру - поршни выйдут из стро&#255;. <br>2) В случае поломки одного из поршей (лампочка будет гореть красным) - пройдите в секцию обслуживани&#255; поршней, отверткой открутите панель на неисправном поршне, с помощью гаечного ключа выпустите давление из главной камеры. Не забудьте поставить всё на место по завершению процедуры. <br>3) Оденьте рабочие перчатки и противогаз при обслуживании поршн&#255; - возможна утечка гор&#255;чего воздуха.</i>"
+
+/obj/item/weapon/paper/travelvisa
+	name = "Sol Travel Visa"
+	info = "<center><b><large>Travel Visa of the Sol Central Government</large></b></center><br><center><img src = sollogo.png><br><br><i><small>Issued on behalf of the Secretary-General.</small></i></center><hr><BR>This paper hereby permits the carrier to travel unhindered through Sol territories, colonies, and space for the purpose of pleasure and recreation."
+	desc = "A flimsy piece of laminated cardboard issued by the Sol Central Government."
+
+/obj/item/weapon/paper/travelvisa/New()
+	..()
+	icon_state = "travelvisa"
+
+/obj/item/weapon/paper/merchant
+	name = "novice help"
+	info = "<I><center><b>Помощь новичку</b></center><hr><h3>Вступление</h3>Торговцы бывают разными. В основном, самым важным критерием стоит то, насколько хорошо развито красноречие. В случае с вашим небольшим аванпостом, маловеро&#255;тно, что вам удастс&#255; кому-то угрожать - необходимо искать общий &#255;зык.<h3>Вежливые торговцы</h3>Как бы вы не презирали экипаж, запомните - ведите себ&#255; по-взрослому, в меру серьезно, без излишней фамиль&#255;рности, но дружелюбно. Не идите на конфликт со Службой Безопасности и тем более командованием, если не хотите провести неопределенный срок в ожидании нового судна в зоне действи&#255; сенсоров.<h3>Наценка</h3>Практически все товары, что наход&#255;тс&#255; на вашей базе достались вам путём купли-продажи. Цена, выдававема&#255; самим сканером, &#255;вл&#255;етс&#255; ценой на рынке в среднем. Никто не будет сильно злитьс&#255; из-за того, что вы накинете 20, 40 или даже 100 процентов к изначальной цене (особенно, если у покупател&#255; нет сканера) - прикидывайте, насколько экипажу нужна та или ина&#255; вещь и сколько они готовы отдать за неё.<h3>Закон</h3>Никто не имеет права обыскивать ваше судно. Никто не имеет права заходить на судно без вашего разрешени&#255;. Никто не имеет права задерживать вас за то, что вы подлетели к шлюзу - другое дело, если вы соверште незаконную стыковку (в лучшем случае, вас попрос&#255;т отстыковатьс&#255;).<h3>Проникновение</h3> Чужой экипаж не имеет права проникать на ваш корабль без вашего разрешения. Вы не имеете права проникать на корабль без разрешения экипажа - помните, что если вы торгуете с крупным судном, то на нём, скорее всего, есть вооруженная охрана, которая может расстрелять вас за взлом внешнего шлюза.</I>"
+
+/obj/item/weapon/paper/roles_nuclear
+	name = "black market"
+	info = "<tt><center>Доступ к черному рынку</center><hr>Используя доступные каналы поставки, Наниматель смог обеспечить вашу команду определенным бюджетом на данную операцию - выражен в телекристаллах. Выбери среди себя главного или возьмите поровну - главное, чтобы работы была сделана. <b>Аплинк с кристаллами у беретоносца.</b> <hr>Аванпост под наблюдением. Удачи.</tt>"
