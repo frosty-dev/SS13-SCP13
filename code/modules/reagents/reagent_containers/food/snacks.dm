@@ -260,13 +260,13 @@
 	trash = /obj/item/trash/candy
 	filling_color = "#7d5f46"
 	center_of_mass = "x=15;y=15"
-	nutriment_amt = 1
-	nutriment_desc = list("candy" = 1)
+	nutriment_amt = 5
+	nutriment_desc = list("candy" = 1, "stale chocolate" = 4)
 
 	New()
 		..()
 		reagents.add_reagent(/datum/reagent/sugar, 3)
-		bitesize = 2
+		bitesize = 3
 
 /obj/item/weapon/reagent_containers/food/snacks/lionbar
 	name = "lion bar"
@@ -276,7 +276,7 @@
 	filling_color = "#7d5f46"
 	center_of_mass = "x=15;y=15"
 	nutriment_amt = 5
-	nutriment_desc = list("candy" = 1,"stale chocolate" = 4)
+	nutriment_desc = list("candy" = 1, "stale chocolate" = 4)
 
 	New()
 		..()
