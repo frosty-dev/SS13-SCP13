@@ -52,7 +52,7 @@
 /obj/effect/paint_stripe
 	name = "stripe of paint"
 	icon = 'icons/effects/effects.dmi'
-	icon_state = "white"
+	icon_state = "n_stripe"
 	plane = TURF_PLANE
 	layer = TURF_DETAIL_LAYER
 	blend_mode = BLEND_MULTIPLY
